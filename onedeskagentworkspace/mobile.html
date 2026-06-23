@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>员工工作台</title>
+    <link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+
+<!-- ==================== 登录页 ==================== -->
+<div class="m-login-page" id="m-login-page">
+    <div class="m-login-bg"></div>
+    <div class="m-login-body">
+        <div class="m-login-logo">📊</div>
+        <h1 class="m-login-title">员工工作台</h1>
+        <p class="m-login-desc">智能办公助手，让工作更高效</p>
+        <form class="m-login-form" id="m-login-form" onsubmit="mHandleLogin(event)">
+            <div class="m-login-field">
+                <label class="m-login-label" id="m-login-account-label">OA账号</label>
+                <input type="text" class="m-login-input" id="m-login-username" value="demo" placeholder="请输入OA账号" autocomplete="username" required>
+            </div>
+            <div class="m-login-field">
+                <label class="m-login-label">密码</label>
+                <input type="password" class="m-login-input" id="m-login-password" value="123456" placeholder="请输入密码" autocomplete="current-password" required>
+            </div>
+            <fieldset class="m-login-role-fieldset">
+                <legend class="m-login-label">选择角色</legend>
+                <div class="m-login-role-options">
+                    <label class="m-login-role-option selected">
+                        <input type="radio" name="m-role" value="employee" checked>
+                        <span class="m-login-role-card">业务团队</span>
+                    </label>
+                    <label class="m-login-role-option">
+                        <input type="radio" name="m-role" value="support">
+                        <span class="m-login-role-card">业务支持中心</span>
+                    </label>
+                </div>
+            </fieldset>
+            <p class="m-login-error" id="m-login-error" hidden></p>
+            <button type="submit" class="m-login-btn">登录</button>
+            <button type="button" class="m-login-mode-toggle" id="m-login-mode-toggle" onclick="mToggleLoginMode()">使用用户名登录</button>
+        </form>
+    </div>
+</div>
+
+<!-- ==================== 主应用容器 ==================== -->
+<div class="m-app" id="m-app" hidden>
+
+    <!-- 顶部导航栏 -->
+    <header class="m-top-nav" id="m-top-nav">
+        <div class="m-nav-left">
+            <span class="m-nav-logo">📊</span>
+            <span class="m-nav-title" id="m-nav-title">员工工作台</span>
+        </div>
+        <div class="m-nav-right">
+            <span class="m-nav-role" id="m-nav-role" onclick="mShowRoleSwitcher()">业务团队 ▼</span>
+        </div>
+    </header>
+
+    <!-- Tab内容区 -->
+    <main class="m-tab-content" id="m-tab-content">
+
+        <!-- ===== 首页Tab ===== -->
+        <div class="m-tab-page active" id="m-tab-home" data-tab="home">
+
+            <!-- 业务团队视图 -->
+            <div class="m-role-view" id="m-home-employee">
+                <!-- 今日任务 -->
+                <section class="m-section" id="m-work-tips-section">
+                    <div class="m-section-header" onclick="mToggleSection('m-work-tips-body')">
+                        <div class="m-section-title"><span class="m-section-icon">📋</span>今日任务 <span class="m-section-badge">4</span></div>
+                        <span class="m-section-chevron">▼</span>
+                    </div>
+                    <div class="m-section-body" id="m-work-tips-body">
+                        <ul class="m-tips-list">
+                            <li class="m-tip-item"><span class="m-tip-num">1</span><p>协和医院赵宇主任已提交开户资料，赵主任提出调降两融费率的申请，今日需与赵主任联系确定；</p></li>
+                            <li class="m-tip-item"><span class="m-tip-num">2</span><p>海南农商行机构准入事项已与黄亮副行长沟通，需准备路演材料；</p></li>
+                            <li class="m-tip-item"><span class="m-tip-num">3</span><p>ST沐邦共益债方案中出资金额需在本周内确定；</p></li>
+                            <li class="m-tip-item"><span class="m-tip-num">4</span><p>中银金租有新能源方面的研究服务需求，本周需协调研究所新能源领域研究员路演。</p></li>
+                        </ul>
+                        <button class="m-btn-outline m-btn-sm" onclick="mPushPage('m-work-log-page')">📝 工作日志</button>
+                    </div>
+                </section>
+
+               <!-- 业绩与绩效 -->
+                <section class="m-section">
+                    <div class="m-section-header" onclick="mToggleSection('m-performance-body')">
+                        <div class="m-section-title"><span class="m-section-icon">📊</span>业绩与绩效</div>
+                        <span class="m-section-chevron">▼</span>
+                    </div>
+                    <div class="m-section-body" id="m-performance-body">
+                        <!-- 子Tab切换 -->
+                        <div class="m-segment-tabs">
+                            <div class="m-segment-tab active" onclick="mSwitchPerfTab('performance')">业绩</div>
+                            <div class="m-segment-tab" onclick="mSwitchPerfTab('behavior')">员工行为</div>
+                        </div>
+
+                        <!-- 业绩Tab内容 -->
+                        <div class="m-perf-tab-content" id="m-perf-performance-content">
+                            <div class="m-perf-cards">
+                                <div class="m-perf-card" onclick="mPushPage('m-assets-detail-page')">
+                                    <div class="m-perf-icon">💰</div>
+                                    <div class="m-perf-label">客户总资产</div>
+                                    <div class="m-perf-value">10.62亿</div>
+                                </div>
+                                <div class="m-perf-card" onclick="mPushPage('m-revenue-detail-page')">
+                                    <div class="m-perf-icon">📈</div>
+                                    <div class="m-perf-label">客户总收入</div>
+                                    <div class="m-perf-value">150万</div>
+                                </div>
+                                <div class="m-perf-card" onclick="mPushPage('m-cost-detail-page')">
+                                    <div class="m-perf-icon">💸</div>
+                                    <div class="m-perf-label">客户总成本</div>
+                                    <div class="m-perf-value">30万</div>
+                                </div>
+                            </div>
+                            <div class="m-bonus-row">
+                                <span class="m-bonus-label">预计绩效</span>
+                                <span class="m-bonus-value">收入30万 · 奖金6万</span>
+                            </div>
+                        </div>
+
+                        <!-- 员工行为Tab内容 -->
+                        <div class="m-perf-tab-content" id="m-perf-behavior-content" hidden>
+                            <!-- 三大核心指标卡片 -->
+                            <div class="m-behavior-cards">
+                                <div class="m-behavior-card" data-type="travel" onclick="mSwitchBehaviorCard('travel')">
+                                    <div class="m-behavior-card-title">差旅费</div>
+                                    <div class="m-behavior-card-count">9次</div>
+                                    <div class="m-behavior-card-amount">¥2.44万</div>
+                                </div>
+                                <div class="m-behavior-card active" data-type="meal" onclick="mSwitchBehaviorCard('meal')">
+                                    <div class="m-behavior-card-title">餐费</div>
+                                    <div class="m-behavior-card-count">45次</div>
+                                    <div class="m-behavior-card-amount">¥0.38万</div>
+                                </div>
+                                <div class="m-behavior-card" data-type="car" onclick="mSwitchBehaviorCard('car')">
+                                    <div class="m-behavior-card-title">用车</div>
+                                    <div class="m-behavior-card-count">28次</div>
+                                    <div class="m-behavior-card-amount">¥0.16万</div>
+                                </div>
+                            </div>
+
+                            <!-- 智能分析联动图表 -->
+                            <div class="m-behavior-chart-section">
+                                <div class="m-behavior-chart-header">
+                                    <div class="m-behavior-chart-title">智能分析联动</div>
+                                    <div class="m-behavior-chart-subtitle" id="m-behavior-chart-subtitle">个人餐费金额 vs 部门平均</div>
+                                </div>
+                                <div class="m-behavior-chart-legend">
+                                    <span class="m-behavior-legend-item"><span class="m-behavior-legend-dot blue"></span>个人</span>
+                                    <span class="m-behavior-legend-item"><span class="m-behavior-legend-dot teal"></span>部门平均</span>
+                                </div>
+                                <div class="m-behavior-chart-container" id="m-behavior-chart">
+                                    <!-- SVG折线图 -->
+                                </div>
+                            </div>
+
+                            <!-- 行为分析 -->
+                            <div class="m-behavior-analysis-card">
+                                <div class="m-behavior-analysis-title">行为分析</div>
+                                <div class="m-behavior-analysis-content" id="m-behavior-analysis-content">
+                                    <div class="m-behavior-analysis-item"><span class="m-behavior-analysis-num">①</span> 近期公务用餐集中于 <span class="m-behavior-highlight">[XX 餐厅]</span>，交易笔数与金额均已临近餐费管控预警阈值。<span class="m-behavior-warn-icon">⚠️</span></div>
+                                </div>
+                            </div>
+
+                            <!-- 节省建议 -->
+                            <div class="m-behavior-suggest-card">
+                                <div class="m-behavior-suggest-title">节省建议</div>
+                                <div class="m-behavior-suggest-content" id="m-behavior-suggest-content">
+                                    <div class="m-behavior-suggest-item"><span class="m-behavior-suggest-num">①</span> 请补充相关业务依据以说明频繁选择该餐厅用餐的合理性，以便纳入白名单管理。</div>
+                                </div>
+                                <div class="m-behavior-suggest-action">
+                                    <button class="m-btn-suggest" onclick="mExplainReason()">💬 说明原因</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AI团队快捷入口 -->
+                <section class="m-section">
+                    <div class="m-section-title"><span class="m-section-icon">🤖</span>AI团队</div>
+                    <div class="m-ai-shortcuts">
+                        <div class="m-ai-shortcut" onclick="mSwitchToAIAssistant('canmou')">🧠<span>分析</span></div>
+                        <div class="m-ai-shortcut" onclick="mSwitchToAIAssistant('tanma')">🐎<span>挖掘</span></div>
+                        <div class="m-ai-shortcut" onclick="mSwitchToAIAssistant('junshi')">📋<span>方案</span></div>
+                        <div class="m-ai-shortcut" onclick="mSwitchToAIAssistant('jiaocha')">🔍<span>验证</span></div>
+                        <div class="m-ai-shortcut" onclick="mSwitchToAIAssistant('tianyan')">👁️<span>服务</span></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 业务支持中心视图 -->
+            <div class="m-role-view" id="m-home-support" hidden>
+                <section class="m-section">
+                    <div class="m-section-title"><span class="m-section-icon">🤖</span>今日任务助理</div>
+                    <div class="m-support-task-cards">
+                        <div class="m-support-task-card" onclick="mPushPage('m-agent-ib-page')">
+                            <div class="m-support-task-header">
+                                <img src="images/Avatar1.png" class="m-support-task-avatar" alt="投行">
+                                <div class="m-support-task-info">
+                                    <div class="m-support-task-name">投行业务助理</div>
+                                    <div class="m-support-task-count">2项待办</div>
+                                </div>
+                                <span class="m-support-task-badge">2</span>
+                            </div>
+                            <ul class="m-support-task-list">
+                                <li>· ST沐邦共益债方案推进</li>
+                                <li>· 某科技IPO尽调跟进</li>
+                            </ul>
+                        </div>
+                        <div class="m-support-task-card" onclick="mPushPage('m-agent-asset-page')">
+                            <div class="m-support-task-header">
+                                <img src="images/Avatar2.png" class="m-support-task-avatar" alt="资管">
+                                <div class="m-support-task-info">
+                                    <div class="m-support-task-name">资管业务助理</div>
+                                    <div class="m-support-task-count">1项待办</div>
+                                </div>
+                                <span class="m-support-task-badge">1</span>
+                            </div>
+                            <ul class="m-support-task-list">
+                                <li>· 固收+产品方案设计</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="m-section">
+                    <div class="m-section-title"><span class="m-section-icon">📂</span>业务分类</div>
+                    <div class="m-category-scroll">
+                        <div class="m-category-chip">👤 组织者助理</div>
+                        <div class="m-category-chip">📈 投资经理助理</div>
+                        <div class="m-category-chip">🛡️ 账户服务助理</div>
+                        <div class="m-category-chip">📐 产品设计助理</div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ===== AI助手Tab ===== -->
+        <div class="m-tab-page" id="m-tab-ai" data-tab="ai">
+
+            <!-- AI卡片选择视图 -->
+            <div class="m-ai-select-view" id="m-ai-select-view">
+                <!-- 7个助理头像横滑 -->
+                <div class="m-section">
+                    <div class="m-section-title">业务助理</div>
+                    <div class="m-avatars-scroll">
+                        <div class="m-avatar-item" onclick="mPushPage('m-agent-ib-page')">
+                            <img src="images/Avatar1.png" class="m-avatar-img" alt="投行"><span>投行</span>
+                        </div>
+                        <div class="m-avatar-item" onclick="mPushPage('m-agent-asset-page')">
+                            <img src="images/Avatar2.png" class="m-avatar-img" alt="资管"><span>资管</span>
+                        </div>
+                        <div class="m-avatar-item" onclick="mPushPage('m-agent-retail-page')">
+                            <img src="images/Avatar3.png" class="m-avatar-img" alt="零售"><span>零售</span>
+                        </div>
+                        <div class="m-avatar-item" onclick="mPushPage('m-agent-invest-page')">
+                            <img src="images/Avatar4.png" class="m-avatar-img" alt="投资"><span>投资</span>
+                        </div>
+                        <div class="m-avatar-item" onclick="mPushPage('m-agent-sales-page')">
+                            <img src="images/Avatar5.png" class="m-avatar-img" alt="销交"><span>销交</span>
+                        </div>
+                        <div class="m-avatar-item" onclick="mPushPage('m-agent-institution-page')">
+                            <img src="images/Avatar6.png" class="m-avatar-img" alt="机构"><span>机构</span>
+                        </div>
+                        <div class="m-avatar-item" onclick="mPushPage('m-agent-verify-page')">
+                            <img src="images/Avatar7.png" class="m-avatar-img" alt="验证"><span>验证</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5个AI卡片网格 -->
+                <div class="m-section">
+                    <div class="m-section-title">AI工作助手</div>
+                    <div class="m-ai-cards-grid">
+                        <div class="m-ai-card" onclick="mOpenAIChat('canmou')">
+                            <div class="m-ai-card-icon">🧠</div>
+                            <div class="m-ai-card-name">客户分析助手</div>
+                            <div class="m-ai-card-desc">全面分析看本质</div>
+                        </div>
+                        <div class="m-ai-card" onclick="mOpenAIChat('tanma')">
+                            <div class="m-ai-card-icon">🐎</div>
+                            <div class="m-ai-card-name">业务挖掘助手</div>
+                            <div class="m-ai-card-desc">业务挖掘找客户</div>
+                        </div>
+                        <div class="m-ai-card" onclick="mOpenAIChat('junshi')">
+                            <div class="m-ai-card-icon">📋</div>
+                            <div class="m-ai-card-name">方案生成助手</div>
+                            <div class="m-ai-card-desc">生成方案显韬略</div>
+                        </div>
+                        <div class="m-ai-card" onclick="mOpenAIChat('jiaocha')">
+                            <div class="m-ai-card-icon">🔍</div>
+                            <div class="m-ai-card-name">交叉验证助手</div>
+                            <div class="m-ai-card-desc">交叉核验保准确</div>
+                        </div>
+                        <div class="m-ai-card" onclick="mOpenAIChat('tianyan')">
+                            <div class="m-ai-card-icon">👁️</div>
+                            <div class="m-ai-card-name">客户服务助手</div>
+                            <div class="m-ai-card-desc">专业高效做服务</div>
+                        </div>
+                    </div>
+                    <p class="m-ai-hint">💡 选AI卡片开始对话 · 选助理头像进智能体</p>
+                </div>
+            </div>
+
+            <!-- AI对话视图（Tab内嵌） -->
+            <div class="m-ai-chat-view" id="m-ai-chat-view" hidden>
+                <div class="m-ai-chat-header">
+                    <button class="m-ai-chat-back" onclick="mCloseAIChat()">← 返回卡片</button>
+                    <span class="m-ai-chat-name" id="m-ai-chat-name">🧠 客户分析助手</span>
+                </div>
+                <div class="m-ai-chat-messages" id="m-ai-chat-messages"></div>
+                <div class="m-ai-chat-actions" id="m-ai-chat-actions"></div>
+                <div class="m-ai-chat-input-bar">
+                    <button class="m-chat-btn" onclick="mTriggerFileUpload()">📎</button>
+                    <button class="m-chat-btn" onclick="mStartVoice()">🎙️</button>
+                    <input type="text" class="m-chat-input" id="m-ai-chat-input" placeholder="开启我的工作" onkeypress="if(event.key==='Enter')mSendAIChatMessage()">
+                    <button class="m-chat-send" onclick="mSendAIChatMessage()">➤</button>
+                </div>
+                <input type="file" id="m-ai-file-input" hidden accept=".doc,.docx,.pdf,.txt,.xls,.xlsx,.png,.jpg">
+            </div>
+        </div>
+
+        <!-- ===== 待办Tab ===== -->
+        <div class="m-tab-page" id="m-tab-todo" data-tab="todo">
+            <!-- 业务团队视图 -->
+            <div class="m-role-view" id="m-todo-employee">
+                <div class="m-todo-log-entry" onclick="mPushPage('m-work-log-page')">
+                    <span class="m-todo-log-icon">📝</span>
+                    <span>工作日志</span>
+                    <span class="m-todo-arrow">›</span>
+                </div>
+                <section class="m-section">
+                    <div class="m-section-title"><span class="m-section-icon">📋</span>今日任务</div>
+                    <div class="m-todo-list">
+                        <div class="m-todo-card">
+                            <div class="m-todo-card-header"><span class="m-todo-num">1</span>协和医院赵宇主任开户跟进</div>
+                            <div class="m-todo-card-body">赵主任已提交开户资料，并提出调降两融费率的申请。</div>
+                            <div class="m-todo-card-actions">
+                                <button class="m-btn-sm m-btn-primary" onclick="mSwitchToAIAssistant('retail');mSendAIChatMessage('协和医院赵宇主任开户跟进')">跟进</button>
+                                <button class="m-btn-sm m-btn-outline">完成</button>
+                            </div>
+                        </div>
+                        <div class="m-todo-card">
+                            <div class="m-todo-card-header"><span class="m-todo-num">2</span>海南农商行机构准入</div>
+                            <div class="m-todo-card-body">需与金融市场部赵翔鹏总经理面谈，准备路演材料。</div>
+                            <div class="m-todo-card-actions">
+                                <button class="m-btn-sm m-btn-primary" onclick="mSwitchToAIAssistant('institution');mSendAIChatMessage('海南农商行机构准入事项')">跟进</button>
+                                <button class="m-btn-sm m-btn-outline">完成</button>
+                            </div>
+                        </div>
+                        <div class="m-todo-card">
+                            <div class="m-todo-card-header"><span class="m-todo-num">3</span>ST沐邦共益债方案</div>
+                            <div class="m-todo-card-body">出资金额需在本周内确定。</div>
+                            <div class="m-todo-card-actions">
+                                <button class="m-btn-sm m-btn-primary" onclick="mPushPage('m-agent-ib-page')">跟进</button>
+                                <button class="m-btn-sm m-btn-outline">完成</button>
+                            </div>
+                        </div>
+                        <div class="m-todo-card">
+                            <div class="m-todo-card-header"><span class="m-todo-num">4</span>中银金租新能源研究服务</div>
+                            <div class="m-todo-card-body">需协调研究所新能源领域研究员进行路演。</div>
+                            <div class="m-todo-card-actions">
+                                <button class="m-btn-sm m-btn-primary" onclick="mPushPage('m-agent-invest-page')">跟进</button>
+                                <button class="m-btn-sm m-btn-outline">完成</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 业务支持中心视图 -->
+            <div class="m-role-view" id="m-todo-support" hidden>
+                <div class="m-category-scroll m-todo-category-scroll">
+                    <div class="m-category-chip active">全部</div>
+                    <div class="m-category-chip">组织者</div>
+                    <div class="m-category-chip">投资经理</div>
+                    <div class="m-category-chip">账户服务</div>
+                    <div class="m-category-chip">产品设计</div>
+                </div>
+                <div class="m-support-todo-list">
+                    <div class="m-support-todo-card">
+                        <div class="m-support-todo-agent">
+                            <img src="images/Avatar1.png" class="m-support-todo-avatar" alt="">
+                            <span>投行业务助理</span>
+                        </div>
+                        <div class="m-support-todo-task">
+                            <div class="m-support-todo-title">ST沐邦共益债方案推进</div>
+                            <div class="m-support-todo-step done">✓ 完成共益债方案初稿</div>
+                            <div class="m-support-todo-step next" onclick="mPushPage('m-agent-ib-page')">→ 本周内确定出资金额</div>
+                        </div>
+                        <div class="m-support-todo-task">
+                            <div class="m-support-todo-title">某科技IPO尽调跟进</div>
+                            <div class="m-support-todo-step done">✓ 下发尽调资料清单</div>
+                            <div class="m-support-todo-step next" onclick="mPushPage('m-agent-ib-page')">→ 整理尽调发现问题</div>
+                        </div>
+                    </div>
+                    <div class="m-support-todo-card">
+                        <div class="m-support-todo-agent">
+                            <img src="images/Avatar2.png" class="m-support-todo-avatar" alt="">
+                            <span>资管业务助理</span>
+                        </div>
+                        <div class="m-support-todo-task">
+                            <div class="m-support-todo-title">固收+产品方案设计</div>
+                            <div class="m-support-todo-step done">✓ 完成客户需求调研</div>
+                            <div class="m-support-todo-step next" onclick="mPushPage('m-agent-asset-page')">→ 完善产品说明书草案</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 我的Tab ===== -->
+        <div class="m-tab-page" id="m-tab-mine" data-tab="mine">
+            <div class="m-mine-profile">
+                <div class="m-mine-avatar">👤</div>
+                <div class="m-mine-info">
+                    <div class="m-mine-name">Demo</div>
+                    <div class="m-mine-role" id="m-mine-role" onclick="mShowRoleSwitcher()">业务团队 ▼</div>
+                </div>
+            </div>
+            <div class="m-mine-menu">
+                <div class="m-mine-item" onclick="mPushPage('m-assets-detail-page')">
+                    <span>💰</span>客户总资产明细<span class="m-mine-arrow">›</span>
+                </div>
+                <div class="m-mine-item" onclick="mPushPage('m-revenue-detail-page')">
+                    <span>📈</span>客户收入明细<span class="m-mine-arrow">›</span>
+                </div>
+                <div class="m-mine-item" onclick="mPushPage('m-cost-detail-page')">
+                    <span>💸</span>客户成本明细<span class="m-mine-arrow">›</span>
+                </div>
+                <div class="m-mine-item" onclick="mPushPage('m-bonus-calc-page')">
+                    <span>📊</span>预计绩效计算<span class="m-mine-arrow">›</span>
+                </div>
+            </div>
+            <div class="m-mine-divider"></div>
+            <div class="m-mine-menu">
+                <div class="m-mine-item" onclick="mShowRoleSwitcher()">
+                    <span>🔄</span>切换角色<span class="m-mine-arrow">›</span>
+                </div>
+                <div class="m-mine-item" onclick="mLogout()">
+                    <span>🚪</span>退出登录<span class="m-mine-arrow">›</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部Tab栏 -->
+    <nav class="m-bottom-nav" id="m-bottom-nav">
+        <div class="m-nav-tab active" data-tab="home" onclick="mSwitchTab('home')">
+            <span class="m-nav-tab-icon">🏠</span><span class="m-nav-tab-label">首页</span>
+        </div>
+        <div class="m-nav-tab" data-tab="ai" onclick="mSwitchTab('ai')">
+            <span class="m-nav-tab-icon">🤖</span><span class="m-nav-tab-label">AI助手</span>
+        </div>
+        <div class="m-nav-tab" data-tab="todo" onclick="mSwitchTab('todo')">
+            <span class="m-nav-tab-icon">📋</span><span class="m-nav-tab-label">待办</span>
+        </div>
+        <div class="m-nav-tab" data-tab="mine" onclick="mSwitchTab('mine')">
+            <span class="m-nav-tab-icon">👤</span><span class="m-nav-tab-label">我的</span>
+        </div>
+    </nav>
+</div>
+
+<!-- ==================== 导航栈页面容器 ==================== -->
+<div class="m-nav-stack" id="m-nav-stack"></div>
+
+<!-- ==================== 角色切换弹窗 ==================== -->
+<div class="m-modal" id="m-role-modal" hidden>
+    <div class="m-modal-overlay" onclick="mCloseRoleSwitcher()"></div>
+    <div class="m-modal-content m-modal-sm">
+        <div class="m-modal-header"><h4>切换角色</h4></div>
+        <div class="m-modal-body">
+            <button class="m-role-switch-btn" onclick="mSwitchRole('employee')">业务团队</button>
+            <button class="m-role-switch-btn" onclick="mSwitchRole('support')">业务支持中心</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 7个助理智能体页面模板 ==================== -->
+
+<script>
+// ========== 全局状态 ==========
+let mCurrentRole = 'employee';
+let mLoginMode = 'oa';
+let mCurrentAIChat = null;
+let mAIChatHistories = {};
+let mNavStack = [];
+
+// ========== 助理数据 ==========
+const mAgents = {
+    ib: { name: '投行业务助理', image: 'images/Avatar1.png', prompts: ['帮我梳理IPO项目尽调清单','生成招股书核心章节写作框架','分析同行业上市公司估值对比','整理投行业务合规审查要点'], welcome: '您好，我是投行业务助理。我可以从项目尽调、发行方案、合规审查等维度为您提供支持。' },
+    asset: { name: '资管业务助理', image: 'images/Avatar2.png', prompts: ['设计一款固收+资管产品方案','分析客户风险偏好与产品匹配','整理资管合同关键条款要点','对比同类资管产品收益与风险'], welcome: '您好，我是资管业务助理。我可以协助您完成产品设计、风险匹配与合规要点梳理。' },
+    retail: { name: '零售业务助理', image: 'images/Avatar3.png', prompts: ['为高净值客户制定资产配置建议','分析两融业务客户需求与费率策略','生成客户拜访谈话要点','分析近期活跃客户交易行为特征'], welcome: '您好，我是零售业务助理。我将结合客户画像与业务规则为您提供建议。' },
+    invest: { name: '投资业务助理', image: 'images/Avatar4.png', prompts: ['分析某行业投资逻辑与核心标的','生成Research Memo研究框架','对比同赛道竞品财务指标','梳理投资组合风险评估要点'], welcome: '您好，我是投资业务助理。我将从行业研究、标的筛选、风险评估等方面协助您。' },
+    sales: { name: '销交业务助理', image: 'images/Avatar5.png', prompts: ['整理机构客户交易需求对接流程','生成债券销售路演材料提纲','分析市场行情与交易策略要点','梳理大客户交易服务方案'], welcome: '您好，我是销交业务助理。我可以协助整理对接流程、路演材料与交易策略。' },
+    institution: { name: '机构业务助理', image: 'images/Avatar6.png', prompts: ['准备机构客户准入路演材料','梳理机构业务合作方案框架','分析机构客户画像与业务机会','生成机构拜访会议纪要模板'], welcome: '您好，我是机构业务助理。我将协助您完成准入材料、合作方案与客户分析。' },
+    verify: { name: '交叉验证助理', image: 'images/Avatar7.png', prompts: ['交叉验证财务数据一致性','复核投资研究结论关键假设','核验合规要件完整性','比对多来源信息差异点'], welcome: '您好，我是交叉验证助理。我将从数据一致性、结论复核、合规核验等维度为您交叉验证。' }
+};
+
+// ========== AI卡片数据 ==========
+const mAIAssistantCards = {
+    canmou: { name: '客户分析助手', icon: '🧠', welcome: '请告诉我要分析的内容，或上传文档，我将为您深度解析。', actions: 'canmou' },
+    tanma: { name: '业务挖掘助手', icon: '🐎', welcome: '为您挖掘潜在客户与业务线索。', actions: 'tanma' },
+    junshi: { name: '方案生成助手', icon: '📋', welcome: '请选择需要生成的方案类型。', actions: 'junshi' },
+    jiaocha: { name: '交叉验证助手', icon: '🔍', welcome: '请提供需要交叉验证的数据或材料。', actions: 'jiaocha' },
+    tianyan: { name: '客户服务助手', icon: '👁️', welcome: '为客户推送专业资讯服务。', actions: 'tianyan' }
+};
+
+// ========== 登录逻辑 ==========
+function mHandleLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('m-login-username').value.trim();
+    const password = document.getElementById('m-login-password').value.trim();
+    const role = document.querySelector('input[name="m-role"]:checked')?.value;
+    const errorEl = document.getElementById('m-login-error');
+    if (!username || !password) { errorEl.textContent = '请输入账号和密码'; errorEl.hidden = false; return; }
+    if (!role) { errorEl.textContent = '请选择登录角色'; errorEl.hidden = false; return; }
+    errorEl.hidden = true;
+    mEnterApp(role);
+}
+
+function mToggleLoginMode() {
+    mLoginMode = mLoginMode === 'oa' ? 'username' : 'oa';
+    const label = document.getElementById('m-login-account-label');
+    const input = document.getElementById('m-login-username');
+    const toggleBtn = document.getElementById('m-login-mode-toggle');
+    if (mLoginMode === 'oa') {
+        label.textContent = 'OA账号'; input.placeholder = '请输入OA账号'; input.value = 'demo';
+        document.getElementById('m-login-password').value = '123456';
+        toggleBtn.textContent = '使用用户名登录';
+    } else {
+        label.textContent = '用户名'; input.placeholder = '请输入用户名'; input.value = '';
+        document.getElementById('m-login-password').value = '';
+        toggleBtn.textContent = '使用OA账号登录';
+    }
+}
+
+function mEnterApp(role) {
+    mCurrentRole = role;
+    document.getElementById('m-login-page').hidden = true;
+    document.getElementById('m-app').hidden = false;
+    document.getElementById('m-app').classList.remove('m-hidden');
+    mUpdateRoleUI();
+}
+
+function mLogout() {
+    document.getElementById('m-login-page').hidden = false;
+    document.getElementById('m-app').hidden = true;
+    document.getElementById('m-app').classList.add('m-hidden');
+    mNavStack = [];
+    document.getElementById('m-nav-stack').innerHTML = '';
+}
+
+// ========== 角色切换 ==========
+function mUpdateRoleUI() {
+    const isEmployee = mCurrentRole === 'employee';
+    const roleLabel = isEmployee ? '业务团队' : '业务支持中心';
+    document.getElementById('m-nav-role').textContent = roleLabel + ' ▼';
+    document.getElementById('m-mine-role').textContent = roleLabel + ' ▼';
+    // 首页
+    document.getElementById('m-home-employee').hidden = !isEmployee;
+    document.getElementById('m-home-support').hidden = isEmployee;
+    // 待办
+    document.getElementById('m-todo-employee').hidden = !isEmployee;
+    document.getElementById('m-todo-support').hidden = isEmployee;
+}
+
+function mShowRoleSwitcher() { document.getElementById('m-role-modal').hidden = false; }
+function mCloseRoleSwitcher() { document.getElementById('m-role-modal').hidden = true; }
+function mSwitchRole(role) { mCurrentRole = role; mUpdateRoleUI(); mCloseRoleSwitcher(); }
+
+// ========== Tab切换 ==========
+function mSwitchTab(tab) {
+    document.querySelectorAll('.m-tab-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('m-tab-' + tab).classList.add('active');
+    document.querySelectorAll('.m-nav-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+}
+
+// ========== 折叠区域 ==========
+function mToggleSection(id) {
+    const body = document.getElementById(id);
+    if (body) body.classList.toggle('collapsed');
+}
+
+// ========== 业绩与绩效子Tab切换 ==========
+let mCurrentPerfTab = 'performance';
+
+function mSwitchPerfTab(tab) {
+    mCurrentPerfTab = tab;
+    document.querySelectorAll('.m-segment-tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.m-segment-tab').forEach(el => {
+        if ((tab === 'performance' && el.textContent === '业绩') ||
+            (tab === 'behavior' && el.textContent === '员工行为')) el.classList.add('active');
+    });
+    document.getElementById('m-perf-performance-content').hidden = (tab !== 'performance');
+    document.getElementById('m-perf-behavior-content').hidden = (tab !== 'behavior');
+    if (tab === 'behavior') {
+        mRenderBehaviorChart();
+    }
+}
+
+// ========== 员工行为 - 数据定义 ==========
+let mCurrentBehaviorType = 'meal';
+
+const mBehaviorData = {
+    travel: {
+        subtitle: '个人差旅金额 vs 部门平均',
+        personal: [1200, 1400, 980, 1100, 1300, 1150],
+        deptAvg:  [800, 850, 780, 820, 860, 830],
+        yMax: 1600,
+        analysis: [
+            '临时订票占比偏高（提前1天订票达60%）',
+            '出行时段不经济（最高价时段订票达50%）',
+            '退改签频次异常偏高（接近50%）',
+            '<span class="m-behavior-analysis-warn">超过机票及住宿标准达86.4%！</span>'
+        ],
+        suggestions: [
+            '执行提前5天订票（预降 ¥2,400）',
+            '避开最高价时段（预降 ¥1,200）',
+            '严控退改签行为（警示阈近50% 预警线）',
+            '超标预定次数控制在50%以下（预降 ¥800）'
+        ]
+    },
+    meal: {
+        subtitle: '个人餐费金额 vs 部门平均',
+        personal: [600, 720, 680, 600, 640, 620],
+        deptAvg:  [480, 500, 510, 490, 500, 480],
+        yMax: 800,
+        analysis: [
+            '近期公务用餐集中于 <span class="m-behavior-highlight">[XX 餐厅]</span>，交易笔数与金额均已临近餐费管控预警阈值。'
+        ],
+        suggestions: [
+            '请补充相关业务依据以说明频繁选择该餐厅用餐的合理性，以便纳入白名单管理。'
+        ]
+    },
+    car: {
+        subtitle: '个人打车金额 vs 部门平均',
+        personal: [380, 420, 350, 400, 430, 360],
+        deptAvg:  [280, 300, 290, 310, 300, 280],
+        yMax: 500,
+        analysis: [
+            '当前用车频率及累计消费金额超出部门平均水平20%',
+            '系统监测到近期多次出行至非工作场所 / 非业务必要的 <span class="m-behavior-highlight">[XX 地点]</span>'
+        ],
+        suggestions: [
+            '合并行程、减少单独用车',
+            '加强用车事由与公务活动的匹配度'
+        ]
+    }
+};
+
+// ========== 员工行为 - 卡片切换 ==========
+function mSwitchBehaviorCard(type) {
+    mCurrentBehaviorType = type;
+    document.querySelectorAll('.m-behavior-card').forEach(el => {
+        el.classList.toggle('active', el.dataset.type === type);
+    });
+    const data = mBehaviorData[type];
+    document.getElementById('m-behavior-chart-subtitle').textContent = data.subtitle;
+    // 更新行为分析内容
+    const analysisEl = document.getElementById('m-behavior-analysis-content');
+    analysisEl.innerHTML = data.analysis.map((text, i) =>
+        `<div class="m-behavior-analysis-item"><span class="m-behavior-analysis-num">${String.fromCharCode(0x2460+i)}</span> ${text}${i === data.analysis.length - 1 ? '<span class="m-behavior-warn-icon">⚠️</span>' : ''}</div>`
+    ).join('');
+    // 更新节省建议内容
+    const suggestEl = document.getElementById('m-behavior-suggest-content');
+    suggestEl.innerHTML = data.suggestions.map((text, i) =>
+        `<div class="m-behavior-suggest-item"><span class="m-behavior-suggest-num">${String.fromCharCode(0x2460+i)}</span> ${text}</div>`
+    ).join('');
+    mRenderBehaviorChart();
+}
+
+// ========== 员工行为 - SVG折线图渲染 ==========
+function mRenderBehaviorChart() {
+    const container = document.getElementById('m-behavior-chart');
+    if (!container) return;
+    const data = mBehaviorData[mCurrentBehaviorType];
+    const months = ['1月','2月','3月','4月','5月','6月'];
+    const W = container.clientWidth || 300;
+    const H = 160;
+    const padL = 36, padR = 10, padT = 10, padB = 24;
+    const chartW = W - padL - padR;
+    const chartH = H - padT - padB;
+    const yMax = data.yMax;
+    const xStep = chartW / (months.length - 1);
+
+    function toX(i) { return padL + i * xStep; }
+    function toY(v) { return padT + chartH - (v / yMax) * chartH; }
+
+    function linePath(arr) {
+        return arr.map((v, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(' ');
+    }
+    function areaPath(arr) {
+        const line = linePath(arr);
+        const lastX = toX(arr.length - 1);
+        const firstX = toX(0);
+        const baseY = toY(0);
+        return line + ` L${lastX.toFixed(1)},${baseY.toFixed(1)} L${firstX.toFixed(1)},${baseY.toFixed(1)} Z`;
+    }
+
+    // Y轴刻度
+    const yTicks = 4;
+    let yTickLines = '';
+    let yTickLabels = '';
+    for (let i = 0; i <= yTicks; i++) {
+        const val = Math.round(yMax * i / yTicks);
+        const y = toY(val);
+        yTickLines += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#E0E0E0" stroke-width="1"/>`;
+        yTickLabels += `<text x="${padL-4}" y="${y.toFixed(1)+4}" fill="#999" font-size="9" text-anchor="end">${val}</text>`;
+    }
+
+    // X轴标签
+    let xLabels = months.map((m, i) => `<text x="${toX(i).toFixed(1)}" y="${H-4}" fill="#999" font-size="9" text-anchor="middle">${m}</text>`).join('');
+
+    // 渐变定义
+    const svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4A90D9" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#4A90D9" stop-opacity="0.05"/>
+            </linearGradient>
+            <linearGradient id="tealGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#26C6DA" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#26C6DA" stop-opacity="0.03"/>
+            </linearGradient>
+        </defs>
+        ${yTickLines}
+        ${xLabels}
+        <!-- 部门平均填充 -->
+        <path d="${areaPath(data.deptAvg)}" fill="url(#tealGrad)"/>
+        <!-- 个人填充 -->
+        <path d="${areaPath(data.personal)}" fill="url(#blueGrad)"/>
+        <!-- 部门平均线 -->
+        <path d="${linePath(data.deptAvg)}" fill="none" stroke="#26C6DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 个人线 -->
+        <path d="${linePath(data.personal)}" fill="none" stroke="#4A90D9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 数据点 -->
+        ${data.personal.map((v,i) => `<circle cx="${toX(i).toFixed(1)}" cy="${toY(v).toFixed(1)}" r="3" fill="#4A90D9" stroke="#fff" stroke-width="1"/>`).join('')}
+        ${data.deptAvg.map((v,i) => `<circle cx="${toX(i).toFixed(1)}" cy="${toY(v).toFixed(1)}" r="3" fill="#26C6DA" stroke="#fff" stroke-width="1"/>`).join('')}
+    </svg>`;
+
+    container.innerHTML = svg;
+}
+
+// ========== 员工行为 - 说明原因 ==========
+function mExplainReason() {
+    alert('请填写说明原因，提交后将纳入白名单审核流程。');
+}
+
+// ========== 导航栈push/pop ==========
+function mPushPage(pageId) {
+    const stack = document.getElementById('m-nav-stack');
+    const pageHtml = mGetPageHtml(pageId);
+    if (!pageHtml) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'm-stack-page';
+    wrapper.id = 'm-stack-' + pageId;
+    wrapper.innerHTML = pageHtml;
+    stack.appendChild(wrapper);
+    mNavStack.push(pageId);
+    // 隐藏主应用
+    document.getElementById('m-app').classList.add('m-hidden');
+    requestAnimationFrame(() => wrapper.classList.add('active'));
+}
+
+function mPopPage() {
+    const stack = document.getElementById('m-nav-stack');
+    if (mNavStack.length === 0) return;
+    const pageId = mNavStack.pop();
+    const page = document.getElementById('m-stack-' + pageId);
+    if (page) {
+        page.classList.remove('active');
+        setTimeout(() => page.remove(), 300);
+    }
+    if (mNavStack.length === 0) {
+        document.getElementById('m-app').classList.remove('m-hidden');
+    }
+}
+
+// ========== AI卡片对话 ==========
+function mOpenAIChat(cardId) {
+    mCurrentAIChat = cardId;
+    const card = mAIAssistantCards[cardId];
+    document.getElementById('m-ai-select-view').hidden = true;
+    document.getElementById('m-ai-chat-view').hidden = false;
+    document.getElementById('m-ai-chat-name').textContent = card.icon + ' ' + card.name;
+    const msgContainer = document.getElementById('m-ai-chat-messages');
+    if (!mAIChatHistories[cardId]) {
+        mAIChatHistories[cardId] = [];
+        msgContainer.innerHTML = '';
+        mAppendAIChatMessage(card.welcome, 'assistant');
+    } else {
+        msgContainer.innerHTML = '';
+        mAIChatHistories[cardId].forEach(m => mAppendAIChatMessage(m.text, m.role, false));
+    }
+    // 设置快捷操作
+    const actionsEl = document.getElementById('m-ai-chat-actions');
+    actionsEl.innerHTML = mGetAIChatActionsHtml(cardId);
+    mScrollChatToBottom();
+}
+
+function mCloseAIChat() {
+    document.getElementById('m-ai-select-view').hidden = false;
+    document.getElementById('m-ai-chat-view').hidden = true;
+    mCurrentAIChat = null;
+}
+
+function mAppendAIChatMessage(text, role, save = true) {
+    const msgContainer = document.getElementById('m-ai-chat-messages');
+    const bubble = document.createElement('div');
+    bubble.className = 'm-chat-bubble ' + (role === 'user' ? 'm-chat-user' : 'm-chat-assistant');
+    bubble.innerHTML = role === 'user' ? `<div class="m-chat-text">${mEscapeHtml(text)}</div>` : `<div class="m-chat-text">${mMarkdownToHtml(text)}</div>`;
+    msgContainer.appendChild(bubble);
+    if (save && mCurrentAIChat) {
+        if (!mAIChatHistories[mCurrentAIChat]) mAIChatHistories[mCurrentAIChat] = [];
+        mAIChatHistories[mCurrentAIChat].push({ text, role });
+    }
+    mScrollChatToBottom();
+}
+
+function mSendAIChatMessage(presetText) {
+    const input = document.getElementById('m-ai-chat-input');
+    const text = presetText || input.value.trim();
+    if (!text || !mCurrentAIChat) return;
+    input.value = '';
+    mAppendAIChatMessage(text, 'user');
+    // 模拟AI回复
+    setTimeout(() => {
+        const card = mAIAssistantCards[mCurrentAIChat];
+        const reply = mGetAIReply(mCurrentAIChat, text);
+        mAppendAIChatMessage(reply, 'assistant');
+    }, 800);
+}
+
+function mGetAIReply(cardId, msg) {
+    const replies = {
+        canmou: `关于「${msg}」，我将从财务风险、估值水平、竞争地位等维度为您深度解析。请提供更详细的分析对象或上传相关文档。`,
+        tanma: `针对「${msg}」，我已从通讯录、公开信息等渠道挖掘到相关线索。您可以点击下方"查看线索"查看详细客户列表。`,
+        junshi: `针对「${msg}」，我可以为您生成破产重整方案、定增方案、债券发行方案或资管产品方案。请点击下方"选择方案"进入方案设计。`,
+        jiaocha: `关于「${msg}」，我将从数据一致性、结论复核、合规核验等维度进行交叉验证。请提供需要验证的数据来源。`,
+        tianyan: `关于「${msg}」，我可以为个人客户、银行客户、企业客户推送专业资讯。请点击下方"发送资讯"选择客户类型。`
+    };
+    return replies[cardId] || `关于「${msg}」，我将为您提供专业支持。`;
+}
+
+function mGetAIChatActionsHtml(cardId) {
+    const actions = {
+        canmou: '<button class="m-btn-sm m-btn-outline" onclick="mPushPage(\'m-canmou-page\')">📄 查看详情</button>',
+        tanma: '<button class="m-btn-sm m-btn-outline" onclick="mPushPage(\'m-tanma-page\')">📋 查看线索</button>',
+        junshi: '<button class="m-btn-sm m-btn-outline" onclick="mPushPage(\'m-junshi-page\')">📋 选择方案</button>',
+        jiaocha: '',
+        tianyan: '<button class="m-btn-sm m-btn-outline" onclick="mPushPage(\'m-tianyan-page\')">📤 发送资讯</button>'
+    };
+    return actions[cardId] || '';
+}
+
+function mTriggerFileUpload() { document.getElementById('m-ai-file-input').click(); }
+function mStartVoice() { /* 语音输入预留 */ }
+
+function mSwitchToAIAssistant(cardId) {
+    mSwitchTab('ai');
+    setTimeout(() => mOpenAIChat(cardId), 100);
+}
+
+function mScrollChatToBottom() {
+    const msgContainer = document.getElementById('m-ai-chat-messages');
+    if (msgContainer) requestAnimationFrame(() => msgContainer.scrollTop = msgContainer.scrollHeight);
+}
+
+// ========== 页面HTML生成器 ==========
+function mGetPageHtml(pageId) {
+    const generators = {
+        // 7个助理智能体页面
+        'm-agent-ib-page': () => mAgentPageHtml('ib'),
+        'm-agent-asset-page': () => mAgentPageHtml('asset'),
+        'm-agent-retail-page': () => mAgentPageHtml('retail'),
+        'm-agent-invest-page': () => mAgentPageHtml('invest'),
+        'm-agent-sales-page': () => mAgentPageHtml('sales'),
+        'm-agent-institution-page': () => mAgentPageHtml('institution'),
+        'm-agent-verify-page': () => mAgentPageHtml('verify'),
+        // 二级详情页
+        'm-canmou-page': mCanmouPageHtml,
+        'm-tanma-page': mTanmaPageHtml,
+        'm-junshi-page': mJunshiPageHtml,
+        'm-tianyan-page': mTianyanPageHtml,
+        'm-assets-detail-page': mAssetsDetailPageHtml,
+        'm-revenue-detail-page': mRevenueDetailPageHtml,
+        'm-cost-detail-page': mCostDetailPageHtml,
+        'm-work-log-page': mWorkLogPageHtml,
+        'm-bonus-calc-page': mBonusCalcPageHtml,
+        // 三级页面
+        'm-tanma-model-page': mTanmaModelPageHtml,
+        'm-bankruptcy-page': mBankruptcyPageHtml,
+        'm-customer-select-page': mCustomerSelectPageHtml,
+    };
+    return generators[pageId] ? generators[pageId]() : null;
+}
+
+function mAgentPageHtml(agentId) {
+    const agent = mAgents[agentId];
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">${agent.name}</span>
+        </div>
+        <div class="m-agent-chat-messages" id="m-agent-chat-${agentId}"></div>
+        <div class="m-agent-prompts">
+            <div class="m-agent-prompts-title">💡 预设提示词</div>
+            ${agent.prompts.map(p => `<div class="m-agent-prompt-item" onclick="mSendAgentMessage('${agentId}','${p.replace(/'/g, "\\'")}')">${p}</div>`).join('')}
+        </div>
+        <div class="m-agent-input-bar">
+            <input type="text" class="m-chat-input" id="m-agent-input-${agentId}" placeholder="输入消息..." onkeypress="if(event.key==='Enter')mSendAgentMessage('${agentId}')">
+            <button class="m-chat-send" onclick="mSendAgentMessage('${agentId}')">➤</button>
+        </div>
+    </div>`;
+}
+
+// 助理对话消息存储
+const mAgentMessages = {};
+
+function mSendAgentMessage(agentId, presetText) {
+    const input = document.getElementById('m-agent-input-' + agentId);
+    const text = presetText || (input ? input.value.trim() : '');
+    if (!text) return;
+    if (input) input.value = '';
+    const container = document.getElementById('m-agent-chat-' + agentId);
+    if (!container) return;
+    // 用户消息
+    container.innerHTML += `<div class="m-chat-bubble m-chat-user"><div class="m-chat-text">${mEscapeHtml(text)}</div></div>`;
+    // AI回复
+    setTimeout(() => {
+        const reply = mAgents[agentId].welcome ? `关于「${text}」，我将为您提供专业支持。请补充具体信息，以便进一步分析。` : text;
+        container.innerHTML += `<div class="m-chat-bubble m-chat-assistant"><div class="m-chat-text">${mMarkdownToHtml(reply)}</div></div>`;
+        container.scrollTop = container.scrollHeight;
+    }, 600);
+    container.scrollTop = container.scrollHeight;
+}
+
+// ========== 参谋分析页 ==========
+function mCanmouPageHtml() {
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">🧠 客户分析助手</span>
+        </div>
+        <div class="m-stack-scroll">
+            <div class="m-analysis-prompt">💬 请告诉我要分析的内容</div>
+            <textarea class="m-analysis-textarea" id="m-analysis-input" placeholder="点击输入框输入分析内容..." rows="4"></textarea>
+            <div class="m-analysis-actions">
+                <button class="m-btn-sm m-btn-outline" onclick="alert('语音输入功能开发中')">🎙️ 语音输入</button>
+                <button class="m-btn-sm m-btn-primary" onclick="mSubmitAnalysis()">开始分析</button>
+            </div>
+            <div class="m-analysis-upload" onclick="document.getElementById('m-analysis-file').click()">
+                📁 上传文档分析
+                <input type="file" id="m-analysis-file" hidden accept=".doc,.docx,.pdf,.txt,.xls,.xlsx">
+            </div>
+            <div class="m-analysis-hint">💡 输入分析需求或上传文档，AI参谋将为您深度解析</div>
+            <div class="m-analysis-result" id="m-analysis-result" hidden>
+                <h4>📊 分析结果</h4>
+                <div class="m-analysis-result-content" id="m-analysis-result-content"></div>
+                <div class="m-analysis-result-actions">
+                    <button class="m-btn-sm m-btn-outline" onclick="document.getElementById('m-analysis-result').hidden=true">清除</button>
+                    <button class="m-btn-sm m-btn-primary">保存分析</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function mSubmitAnalysis() {
+    const input = document.getElementById('m-analysis-input');
+    const text = input ? input.value.trim() : '';
+    if (!text) { alert('请输入分析内容'); return; }
+    const resultEl = document.getElementById('m-analysis-result');
+    const contentEl = document.getElementById('m-analysis-result-content');
+    resultEl.hidden = false;
+    contentEl.innerHTML = '<div class="m-loading">分析中...</div>';
+    fetch('/api/ai/analyze', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: text, provider: 'doubao' })
+    }).then(r => r.json()).then(data => {
+        contentEl.innerHTML = data.success ? mMarkdownToHtml(data.content) : '分析失败：' + (data.error || '未知错误');
+    }).catch(() => { contentEl.innerHTML = '网络错误，请稍后重试'; });
+}
+
+// ========== 探马详情页 ==========
+function mTanmaPageHtml() {
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">🐎 业务挖掘助手</span>
+            <button class="m-stack-nav-btn" onclick="mPushPage('m-tanma-model-page')">🎯 模型</button>
+        </div>
+        <div class="m-stack-scroll">
+            <div class="m-accordion open" onclick="this.classList.toggle('open')">
+                <div class="m-accordion-header">📊 经纪业务潜在客户</div>
+                <div class="m-accordion-body">
+                    <div class="m-client-card"><div class="m-client-name">孙海燕</div><div class="m-client-row"><span class="m-client-label">联系电话：</span>13932157387</div><div class="m-client-row"><span class="m-client-label">业务线索：</span>在国信证券有股票账户及两融账户</div></div>
+                </div>
+            </div>
+            <div class="m-accordion" onclick="this.classList.toggle('open')">
+                <div class="m-accordion-header">💼 资管业务潜在客户</div>
+                <div class="m-accordion-body">
+                    <div class="m-client-card"><div class="m-client-name">行云科技有限公司</div><div class="m-client-row"><span class="m-client-label">业务线索：</span>2026年3月公告购买广发证券天天红1号资产管理产品3亿元</div></div>
+                    <div class="m-client-card"><div class="m-client-name">徽商银行</div><div class="m-client-row"><span class="m-client-label">关键人：</span>行长孔庆龙（前同事）</div><div class="m-client-row"><span class="m-client-label">业务线索：</span>代销券商资管产品200亿元</div></div>
+                </div>
+            </div>
+            <div class="m-accordion" onclick="this.classList.toggle('open')">
+                <div class="m-accordion-header">🏛️ 投行业务潜在客户</div>
+                <div class="m-accordion-body">
+                    <div class="m-client-card"><div class="m-client-name">亿晶光电</div><div class="m-client-row"><span class="m-client-label">业务线索：</span>已被债权人申请预重整</div></div>
+                    <div class="m-client-card"><div class="m-client-name">棒杰股份</div><div class="m-client-row"><span class="m-client-label">业务线索：</span>2026年2月28日法院受理重整申请</div></div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ========== 军师方案页 ==========
+function mJunshiPageHtml() {
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">📋 方案生成助手</span>
+        </div>
+        <div class="m-stack-scroll">
+            <div class="m-solution-list">
+                <div class="m-solution-card" onclick="mPushPage('m-bankruptcy-page')">
+                    <div class="m-solution-icon">🏗️</div>
+                    <div class="m-solution-info"><div class="m-solution-name">破产重整方案</div><div class="m-solution-desc">企业破产重整全流程解决方案</div></div>
+                    <span class="m-solution-arrow">›</span>
+                </div>
+                <div class="m-solution-card">
+                    <div class="m-solution-icon">📈</div>
+                    <div class="m-solution-info"><div class="m-solution-name">定增方案</div><div class="m-solution-desc">定向增发融资方案设计</div></div>
+                    <span class="m-solution-arrow">›</span>
+                </div>
+                <div class="m-solution-card">
+                    <div class="m-solution-icon">📜</div>
+                    <div class="m-solution-info"><div class="m-solution-name">债券发行方案</div><div class="m-solution-desc">公司债、企业债发行方案</div></div>
+                    <span class="m-solution-arrow">›</span>
+                </div>
+                <div class="m-solution-card">
+                    <div class="m-solution-icon">💼</div>
+                    <div class="m-solution-info"><div class="m-solution-name">资管产品方案</div><div class="m-solution-desc">资产管理计划方案设计</div></div>
+                    <span class="m-solution-arrow">›</span>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ========== 天眼详情页 ==========
+function mTianyanPageHtml() {
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">👁️ 客户服务助手</span>
+        </div>
+        <div class="m-stack-scroll">
+            <div class="m-segment" id="m-tianyan-segment">
+                <div class="m-segment-item active" onclick="mTianyanSwitchTab('personal',this)">👤 个人客户</div>
+                <div class="m-segment-item" onclick="mTianyanSwitchTab('bank',this)">🏦 银行客户</div>
+                <div class="m-segment-item" onclick="mTianyanSwitchTab('enterprise',this)">🏢 企业客户</div>
+            </div>
+            <div class="m-tianyan-tab active" id="m-tianyan-personal">
+                <div class="m-news-section"><h4 class="m-news-cat">📈 市场热点</h4>
+                    <div class="m-news-card"><div class="m-news-title">A股三大指数集体收涨，新能源板块领涨</div><div class="m-news-summary">今日上证指数收涨0.85%，新能源、半导体板块表现强势。</div><div class="m-news-meta">2026-03-19 15:30 · 市场快讯</div></div>
+                </div>
+                <div class="m-news-section"><h4 class="m-news-cat">💡 理财建议</h4>
+                    <div class="m-news-card"><div class="m-news-title">当前市场环境下，如何做好资产配置？</div><div class="m-news-summary">建议采取"核心+卫星"策略：60%配置低风险债券基金，30%宽基指数基金，10%主题投资。</div><div class="m-news-meta">2026-03-19 14:00 · 投顾观点</div></div>
+                </div>
+            </div>
+            <div class="m-tianyan-tab" id="m-tianyan-bank">
+                <div class="m-news-section"><h4 class="m-news-cat">🏦 监管政策</h4>
+                    <div class="m-news-card"><div class="m-news-title">银保监会发布商业银行金融资产风险分类新规</div><div class="m-news-summary">新规要求商业银行对承担信用风险的全部金融资产进行风险分类。</div><div class="m-news-meta">2026-03-18 16:00 · 监管动态</div></div>
+                </div>
+            </div>
+            <div class="m-tianyan-tab" id="m-tianyan-enterprise">
+                <div class="m-news-section"><h4 class="m-news-cat">🏭 行业动态</h4>
+                    <div class="m-news-card"><div class="m-news-title">新能源汽车产业链景气度持续上行</div><div class="m-news-summary">2月新能源汽车产销同比分别增长48.8%和49.6%。</div><div class="m-news-meta">2026-03-18 16:30 · 行业研究</div></div>
+                </div>
+            </div>
+            <div class="m-tianyan-actions">
+                <button class="m-btn-sm m-btn-outline">调整</button>
+                <button class="m-btn-sm m-btn-primary" onclick="mPushPage('m-customer-select-page')">发送</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function mTianyanSwitchTab(tab, el) {
+    document.querySelectorAll('#m-tianyan-segment .m-segment-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.m-tianyan-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('m-tianyan-' + tab).classList.add('active');
+}
+
+// ========== 客户明细页 ==========
+function mAssetsDetailPageHtml() { return mDetailPageHtml('客户总资产及明细', 'assets'); }
+function mRevenueDetailPageHtml() { return mDetailPageHtml('客户带来的总收入及明细', 'revenue'); }
+function mCostDetailPageHtml() { return mDetailPageHtml('维护客户的总成本及明细', 'cost'); }
+
+function mDetailPageHtml(title, type) {
+    const items = {
+        assets: [{name:'王斌',type:'经纪业务',value:'股票账户总金额 120万元'},{name:'晋商银行',type:'资管业务',value:'金融市场部委外资金 10亿元'},{name:'东方新能',type:'资管业务',value:'购买创金宝3个月产品 5000万元'}],
+        revenue: [{name:'经纪业务佣金收入',value:'45万元',desc:'主要来自股票交易佣金收入'},{name:'资管业务管理费收入',value:'85万元',desc:'主要来自委外资金及资管产品管理费'},{name:'投资业务收入',value:'20万元',desc:'主要来自投资银行及公司自有资金投资收益'}],
+        cost: [{name:'客户活动及招待费用',value:'15万元',desc:'包括客户答谢宴、商务宴请等'},{name:'差旅及交通费用',value:'8万元',desc:'客户拜访、路演活动产生的差旅费用'},{name:'营销物料',value:'7万元',desc:'宣传资料、营销用品等'}]
+    };
+    const data = items[type] || [];
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">${title}</span>
+        </div>
+        <div class="m-stack-scroll">
+            ${data.map(item => `
+            <div class="m-detail-item">
+                <div class="m-detail-item-header"><span class="m-detail-item-name">${item.name}</span>${item.type ? `<span class="m-detail-item-type">${item.type}</span>` : `<span class="m-detail-item-amount">${item.value}</span>`}</div>
+                <div class="m-detail-item-body">${item.type ? `<div class="m-detail-row"><span class="m-client-label">资产金额：</span>${item.value}</div>` : `<div class="m-detail-desc">${item.desc}</div>`}</div>
+            </div>`).join('')}
+        </div>
+    </div>`;
+}
+
+// ========== 工作日志页 ==========
+function mWorkLogPageHtml() {
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">📝 工作日志</span>
+        </div>
+        <div class="m-stack-scroll">
+            <div class="m-section-title">📁 导入方式</div>
+            <div class="m-import-btns">
+                <button class="m-import-btn" onclick="document.getElementById('m-log-doc-input').click()">
+                    <span class="m-import-icon">📄</span><span>导入文档</span>
+                    <input type="file" id="m-log-doc-input" hidden accept=".doc,.docx,.pdf,.txt">
+                </button>
+                <button class="m-import-btn" onclick="alert('语音导入功能开发中')">
+                    <span class="m-import-icon">🎙️</span><span>语音导入</span>
+                </button>
+            </div>
+            <div class="m-section-title">✏️ 手动记录</div>
+            <form class="m-log-form" onsubmit="event.preventDefault();alert('日志已保存');mPopPage()">
+                <div class="m-form-group"><label>时间</label><div class="m-form-row"><input type="date" class="m-form-input" required><input type="time" class="m-form-input" required></div></div>
+                <div class="m-form-group"><label>事项</label><textarea class="m-form-textarea" placeholder="请输入工作内容..." rows="4" required></textarea></div>
+                <div class="m-form-actions"><button type="button" class="m-btn-sm m-btn-outline" onclick="mPopPage()">取消</button><button type="submit" class="m-btn-sm m-btn-primary">保存日志</button></div>
+            </form>
+        </div>
+    </div>`;
+}
+
+// ========== 绩效计算页 ==========
+function mBonusCalcPageHtml() {
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">📊 预计绩效计算</span>
+        </div>
+        <div class="m-stack-scroll">
+            <div class="m-form-group"><label>选择时间段</label>
+                <div class="m-form-row"><input type="date" class="m-form-input" value="2026-01-01"><span>至</span><input type="date" class="m-form-input" value="2026-01-31"></div>
+            </div>
+            <button class="m-btn-primary m-btn-block" onclick="document.getElementById('m-bonus-result').hidden=false">计算</button>
+            <div class="m-bonus-result" id="m-bonus-result" hidden>
+                <div class="m-bonus-item"><span class="m-bonus-label">客户带来的收入</span><span class="m-bonus-value">30万元</span></div>
+                <div class="m-bonus-item highlight"><span class="m-bonus-label">预计可获得绩效奖金</span><span class="m-bonus-amount">6万元</span></div>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ========== 探马模型页 ==========
+function mTanmaModelPageHtml() {
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">🎯 业务挖掘模型</span>
+        </div>
+        <div class="m-stack-scroll">
+            <div class="m-model-section">
+                <div class="m-model-header"><h4>📊 经纪业务客户发掘模型</h4><button class="m-btn-sm m-btn-outline">修改</button></div>
+                <div class="m-model-steps">
+                    <div class="m-model-step"><span class="m-step-num">1</span>潜在客户要素1：手机通讯录或微信通讯录导入名单</div>
+                    <div class="m-model-step"><span class="m-step-num">2</span>潜在客户要素2：识别其他券商已开立股票账户且活跃交易的个人或企业</div>
+                    <div class="m-model-step"><span class="m-step-num">3</span>潜在客户要素3：识别已开立股票账户但未开立两融账户的个人或企业</div>
+                    <div class="m-model-step"><span class="m-step-num">4</span>潜在客户要素4：识别已开立股票账户但月均交易额低于1万元的个人或企业</div>
+                </div>
+            </div>
+            <div class="m-model-section">
+                <div class="m-model-header"><h4>💼 资管业务客户发掘模型</h4><button class="m-btn-sm m-btn-outline">修改</button></div>
+                <div class="m-model-steps">
+                    <div class="m-model-step"><span class="m-step-num">1</span>潜在客户要素1：手机通讯录或微信通讯录导入名单</div>
+                    <div class="m-model-step"><span class="m-step-num">2</span>潜在客户要素2：识别通讯录中的银行，搜索代销资管产品的信息</div>
+                    <div class="m-model-step"><span class="m-step-num">3</span>潜在客户要素3：识别银行、保险、信托，搜索委外理财的信息</div>
+                </div>
+            </div>
+            <div class="m-model-section">
+                <div class="m-model-header"><h4>🏛️ 投行业务客户发掘模型</h4><button class="m-btn-sm m-btn-outline">修改</button></div>
+                <div class="m-model-steps">
+                    <div class="m-model-step"><span class="m-step-num">1</span>潜在客户要素1：手机通讯录或微信通讯录导入名单</div>
+                    <div class="m-model-step"><span class="m-step-num">2</span>潜在客户要素2：识别已被实施退市风险警示的上市公司</div>
+                    <div class="m-model-step"><span class="m-step-num">3</span>潜在客户要素3：识别资产负债表资产总额小于负债总额的上市公司</div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+// ========== 破产重整方案页 ==========
+function mBankruptcyPageHtml() {
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">🏗️ 破产重整方案</span>
+        </div>
+        <div class="m-stack-scroll">
+            <div class="m-step-indicator"><span class="m-step-dot active">1</span><span class="m-step-line"></span><span class="m-step-dot">2</span><span class="m-step-line"></span><span class="m-step-dot">3</span><span class="m-step-line"></span><span class="m-step-dot">4</span></div>
+            <form id="m-bankruptcy-form" onsubmit="event.preventDefault();mGenerateBankruptcy()">
+                <div class="m-form-section" id="m-bankruptcy-step-1">
+                    <h4 class="m-form-section-title">📌 基本信息</h4>
+                    <div class="m-form-group"><label>公司名称</label><input type="text" class="m-form-input" placeholder="请输入公司名称" required></div>
+                    <div class="m-form-group"><label>股票代码</label><input type="text" class="m-form-input" placeholder="如：600XXX" required></div>
+                    <div class="m-form-group"><label>测算日期</label><input type="date" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>公司股本总额（万股）</label><input type="number" class="m-form-input" placeholder="请输入股本总额" required></div>
+                    <button type="button" class="m-btn-primary m-btn-block" onclick="mBankruptcyNextStep(2)">下一步</button>
+                </div>
+                <div class="m-form-section" id="m-bankruptcy-step-2" hidden>
+                    <h4 class="m-form-section-title">📈 股票价格信息</h4>
+                    <div class="m-form-group"><label>测算日股票收盘价（元/股）</label><input type="number" step="0.01" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>前20日均价（元/股）</label><input type="number" step="0.01" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>前60日均价（元/股）</label><input type="number" step="0.01" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>前120日均价（元/股）</label><input type="number" step="0.01" class="m-form-input" required></div>
+                    <div class="m-form-row"><button type="button" class="m-btn-sm m-btn-outline" onclick="mBankruptcyNextStep(1)">上一步</button><button type="button" class="m-btn-sm m-btn-primary" onclick="mBankruptcyNextStep(3)">下一步</button></div>
+                </div>
+                <div class="m-form-section" id="m-bankruptcy-step-3" hidden>
+                    <h4 class="m-form-section-title">💰 偿债方案</h4>
+                    <div class="m-form-group"><label>债权本金（万元）</label><input type="number" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>偿债比例（%）</label><input type="number" step="0.01" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>偿债股价倍数</label><input type="number" step="0.01" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>现金清偿金额（万元）</label><input type="number" class="m-form-input" required></div>
+                    <div class="m-form-row"><button type="button" class="m-btn-sm m-btn-outline" onclick="mBankruptcyNextStep(2)">上一步</button><button type="button" class="m-btn-sm m-btn-primary" onclick="mBankruptcyNextStep(4)">下一步</button></div>
+                </div>
+                <div class="m-form-section" id="m-bankruptcy-step-4" hidden>
+                    <h4 class="m-form-section-title">👥 投资人方案</h4>
+                    <div class="m-form-group"><label>产业投资人价格折扣（小数）</label><input type="number" step="0.01" min="0" max="1" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>财务投资人价格折扣（小数）</label><input type="number" step="0.01" min="0" max="1" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>公积金转增比例（小数）</label><input type="number" step="0.01" class="m-form-input" required></div>
+                    <div class="m-form-group"><label>产业投资人转增后持股比例（%）</label><input type="number" step="0.01" class="m-form-input" required></div>
+                    <div class="m-form-row"><button type="button" class="m-btn-sm m-btn-outline" onclick="mBankruptcyNextStep(3)">上一步</button><button type="submit" class="m-btn-sm m-btn-primary">🤖 AI生成重整方案</button></div>
+                </div>
+            </form>
+            <div class="m-bankruptcy-result" id="m-bankruptcy-result" hidden>
+                <div class="m-bankruptcy-result-header"><h4>📄 破产重整方案</h4></div>
+                <div class="m-bankruptcy-result-content" id="m-bankruptcy-result-content"></div>
+                <div class="m-form-row"><button class="m-btn-sm m-btn-outline" onclick="mBankruptcyNextStep(4)">修改要素</button><button class="m-btn-sm m-btn-primary">导出方案</button></div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function mBankruptcyNextStep(step) {
+    for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById('m-bankruptcy-step-' + i);
+        if (el) el.hidden = i !== step;
+    }
+    document.querySelectorAll('.m-step-dot').forEach((d, idx) => d.classList.toggle('active', idx < step));
+}
+
+function mGenerateBankruptcy() {
+    const resultEl = document.getElementById('m-bankruptcy-result');
+    const contentEl = document.getElementById('m-bankruptcy-result-content');
+    resultEl.hidden = false;
+    contentEl.innerHTML = '<div class="m-loading">AI生成方案中...</div>';
+    setTimeout(() => {
+        contentEl.innerHTML = mMarkdownToHtml('## 破产重整方案\n\n### 一、公司基本情况\n\n根据提供的基本信息，公司股本总额及股票价格情况如下...\n\n### 二、偿债方案\n\n根据偿债方案设计，债权人将获得...\n\n### 三、投资人方案\n\n产业投资人和财务投资人的参与方案...\n\n### 四、资本公积金转增方案\n\n公积金转增后的股本结构...\n\n---\n*本方案由AI生成，仅供参考*');
+    }, 2000);
+}
+
+// ========== 客户选择页 ==========
+function mCustomerSelectPageHtml() {
+    return `
+    <div class="m-stack-page-inner">
+        <div class="m-stack-nav">
+            <button class="m-stack-back" onclick="mPopPage()">← 返回</button>
+            <span class="m-stack-title">📤 选择发送对象</span>
+        </div>
+        <div class="m-stack-scroll">
+            <div class="m-search-bar"><input type="text" class="m-form-input" placeholder="🔍 搜索客户姓名或企业名称..."></div>
+            <div class="m-category-scroll"><div class="m-category-chip active">全部</div><div class="m-category-chip">👤 个人</div><div class="m-category-chip">🏦 银行</div><div class="m-category-chip">🏢 企业</div></div>
+            <div class="m-customer-list">
+                <div class="m-customer-item"><div class="m-customer-check">☐</div><div class="m-customer-info"><div class="m-customer-name">王斌</div><div class="m-customer-type">经纪业务 · 个人</div></div></div>
+                <div class="m-customer-item"><div class="m-customer-check">☐</div><div class="m-customer-info"><div class="m-customer-name">晋商银行</div><div class="m-customer-type">资管业务 · 银行</div></div></div>
+                <div class="m-customer-item"><div class="m-customer-check">☐</div><div class="m-customer-info"><div class="m-customer-name">东方新能</div><div class="m-customer-type">资管业务 · 企业</div></div></div>
+            </div>
+            <div class="m-customer-selected">已选择：<strong>0</strong> 人</div>
+        </div>
+        <div class="m-stack-bottom-bar">
+            <button class="m-btn-sm m-btn-outline" onclick="mPopPage()">取消</button>
+            <button class="m-btn-sm m-btn-primary" onclick="alert('发送成功！');mPopPage()">确认发送</button>
+        </div>
+    </div>`;
+}
+
+// ========== 工具函数 ==========
+function mEscapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function mMarkdownToHtml(md) {
+    if (!md) return '';
+    return md
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/^### (.+)$/gm, '<h4>$1</h4>')
+        .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^# (.+)$/gm, '<h2>$1</h2>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/\n{2,}/g, '<br><br>')
+        .replace(/\n/g, '<br>');
+}
+</script>
+
+</body>
+</html>

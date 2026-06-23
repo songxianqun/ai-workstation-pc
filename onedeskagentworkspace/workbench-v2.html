@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>员工工作台</title>
+    <style>
+        .hidden { display: none !important; }
+        :root {
+            --primary: #C9A96E;
+            --primary-dark: #A88B52;
+            --primary-bg: rgba(201,169,110,0.08);
+            --primary-border: rgba(201,169,110,0.25);
+            --secondary: #1A1A2E;
+            --bg: #F5F5F0;
+            --surface: #FFFFFF;
+            --surface-hover: #F0EDE5;
+            --text: #333333;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border: #E8E8E8;
+            --border-light: #F0F0F0;
+            --bubble-bg: #F7F4EE;
+            --gradient-gold: linear-gradient(135deg, #C9A96E 0%, #E8D4A8 50%, #C9A96E 100%);
+            --gradient-dark: linear-gradient(135deg, #1A1A2E 0%, #2D2D44 100%);
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+            --shadow: 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+
+        /* 隐藏滚动条但保留滚动功能 */
+        ::-webkit-scrollbar { width: 0 !important; height: 0 !important; }
+        * { scrollbar-width: none; -ms-overflow-style: none; }
+        *::-webkit-scrollbar { display: none; }
+
+        /* ========== 登录页（保持 index.html 风格） ========== */
+        .login-overlay {
+            position: fixed; inset: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(160deg, #f8f4ec 0%, #f0e8d8 28%, #ebe2d0 55%, #f5f0e6 100%);
+        }
+        .login-overlay::before {
+            content: ''; position: absolute; inset: 0;
+            background:
+                radial-gradient(circle at 50% 42%, rgba(255,255,255,0.55) 0%, transparent 52%),
+                radial-gradient(circle at 18% 22%, rgba(201,169,110,0.28), transparent 42%),
+                radial-gradient(circle at 82% 78%, rgba(155,127,212,0.12), transparent 48%),
+                radial-gradient(circle at 72% 18%, rgba(245,166,35,0.1), transparent 38%);
+            pointer-events: none; z-index: 0;
+        }
+        .login-overlay::after {
+            content: ''; position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(201,169,110,0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(201,169,110,0.06) 1px, transparent 1px);
+            background-size: 40px 40px; opacity: 0.5;
+            pointer-events: none; z-index: 0;
+        }
+        .login-overlay.hidden { display: none; }
+        .login-card {
+            position: relative; z-index: 1;
+            width: 420px; background: #fff; border-radius: 20px;
+            padding: 36px 32px 32px;
+            box-shadow: 0 16px 48px rgba(26,39,68,0.1), 0 0 0 1px rgba(201,169,110,0.14);
+            border: 1px solid rgba(201,169,110,0.15);
+        }
+        .login-welcome { text-align: center; margin-bottom: 28px; }
+        .login-welcome-sys { font-size: 26px; font-weight: 700; color: var(--primary-dark); letter-spacing: 0.04em; display: block; margin-bottom: 8px; }
+        .login-welcome-desc { font-size: 14px; color: var(--text-secondary); }
+        .login-form { display: flex; flex-direction: column; gap: 18px; }
+        .login-field { display: flex; flex-direction: column; gap: 8px; }
+        .login-label { font-size: 14px; font-weight: 500; color: var(--text); }
+        .login-input-wrap {
+            display: flex; align-items: center; gap: 10px;
+            height: 44px; padding: 0 14px;
+            border: 1px solid #e8e4dc; border-radius: 10px;
+            background: #fafaf8; transition: var(--transition);
+        }
+        .login-input-wrap:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(201,169,110,0.12); }
+        .login-input {
+            flex: 1; border: none; background: transparent;
+            font-size: 15px; color: var(--text); outline: none;
+        }
+        .login-role-fieldset { border: none; display: flex; flex-direction: column; gap: 8px; }
+        .login-role-fieldset legend { margin-bottom: 4px; }
+        .login-role-options { display: flex; gap: 10px; }
+        .login-role-option { flex: 1; cursor: pointer; }
+        .login-role-option input { position: absolute; opacity: 0; }
+        .login-role-card {
+            display: flex; align-items: center; justify-content: center;
+            height: 42px; padding: 0 12px;
+            border: 1.5px solid #e8e4dc; border-radius: 10px;
+            font-size: 14px; font-weight: 500;
+            color: var(--text-secondary); background: #fafaf8;
+            transition: var(--transition);
+        }
+        .login-role-option input:checked + .login-role-card {
+            border-color: var(--primary); background: rgba(201,169,110,0.08);
+            color: var(--primary-dark); box-shadow: 0 0 0 2px rgba(201,169,110,0.1);
+        }
+        .login-submit-btn {
+            height: 44px; border: none; border-radius: 10px;
+            background: var(--gradient-gold); color: #fff;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: var(--transition);
+        }
+        .login-submit-btn:hover { opacity: 0.92; }
+
+        /* ========== 主工作台 ========== */
+        .app-main { flex: 1; display: flex; overflow: hidden; }
+        .app-main.hidden { display: none; }
+
+        /* 左侧面板 */
+        .left-panel {
+            width: 0; overflow: hidden; flex-shrink: 0;
+            background: var(--surface); border-right: 1px solid var(--border);
+            transition: width var(--transition);
+            display: flex; flex-direction: column;
+        }
+        .left-panel.open { width: 260px; }
+        .left-panel-header {
+            padding: 16px 16px 8px; flex-shrink: 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .left-panel-title {
+            font-size: 16px; font-weight: 700; color: var(--text);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 10px;
+        }
+        .left-panel-role-tabs {
+            display: flex; background: #f1efe8; border-radius: 8px;
+            padding: 2px; gap: 1px; margin-bottom: 4px;
+        }
+        .left-panel-role-tab {
+            flex: 1; text-align: center; padding: 6px 8px; border-radius: 7px;
+            font-size: 11px; font-weight: 500; cursor: pointer;
+            color: var(--text-secondary); border: none; background: transparent;
+            transition: var(--transition); white-space: nowrap;
+        }
+        .left-panel-role-tab.active {
+            background: var(--surface); color: var(--primary-dark);
+            font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        }
+        .left-panel-body { flex: 1; overflow-y: auto; padding: 8px; }
+        .left-section-title {
+            font-size: 11px; font-weight: 600; color: var(--text-muted);
+            letter-spacing: 0.04em; padding: 10px 12px 6px;
+        }
+        .left-new-chat {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; border-radius: var(--radius-sm);
+            cursor: pointer; font-size: 13px; font-weight: 500;
+            color: var(--primary-dark); transition: var(--transition); margin: 0 4px;
+        }
+        .left-new-chat:hover { background: var(--primary-bg); }
+        .left-history-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px; border-radius: var(--radius-sm);
+            font-size: 12px; color: var(--text-secondary);
+            cursor: pointer; transition: var(--transition);
+            margin: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .left-history-item:hover { background: var(--surface-hover); }
+        .left-history-item.active { background: var(--primary-bg); color: var(--primary-dark); font-weight: 500; }
+        .left-empty {
+            padding: 24px 12px; text-align: center;
+            font-size: 12px; color: var(--text-muted);
+        }
+
+        /* 中间区域 */
+        .center-area {
+            flex: 1; display: flex; flex-direction: column;
+            overflow: hidden; position: relative; min-width: 0;
+            align-items: center;
+        }
+
+        /* 中间顶栏 - 展开/收起按钮 */
+        .center-topbar {
+            display: flex; align-items: center; justify-content: center;
+            padding: 10px 16px; flex-shrink: 0;
+            gap: 0; position: relative; width: 100%;
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            min-height: 44px;
+        }
+        .center-topbar-toggle {
+            width: 32px; height: 32px; border-radius: var(--radius-sm);
+            border: none; background: transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: var(--text-secondary);
+            transition: var(--transition); position: absolute; top: 50%; transform: translateY(-50%);
+        }
+        .center-topbar-toggle:hover { background: var(--surface-hover); color: var(--text); }
+        .center-topbar-toggle.left { left: 16px; }
+        .center-topbar-toggle.right { right: 16px; }
+
+        /* 内容区（可滚动） */
+        .center-content {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            width: 100%;
+        }
+
+        /* 欢迎区（默认状态） */
+        .welcome-area {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 48px 32px; text-align: center; width: 100%;
+        }
+        .welcome-area.hidden { display: none; }
+        .welcome-avatar {
+            width: 72px; height: 72px; border-radius: 50%;
+            background: var(--gradient-gold);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(201,169,110,0.25);
+        }
+        .welcome-greeting { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .welcome-sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 28px; }
+
+        /* 智能体网格 */
+        .agents-grid {
+            display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+            max-width: 680px; margin-bottom: 28px;
+        }
+        .agent-card {
+            width: 120px; padding: 16px 10px; border-radius: var(--radius);
+            text-align: center; cursor: pointer; transition: var(--transition);
+            background: var(--surface); border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+        .agent-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: var(--primary);
+        }
+        .agent-card-avatar {
+            width: 50px; height: 50px; border-radius: 50%;
+            margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        .agent-card-avatar.canmou { background: linear-gradient(135deg, #4ECDC4 0%, #44A3AA 100%); }
+        .agent-card-avatar.tanma { background: linear-gradient(135deg, #FF6B6B 0%, #EE5A6F 100%); }
+        .agent-card-avatar.junshi { background: linear-gradient(135deg, #FFD93D 0%, #F6AD55 100%); }
+        .agent-card-avatar.jiaocha { background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%); }
+        .agent-card-avatar.tianyan { background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%); }
+        .agent-card-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+        .agent-card-desc { font-size: 11px; color: var(--text-muted); }
+
+        /* 助理网格 */
+        .assistants-grid {
+            display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+            max-width: 900px; margin-bottom: 28px;
+        }
+        .assistant-chip {
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            cursor: pointer; padding: 6px 10px; border-radius: 12px;
+            transition: all 0.3s ease; width: 84px;
+        }
+        .assistant-chip:hover { transform: translateY(-5px); background: var(--primary-bg); }
+        .assistant-chip-avatar {
+            width: 70px; height: 70px; border-radius: 50%;
+            position: relative; line-height: 0;
+        }
+        .assistant-chip-avatar img {
+            width: 70px; height: 70px; border-radius: 50%;
+            object-fit: cover; border: 3px solid transparent;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            transition: all 0.3s ease;
+        }
+        .assistant-chip:hover .assistant-chip-avatar img {
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(201,169,110,0.4);
+        }
+        .assistant-chip-badge {
+            position: absolute; top: 0; right: 0;
+            min-width: 18px; height: 18px; border-radius: 9px;
+            background: #e85d4c; color: #fff;
+            font-size: 11px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; padding: 0 5px;
+            border: 2px solid #fff; box-shadow: 0 1px 4px rgba(232,93,76,0.45);
+        }
+        .assistant-chip-name { font-size: 12px; color: var(--text-secondary); text-align: center; line-height: 1.3; font-weight: 500; max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* 输入框（默认居中，不撑满） */
+        .input-wrapper {
+            width: 100%; max-width: 560px;
+        }
+        .input-row {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--surface); border: 1.5px solid #e8e4dc;
+            border-radius: 28px; padding: 4px 6px 4px 16px;
+            transition: var(--transition); box-shadow: var(--shadow-sm);
+        }
+        .input-row:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(201,169,110,0.12);
+        }
+        .input-row input {
+            flex: 1; border: none; background: transparent;
+            font-size: 14px; padding: 8px 0; outline: none;
+            color: var(--text); min-width: 0;
+        }
+        .input-row input::placeholder { color: var(--text-muted); }
+        .input-action-btn {
+            width: 34px; height: 34px; border-radius: 50%;
+            border: none; background: transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; color: var(--text-muted);
+            transition: var(--transition); flex-shrink: 0;
+        }
+        .input-action-btn:hover { background: var(--surface-hover); color: var(--text-secondary); }
+        .input-send-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: none; background: var(--gradient-gold); color: #fff;
+            font-size: 16px; cursor: pointer; flex-shrink: 0;
+            transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .input-send-btn:hover { opacity: 0.9; }
+
+        /* 对话区域 - 始终居中，两边留空 */
+        .chat-area {
+            flex: 1; display: flex; flex-direction: column;
+            overflow: hidden; width: 100%; align-items: center;
+        }
+        .chat-area.hidden { display: none; }
+        .chat-messages-wrap {
+            flex: 1; overflow-y: auto; width: 100%;
+            max-width: 760px; padding: 24px 16px;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .chat-msg {
+            display: flex; gap: 10px; max-width: 90%;
+        }
+        .chat-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+        .chat-msg.assistant { align-self: flex-start; }
+        .chat-msg-avatar {
+            width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 13px;
+        }
+        .chat-msg-avatar.assistant-av { background: rgba(201,169,110,0.15); color: var(--primary-dark); }
+        .chat-msg-avatar.user-av { background: var(--secondary); color: #fff; }
+        .chat-msg-bubble {
+            padding: 10px 14px; border-radius: 14px;
+            font-size: 13px; line-height: 1.6; word-break: break-word;
+        }
+        .chat-msg.assistant .chat-msg-bubble {
+            background: var(--bubble-bg); color: var(--text);
+            border-bottom-left-radius: 4px;
+        }
+        .chat-msg.user .chat-msg-bubble {
+            background: var(--secondary); color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        /* 对话模式输入框（居中，max-width 控制） */
+        .chat-input-bar {
+            padding: 12px 16px 16px; flex-shrink: 0;
+            width: 100%; display: flex; justify-content: center;
+            background: linear-gradient(to top, var(--bg) 60%, transparent);
+        }
+        .chat-input-bar .input-wrapper { max-width: 640px; width: 100%; }
+
+        /* 迷你智能体切换条 */
+        .agents-mini-bar {
+            display: flex; gap: 6px; padding: 6px 0 10px;
+            overflow-x: auto; flex-shrink: 0; justify-content: center;
+            max-width: 760px; width: 100%;
+        }
+        .agents-mini-bar.hidden { display: none; }
+        .agent-mini {
+            display: flex; align-items: center; gap: 5px;
+            padding: 5px 12px; border-radius: 16px;
+            font-size: 11px; cursor: pointer; white-space: nowrap;
+            border: 1px solid var(--border); background: var(--surface);
+            color: var(--text-secondary); transition: var(--transition);
+        }
+        .agent-mini:hover { border-color: var(--primary); }
+        .agent-mini.active {
+            background: rgba(201,169,110,0.12); border-color: var(--primary);
+            color: var(--primary-dark); font-weight: 600;
+        }
+        .agent-mini-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+        /* 快捷回复 */
+        .quick-replies {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            padding: 8px 0 4px; max-width: 760px; width: 100%; justify-content: center;
+        }
+        .quick-replies.hidden { display: none; }
+        .quick-reply-btn {
+            padding: 6px 14px; border-radius: 16px; font-size: 11px;
+            border: 1px solid var(--border); background: var(--surface);
+            color: var(--text-secondary); cursor: pointer;
+            transition: var(--transition); white-space: nowrap;
+        }
+        .quick-reply-btn:hover {
+            border-color: var(--primary); color: var(--primary-dark);
+            background: rgba(201,169,110,0.06);
+        }
+
+        /* 右侧面板 */
+        .right-panel {
+            width: 0; overflow: hidden; flex-shrink: 0;
+            background: var(--surface); border-left: 1px solid var(--border);
+            transition: width var(--transition);
+            display: flex; flex-direction: column;
+        }
+        .right-panel.open { width: 340px; }
+        .right-panel-inner { width: 340px; height: 100%; display: flex; flex-direction: column; }
+        .right-tabs {
+            display: flex; border-bottom: 1px solid var(--border);
+            flex-shrink: 0; background: #fafaf8; overflow-x: auto;
+        }
+        .right-tab {
+            flex: 1; text-align: center; padding: 10px 6px;
+            font-size: 11px; font-weight: 500; cursor: pointer;
+            color: var(--text-secondary); transition: var(--transition);
+            border-bottom: 2px solid transparent; white-space: nowrap;
+        }
+        .right-tab:hover { color: var(--text); }
+        .right-tab.active { color: var(--primary-dark); border-bottom-color: var(--primary); font-weight: 600; }
+        .right-content { flex: 1; overflow-y: auto; padding: 14px 16px; }
+
+        /* 任务列表 */
+        .task-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px 12px; border-radius: var(--radius-sm);
+            cursor: pointer; transition: var(--transition);
+            margin-bottom: 4px; border: 1px solid transparent;
+        }
+        .task-item:hover { background: #fafaf8; border-color: var(--border); }
+        .task-num {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: rgba(201,169,110,0.12); color: var(--primary-dark);
+            font-size: 10px; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .task-text { font-size: 12px; color: var(--text); line-height: 1.5; flex: 1; min-width: 0; }
+        .task-source { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+        .task-send-btn {
+            flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+            border: none; background: transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; color: var(--text-muted); transition: var(--transition);
+        }
+        .task-send-btn:hover { background: rgba(201,169,110,0.1); color: var(--primary-dark); }
+
+        /* 产物 / 文件 */
+        .artifact-item, .file-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; border-radius: var(--radius-sm);
+            cursor: pointer; transition: var(--transition);
+            margin-bottom: 4px; border: 1px solid transparent;
+        }
+        .artifact-item:hover, .file-item:hover { background: #fafaf8; border-color: var(--border); }
+        .file-icon {
+            width: 36px; height: 36px; border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+        }
+        .file-info { flex: 1; min-width: 0; }
+        .file-name { font-size: 12px; font-weight: 500; color: var(--text); }
+        .file-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+        /* 预览 */
+        .preview-card {
+            border: 1px solid var(--border); border-radius: var(--radius);
+            overflow: hidden; margin-bottom: 10px; cursor: pointer; transition: var(--transition);
+        }
+        .preview-card:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
+        .preview-card-header {
+            padding: 10px 12px; background: #fafaf8;
+            font-size: 11px; font-weight: 600; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 6px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .preview-card-body {
+            padding: 12px; font-size: 12px; color: var(--text);
+            line-height: 1.6; max-height: 100px; overflow: hidden;
+            position: relative;
+        }
+        .preview-card-body::after {
+            content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+            height: 28px; background: linear-gradient(transparent, #fff);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 40px 20px; text-align: center; color: var(--text-muted);
+        }
+        .empty-state-icon { font-size: 32px; margin-bottom: 8px; }
+        .empty-state-text { font-size: 12px; }
+
+        /* ========== 业绩与绩效面板 ========== */
+        .perf-sub-tabs {
+            display: flex; gap: 0; margin-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        .perf-sub-tab {
+            flex: 1; text-align: center; padding: 8px 4px;
+            font-size: 11px; font-weight: 500; cursor: pointer;
+            color: var(--text-muted); transition: var(--transition);
+            border-bottom: 2px solid transparent; white-space: nowrap;
+        }
+        .perf-sub-tab:hover { color: var(--text-secondary); }
+        .perf-sub-tab.active {
+            color: var(--primary-dark); font-weight: 600;
+            border-bottom-color: var(--primary);
+        }
+        .perf-part { margin-bottom: 16px; }
+        .perf-part:last-child { margin-bottom: 0; }
+        .perf-part-title {
+            font-size: 12px; font-weight: 600; color: var(--text-secondary);
+            margin-bottom: 10px; padding-left: 8px;
+            border-left: 2px solid var(--primary);
+        }
+        /* 业绩看板 */
+        .perf-dashboard {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .perf-dash-card {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; border-radius: var(--radius-sm);
+            background: #fff; border: 1px solid var(--border);
+            cursor: pointer; transition: var(--transition);
+        }
+        .perf-dash-card:hover {
+            border-color: var(--primary); transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .perf-dash-icon { font-size: 24px; flex-shrink: 0; }
+        .perf-dash-info { flex: 1; min-width: 0; }
+        .perf-dash-label { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+        .perf-dash-hint { font-size: 10px; color: var(--text-muted); }
+        .perf-dash-arrow { font-size: 18px; color: var(--primary); font-weight: 300; }
+        /* 预计绩效收入 */
+        .perf-bonus {
+            background: linear-gradient(135deg, #FFF9F0 0%, #FFF5E6 100%);
+            border-radius: 10px; padding: 12px; border: 1px solid rgba(201,169,110,0.2);
+        }
+        .perf-date-row { margin-bottom: 10px; }
+        .perf-date-label { display: block; font-size: 10px; color: var(--text-secondary); margin-bottom: 5px; }
+        .perf-date-inputs { display: flex; align-items: center; gap: 4px; }
+        .perf-date-input {
+            padding: 4px 6px; font-size: 10px; border: 1px solid var(--border);
+            border-radius: 5px; background: #fff; color: var(--text);
+        }
+        .perf-date-sep { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+        .perf-calc-btn {
+            padding: 4px 10px; font-size: 10px; font-weight: 500;
+            background: var(--primary); color: #fff; border: none;
+            border-radius: 5px; cursor: pointer; transition: var(--transition);
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .perf-calc-btn:hover { opacity: 0.85; }
+        .perf-bonus-result { display: flex; flex-direction: column; gap: 6px; }
+        .perf-bonus-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 4px 0; font-size: 11px;
+        }
+        .perf-bonus-label { color: var(--text-secondary); }
+        .perf-bonus-value { color: var(--text); font-weight: 600; }
+        .perf-bonus-amount { color: #c0392b; font-weight: 700; font-size: 13px; }
+        /* 员工行为 */
+        .perf-behavior-cards { display: flex; gap: 8px; margin-bottom: 12px; }
+        .perf-behavior-card {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            padding: 12px 8px; border-radius: var(--radius-sm);
+            background: #F7F8FA; border: 2px solid #E8E8E8;
+            cursor: pointer; transition: all 0.2s; text-align: center;
+        }
+        .perf-behavior-card:hover { border-color: #B0C4DE; }
+        .perf-behavior-card.active {
+            background: #1A3A6E; border-color: #1A3A6E; color: #fff;
+        }
+        .perf-behavior-icon { font-size: 20px; }
+        .perf-behavior-info { text-align: center; }
+        .perf-behavior-label { font-size: 10px; color: var(--text-muted); }
+        .perf-behavior-card.active .perf-behavior-label { color: rgba(255,255,255,0.7); }
+        .perf-behavior-value { font-size: 16px; font-weight: 700; color: var(--text); }
+        .perf-behavior-card.active .perf-behavior-value { color: #fff; }
+        .perf-behavior-amount { font-size: 11px; color: #4A90D9; font-weight: 500; }
+        .perf-behavior-card.active .perf-behavior-amount { color: rgba(255,255,255,0.85); }
+        .perf-behavior-detail {
+            background: #fff; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 12px;
+        }
+        .perf-behavior-chart-title {
+            font-size: 11px; font-weight: 600; color: var(--text);
+            margin-bottom: 8px; padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .perf-behavior-list { display: flex; flex-direction: column; gap: 4px; }
+        .perf-behavior-row {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 11px; color: var(--text-secondary); padding: 3px 0;
+        }
+
+        /* 分组标题 */
+        .group-title {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 600; color: var(--text);
+            margin-bottom: 6px; padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .group-title .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .group-title .count { font-size: 10px; font-weight: 400; color: var(--text-muted); margin-left: auto; }
+
+        /* 绩效 / 行为卡片 */
+        .mini-card {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; border-radius: var(--radius-sm);
+            background: #fafaf8; border: 1px solid var(--border-light);
+            margin-bottom: 6px; cursor: pointer; transition: var(--transition);
+        }
+        .mini-card:hover { border-color: var(--primary); }
+        .mini-card-icon { font-size: 20px; flex-shrink: 0; }
+        .mini-card-label { font-size: 12px; color: var(--text-secondary); }
+        .mini-card-arrow { font-size: 14px; color: var(--text-muted); flex-shrink: 0; margin-left: auto; }
+
+        .behavior-mini-cards { display: flex; gap: 8px; margin-bottom: 12px; }
+        .behavior-mini-card {
+            flex: 1; padding: 10px; border-radius: 8px; text-align: center;
+            border: 1px solid var(--border); cursor: pointer; font-size: 11px;
+            transition: var(--transition);
+        }
+        .behavior-mini-card:hover { border-color: var(--primary); }
+        .behavior-mini-card .icon { font-size: 18px; margin-bottom: 4px; }
+        .behavior-mini-card .value { font-size: 16px; font-weight: 700; color: var(--text); }
+        .behavior-mini-card .amount { font-size: 11px; color: var(--text-secondary); }
+
+        /* 新会话弹窗 */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 500;
+            background: rgba(0,0,0,0.3); display: flex;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.hidden { display: none; }
+        .modal {
+            width: 480px; max-height: 80vh; background: var(--surface);
+            border-radius: var(--radius-lg); padding: 24px;
+            box-shadow: var(--shadow-lg); overflow-y: auto;
+        }
+        .modal-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .modal-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 20px; }
+        .modal-role-select { display: flex; gap: 10px; margin-bottom: 20px; }
+        .modal-role-opt { flex: 1; }
+        .modal-role-opt input { display: none; }
+        .modal-role-opt label {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            height: 44px; border: 1.5px solid var(--border);
+            border-radius: 10px; font-size: 13px; font-weight: 500;
+            color: var(--text-secondary); cursor: pointer; transition: var(--transition);
+        }
+        .modal-role-opt input:checked + label {
+            border-color: var(--primary); background: var(--primary-bg); color: var(--primary-dark);
+        }
+        .modal-agent-list { display: flex; flex-direction: column; gap: 6px; }
+        .modal-agent-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light); cursor: pointer; transition: var(--transition);
+        }
+        .modal-agent-item:hover { background: #fafaf8; border-color: var(--primary); }
+        .modal-agent-item-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+        }
+        .modal-agent-item-info { flex: 1; }
+        .modal-agent-item-name { font-size: 13px; font-weight: 600; color: var(--text); }
+        .modal-agent-item-desc { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+        .modal-close-btn {
+            margin-top: 16px; width: 100%; height: 40px;
+            border: 1px solid var(--border); border-radius: 10px;
+            background: var(--surface); color: var(--text-secondary);
+            font-size: 13px; cursor: pointer; transition: var(--transition);
+        }
+        .modal-close-btn:hover { background: #fafaf8; }
+
+        @media (max-width: 900px) {
+            .right-panel.open { width: 280px; }
+            .right-panel-inner { width: 280px; }
+            .left-panel.open { width: 220px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========== 登录页（保持 index.html 风格） ========== -->
+<div class="login-overlay" id="login-overlay">
+    <div class="login-card">
+        <div class="login-welcome">
+            <span class="login-welcome-sys">员工工作台</span>
+            <p class="login-welcome-desc">智能办公助手，让工作更高效</p>
+        </div>
+        <form class="login-form" onsubmit="doLogin(event)">
+            <label class="login-field">
+                <span class="login-label">OA账号</span>
+                <div class="login-input-wrap">
+                    <input type="text" class="login-input" id="login-user" value="demo" placeholder="请输入OA账号" required>
+                </div>
+            </label>
+            <label class="login-field">
+                <span class="login-label">密码</span>
+                <div class="login-input-wrap">
+                    <input type="password" class="login-input" id="login-pass" value="123456" placeholder="请输入密码" required>
+                </div>
+            </label>
+            <fieldset class="login-role-fieldset">
+                <legend class="login-label">选择角色</legend>
+                <div class="login-role-options">
+                    <label class="login-role-option">
+                        <input type="radio" name="login-role" value="employee" checked>
+                        <span class="login-role-card">业务团队</span>
+                    </label>
+                    <label class="login-role-option">
+                        <input type="radio" name="login-role" value="support">
+                        <span class="login-role-card">业务支持中心</span>
+                    </label>
+                </div>
+            </fieldset>
+            <button type="submit" class="login-submit-btn">登录</button>
+        </form>
+    </div>
+</div>
+
+<!-- ========== 主工作台 ========== -->
+<div class="app-main hidden" id="app-main">
+
+    <!-- 左侧面板 -->
+    <div class="left-panel" id="left-panel">
+        <div class="left-panel-header">
+            <div class="left-panel-title">
+                <span>🤖</span><span>员工工作台</span>
+            </div>
+            <div class="left-panel-role-tabs">
+                <button class="left-panel-role-tab active" data-role="employee" onclick="switchRole('employee')">💼 业务团队</button>
+                <button class="left-panel-role-tab" data-role="support" onclick="switchRole('support')">🏢 业务支持中心</button>
+            </div>
+        </div>
+        <div class="left-panel-body">
+            <div class="left-section-title">会话</div>
+            <div class="left-new-chat" onclick="openNewChatModal()">
+                <span>➕</span><span>新建对话</span>
+            </div>
+            <div class="left-section-title">历史会话</div>
+            <div id="history-list">
+                <div class="left-empty">暂无历史会话</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 中间主区域 -->
+    <div class="center-area" id="center-area">
+
+        <!-- 中间顶栏 - 展开/收起按钮 -->
+        <div class="center-topbar">
+            <button class="center-topbar-toggle left" onclick="toggleLeft()" title="展开/收起">
+                <span id="toggle-left-icon">☰</span>
+            </button>
+            <button class="center-topbar-toggle right" onclick="toggleRight()" title="展开/收起">
+                <span id="toggle-right-icon">◀</span>
+            </button>
+        </div>
+
+        <!-- 可滚动内容区 -->
+        <div class="center-content" id="center-content">
+
+            <!-- 欢迎区（默认） -->
+            <div class="welcome-area" id="welcome-area">
+                <div class="welcome-avatar">🤖</div>
+                <div class="welcome-greeting" id="welcome-greeting">你好，我是你的 AI 工作助手</div>
+                <div class="welcome-sub" id="welcome-sub">选择下方智能体或直接输入，开始你的工作</div>
+                <div class="agents-grid" id="agents-grid"></div>
+                <div class="assistants-grid hidden" id="assistants-grid"></div>
+                <div class="input-wrapper">
+                    <div class="input-row">
+                        <input type="text" id="default-input" placeholder="开启我的工作" onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDefaultMessage();}">
+                        <button class="input-action-btn" onclick="handleAttach()" title="附件">📎</button>
+                        <button class="input-send-btn" onclick="sendDefaultMessage()">➤</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 对话区 -->
+            <div class="chat-area hidden" id="chat-area">
+                <div class="chat-messages-wrap" id="chat-messages"></div>
+                <div class="quick-replies hidden" id="quick-replies"></div>
+                <div class="agents-mini-bar hidden" id="agents-mini-bar"></div>
+                <div class="chat-input-bar">
+                    <div class="input-wrapper">
+                        <div class="input-row">
+                            <input type="text" id="chat-input" placeholder="继续对话..." onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}">
+                            <button class="input-action-btn" onclick="handleAttach()" title="附件">📎</button>
+                            <button class="input-send-btn" onclick="sendChatMessage()">➤</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧面板 -->
+    <div class="right-panel" id="right-panel">
+        <div class="right-panel-inner">
+            <div class="right-tabs" id="right-tabs">
+                <div class="right-tab active" data-tab="tasks" onclick="switchRightTab('tasks')">📋 任务</div>
+                <div class="right-tab" data-tab="performance" onclick="switchRightTab('performance')">📊 业绩</div>
+                <div class="right-tab" data-tab="artifacts" onclick="switchRightTab('artifacts')">📦 产物</div>
+                <div class="right-tab" data-tab="files" onclick="switchRightTab('files')">📁 文件</div>
+                <div class="right-tab" data-tab="preview" onclick="switchRightTab('preview')">👁 预览</div>
+            </div>
+            <div class="right-content" id="right-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== 新建会话弹窗 ========== -->
+<div class="modal-overlay hidden" id="new-chat-modal">
+    <div class="modal">
+        <div class="modal-title">新建对话</div>
+        <div class="modal-sub">选择角色与智能体开始新会话</div>
+        <div class="modal-role-select" id="modal-role-select">
+            <div class="modal-role-opt">
+                <input type="radio" name="modal-role" id="modal-role-emp" value="employee" checked>
+                <label for="modal-role-emp">💼 业务团队</label>
+            </div>
+            <div class="modal-role-opt">
+                <input type="radio" name="modal-role" id="modal-role-sup" value="support">
+                <label for="modal-role-sup">🏢 业务支持中心</label>
+            </div>
+        </div>
+        <div class="modal-agent-list" id="modal-agent-list"></div>
+        <button class="modal-close-btn" onclick="closeNewChatModal()">取消</button>
+    </div>
+</div>
+
+<script>
+// ========== 全局状态 ==========
+const STATE = {
+    role: 'employee',
+    chatActive: false,
+    leftOpen: false,
+    rightOpen: false,
+    rightTab: 'tasks',
+    activeAgentIdx: 0,
+    sessions: [],
+};
+
+const AI_AGENTS = [
+    { id: 'customer', name: '客户分析助手', icon: '🧠', desc: '全面分析看本质', color: '#4ECDC4', cssClass: 'canmou' },
+    { id: 'business', name: '业务分析助手', icon: '🐎', desc: '业务挖掘找客户', color: '#FF6B6B', cssClass: 'tanma' },
+    { id: 'plan', name: '方案生成助手', icon: '📋', desc: '生成方案显韬略', color: '#FFD93D', cssClass: 'junshi' },
+    { id: 'verify', name: '交叉验证助手', icon: '🔍', desc: '交叉核验保准确', color: '#60A5FA', cssClass: 'jiaocha' },
+    { id: 'service', name: '客户服务助手', icon: '👁️', desc: '专业高效做服务', color: '#A78BFA', cssClass: 'tianyan' },
+];
+
+const ASSISTANTS = [
+    { id: 'ib', name: '投行业务助理', icon: '🏦', color: '#4A6FA5', tasks: 2, img: 'images/Avatar1.png' },
+    { id: 'am', name: '资管业务助理', icon: '📊', color: '#E67E22', tasks: 1, img: 'images/Avatar2.png' },
+    { id: 'retail', name: '零售业务助理', icon: '🏪', color: '#27AE60', tasks: 1, img: 'images/Avatar3.png' },
+    { id: 'invest', name: '投资业务助理', icon: '💹', color: '#8E44AD', tasks: 0, img: 'images/Avatar4.png' },
+    { id: 'sales', name: '销交业务助理', icon: '🤝', color: '#2C3E50', tasks: 0, img: 'images/Avatar5.png' },
+    { id: 'institution', name: '机构业务助理', icon: '🏛️', color: '#D4AC0D', tasks: 0, img: 'images/Avatar6.png' },
+    { id: 'research', name: '研究业务助理', icon: '🔬', color: '#1ABC9C', tasks: 0, img: 'images/Avatar8.png' },
+    { id: 'credit', name: '信用业务助理', icon: '💳', color: '#E74C3C', tasks: 0, img: 'images/Avatar9.png' },
+    { id: 'cross_verify', name: '交叉验证助理', icon: '🔍', color: '#3498DB', tasks: 0, img: 'images/Avatar7.png' },
+];
+
+const DEFAULT_TASKS = [
+    { id: 't1', title: '高净值客户张三季度回访待完成，客户资产近3月波动较大需主动触达', source: '投资业务助理', assistantId: 'invest' },
+    { id: 't2', title: '机构客户"测试科技有限公司"开户资料补件待跟进', source: '投行业务助理', assistantId: 'ib' },
+    { id: 't3', title: '私募基金双录视频待完成，客户已签署风险揭示书', source: '资管业务助理', assistantId: 'am' },
+    { id: 't4', title: '本月基金定投任务缺口8户，需重点触达偏股型持仓客户', source: '零售业务助理', assistantId: 'retail' },
+    { id: 't5', title: '适当性匹配异常客户待处理，需出具不匹配警示书', source: '交叉验证助理', assistantId: 'cross_verify' },
+];
+
+// ========== 登录 ==========
+function doLogin(e) {
+    e.preventDefault();
+    const roleEl = document.querySelector('input[name="login-role"]:checked');
+    STATE.role = roleEl ? roleEl.value : 'employee';
+    document.getElementById('login-overlay').classList.add('hidden');
+    document.getElementById('app-main').classList.remove('hidden');
+    document.getElementById('modal-role-emp').checked = STATE.role === 'employee';
+    document.getElementById('modal-role-sup').checked = STATE.role === 'support';
+    updateRoleTabUI();
+    init();
+}
+
+// ========== 初始化 ==========
+function init() {
+    renderWelcomeAgents();
+    renderRightPanel();
+    loadSessions();
+}
+
+// ========== 角色切换（顶栏 Tab） ==========
+function switchRole(role) {
+    if (STATE.role === role) return;
+    STATE.role = role;
+    STATE.chatActive = false;
+    resetToWelcome();
+    updateRoleTabUI();
+    renderWelcomeAgents();
+    renderRightPanel();
+}
+
+function updateRoleTabUI() {
+    document.querySelectorAll('.left-panel-role-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.role === STATE.role);
+    });
+}
+
+// ========== 侧边栏 ==========
+function toggleLeft() {
+    STATE.leftOpen = !STATE.leftOpen;
+    document.getElementById('left-panel').classList.toggle('open', STATE.leftOpen);
+    document.getElementById('toggle-left-icon').textContent = STATE.leftOpen ? '✕' : '☰';
+}
+
+function toggleRight() {
+    STATE.rightOpen = !STATE.rightOpen;
+    document.getElementById('right-panel').classList.toggle('open', STATE.rightOpen);
+    document.getElementById('toggle-right-icon').textContent = STATE.rightOpen ? '▶' : '◀';
+    if (STATE.rightOpen) renderRightPanel();
+}
+
+function switchRightTab(tab) {
+    STATE.rightTab = tab;
+    document.querySelectorAll('.right-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    renderRightPanel();
+}
+
+// ========== 欢迎区智能体 ==========
+function renderWelcomeAgents() {
+    const agentsGrid = document.getElementById('agents-grid');
+    const assistantsGrid = document.getElementById('assistants-grid');
+    const isEmp = STATE.role === 'employee';
+
+    agentsGrid.classList.toggle('hidden', !isEmp);
+    assistantsGrid.classList.toggle('hidden', isEmp);
+
+    if (isEmp) {
+        agentsGrid.innerHTML = AI_AGENTS.map((a, i) => `
+            <div class="agent-card" onclick="startChat(${i}, '${a.id}')">
+                <div class="agent-card-avatar ${a.cssClass}">${a.icon}</div>
+                <div class="agent-card-name">${a.name}</div>
+                <div class="agent-card-desc">${a.desc}</div>
+            </div>
+        `).join('');
+    } else {
+        assistantsGrid.innerHTML = ASSISTANTS.map(a => `
+            <div class="assistant-chip" onclick="startChatAssist('${a.id}')">
+                <div class="assistant-chip-avatar">
+                    <img src="${a.img}" alt="${a.name}">
+                    ${a.tasks > 0 ? `<span class="assistant-chip-badge">${a.tasks}</span>` : ''}
+                </div>
+                <div class="assistant-chip-name">${a.name}</div>
+            </div>
+        `).join('');
+    }
+}
+
+// ========== 右侧面板 ==========
+function renderRightPanel() {
+    const content = document.getElementById('right-content');
+    const tab = STATE.rightTab;
+    const isEmp = STATE.role === 'employee';
+
+    switch (tab) {
+        case 'tasks': renderTasksPanel(content, isEmp); break;
+        case 'performance': renderPerformancePanel(content, isEmp); break;
+        case 'artifacts': renderArtifactsPanel(content); break;
+        case 'files': renderFilesPanel(content); break;
+        case 'preview': renderPreviewPanel(content); break;
+    }
+}
+
+function renderTasksPanel(el, isEmp) {
+    const tasks = getTasks();
+    if (isEmp) {
+        el.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <span style="font-weight:600;font-size:13px;">今日任务</span>
+                <span style="font-size:11px;color:var(--text-muted);">共 ${tasks.length} 项</span>
+            </div>
+            ${tasks.map((t, i) => `
+                <div class="task-item" onclick="sendTaskToChat('${t.id}')">
+                    <span class="task-num">${i + 1}</span>
+                    <div style="flex:1;min-width:0;">
+                        <div class="task-text">${t.title}</div>
+                        <div class="task-source">来源：${t.source}</div>
+                    </div>
+                    <button class="task-send-btn" onclick="event.stopPropagation();sendTaskToChat('${t.id}')">➤</button>
+                </div>
+            `).join('')}
+        `;
+    } else {
+        const grouped = {};
+        tasks.forEach(t => {
+            const aid = t.assistantId;
+            if (!aid || aid === 'undefined') return; // 跳过无效 assistantId
+            if (!grouped[aid]) grouped[aid] = [];
+            grouped[aid].push(t);
+        });
+        const amap = {}; ASSISTANTS.forEach(a => amap[a.id] = a);
+
+        let html = `<div style="font-weight:600;font-size:13px;margin-bottom:12px;">今日任务看板</div>`;
+        Object.entries(grouped).forEach(([aid, items]) => {
+            const a = amap[aid];
+            if (!a) return; // 找不到对应助理则跳过
+            html += `<div style="margin-bottom:14px;">
+                <div class="group-title"><span class="dot" style="background:${a.color}"></span><span>${a.icon} ${a.name}</span><span class="count">${items.length}项</span></div>
+                ${items.map((t, i) => `
+                    <div class="task-item" onclick="sendTaskToChat('${t.id}')" style="padding-left:20px;">
+                        <span class="task-num" style="width:16px;height:16px;font-size:9px;">${i+1}</span>
+                        <div style="flex:1;min-width:0;"><div class="task-text">${t.title}</div></div>
+                    </div>
+                `).join('')}
+            </div>`;
+        });
+        el.innerHTML = html || `<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">暂无任务数据</div></div>`;
+    }
+}
+
+function renderPerformancePanel(el, isEmp) {
+    if (isEmp) {
+        el.innerHTML = `
+            <div class="perf-sub-tabs" id="perf-sub-tabs">
+                <div class="perf-sub-tab active" data-perf="performance" onclick="switchPerfSubTab('performance')">📊 业绩与绩效</div>
+                <div class="perf-sub-tab" data-perf="behavior" onclick="switchPerfSubTab('behavior')">👤 员工行为</div>
+            </div>
+            <div class="perf-sub-content" id="perf-sub-content"></div>
+        `;
+        renderPerfSubContent('performance');
+    } else {
+        // 业务支持中心暂不显示业绩面板
+        el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">业绩数据仅限业务团队查看</div></div>`;
+    }
+}
+
+function switchPerfSubTab(tab) {
+    document.querySelectorAll('.perf-sub-tab').forEach(t => t.classList.toggle('active', t.dataset.perf === tab));
+    renderPerfSubContent(tab);
+}
+
+function renderPerfSubContent(tab) {
+    const el = document.getElementById('perf-sub-content');
+    if (!el) return;
+    if (tab === 'performance') {
+        el.innerHTML = `
+            <div class="perf-part">
+                <div class="perf-part-title">业绩看板</div>
+                <div class="perf-dashboard">
+                    <div class="perf-dash-card">
+                        <div class="perf-dash-icon">💰</div>
+                        <div class="perf-dash-info">
+                            <div class="perf-dash-label">客户总资产</div>
+                            <div class="perf-dash-hint">点击选择时间点查看明细</div>
+                        </div>
+                        <div class="perf-dash-arrow">›</div>
+                    </div>
+                    <div class="perf-dash-card">
+                        <div class="perf-dash-icon">📈</div>
+                        <div class="perf-dash-info">
+                            <div class="perf-dash-label">客户带来的总收入</div>
+                            <div class="perf-dash-hint">点击选择时间段查看明细</div>
+                        </div>
+                        <div class="perf-dash-arrow">›</div>
+                    </div>
+                    <div class="perf-dash-card">
+                        <div class="perf-dash-icon">💸</div>
+                        <div class="perf-dash-info">
+                            <div class="perf-dash-label">维护客户的总成本</div>
+                            <div class="perf-dash-hint">点击选择时间段查看明细</div>
+                        </div>
+                        <div class="perf-dash-arrow">›</div>
+                    </div>
+                </div>
+            </div>
+            <div class="perf-part">
+                <div class="perf-part-title">预计绩效收入</div>
+                <div class="perf-bonus">
+                    <div class="perf-date-row">
+                        <label class="perf-date-label">选择时间段：</label>
+                        <div class="perf-date-inputs">
+                            <input type="date" id="perf-start-date" value="2026-01-01" class="perf-date-input">
+                            <span class="perf-date-sep">至</span>
+                            <input type="date" id="perf-end-date" value="2026-01-31" class="perf-date-input">
+                            <button class="perf-calc-btn" onclick="calcPerfBonus()">计算</button>
+                        </div>
+                    </div>
+                    <div class="perf-bonus-result" id="perf-bonus-result">
+                        <div class="perf-bonus-item">
+                            <span class="perf-bonus-label">客户带来的收入</span>
+                            <span class="perf-bonus-value">30万元</span>
+                        </div>
+                        <div class="perf-bonus-item highlight">
+                            <span class="perf-bonus-label">预计可获得绩效奖金</span>
+                            <span class="perf-bonus-amount">6万元</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        el.innerHTML = `
+            <div class="perf-behavior-cards">
+                <div class="perf-behavior-card active" data-type="travel" onclick="switchBehaviorCard('travel')">
+                    <div class="perf-behavior-icon">✈️</div>
+                    <div class="perf-behavior-info">
+                        <div class="perf-behavior-label">差旅费</div>
+                        <div class="perf-behavior-value">9次</div>
+                    </div>
+                    <div class="perf-behavior-amount">¥2.44万</div>
+                </div>
+                <div class="perf-behavior-card" data-type="meal" onclick="switchBehaviorCard('meal')">
+                    <div class="perf-behavior-icon">🍽️</div>
+                    <div class="perf-behavior-info">
+                        <div class="perf-behavior-label">招待费</div>
+                        <div class="perf-behavior-value">12次</div>
+                    </div>
+                    <div class="perf-behavior-amount">¥1.68万</div>
+                </div>
+                <div class="perf-behavior-card" data-type="overtime" onclick="switchBehaviorCard('overtime')">
+                    <div class="perf-behavior-icon">⏰</div>
+                    <div class="perf-behavior-info">
+                        <div class="perf-behavior-label">加班时长</div>
+                        <div class="perf-behavior-value">28h</div>
+                    </div>
+                    <div class="perf-behavior-amount">本月</div>
+                </div>
+            </div>
+            <div class="perf-behavior-detail" id="perf-behavior-detail">
+                <div class="perf-behavior-chart-title">差旅费明细</div>
+                <div class="perf-behavior-list">
+                    <div class="perf-behavior-row">
+                        <span>北京出差（客户拜访）</span><span>¥5,200</span>
+                    </div>
+                    <div class="perf-behavior-row">
+                        <span>上海出差（行业会议）</span><span>¥4,800</span>
+                    </div>
+                    <div class="perf-behavior-row">
+                        <span>深圳出差（项目路演）</span><span>¥6,100</span>
+                    </div>
+                    <div class="perf-behavior-row">
+                        <span>成都出差（客户尽调）</span><span>¥3,500</span>
+                    </div>
+                    <div class="perf-behavior-row">
+                        <span>其他差旅</span><span>¥4,800</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function calcPerfBonus() {
+    const start = document.getElementById('perf-start-date').value;
+    const end = document.getElementById('perf-end-date').value;
+    if (!start || !end) return;
+    const days = Math.ceil((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24));
+    const revenue = Math.round(days * 0.97);
+    const bonus = Math.round(revenue * 0.2);
+    document.getElementById('perf-bonus-result').innerHTML = `
+        <div class="perf-bonus-item">
+            <span class="perf-bonus-label">${start} 至 ${end} 客户带来的收入</span>
+            <span class="perf-bonus-value">${revenue}万元</span>
+        </div>
+        <div class="perf-bonus-item highlight">
+            <span class="perf-bonus-label">预计可获得绩效奖金</span>
+            <span class="perf-bonus-amount">${bonus}万元</span>
+        </div>
+    `;
+}
+
+function switchBehaviorCard(type) {
+    document.querySelectorAll('.perf-behavior-card').forEach(c => c.classList.toggle('active', c.dataset.type === type));
+    const details = {
+        travel: { title: '差旅费明细', rows: [
+            ['北京出差（客户拜访）', '¥5,200'], ['上海出差（行业会议）', '¥4,800'],
+            ['深圳出差（项目路演）', '¥6,100'], ['成都出差（客户尽调）', '¥3,500'], ['其他差旅', '¥4,800']
+        ]},
+        meal: { title: '招待费明细', rows: [
+            ['商务宴请 - 张三', '¥2,800'], ['客户答谢宴', '¥3,500'],
+            ['工作午餐（×8次）', '¥1,600'], ['商务茶歇（×12次）', '¥2,400'], ['其他招待', '¥6,500']
+        ]},
+        overtime: { title: '加班时长明细', rows: [
+            ['方案撰写加班', '8h'], ['客户紧急需求处理', '6h'],
+            ['合规审查加班', '5h'], ['培训准备加班', '4h'], ['其他加班', '5h']
+        ]}
+    };
+    const d = details[type];
+    document.getElementById('perf-behavior-detail').innerHTML = `
+        <div class="perf-behavior-chart-title">${d.title}</div>
+        <div class="perf-behavior-list">
+            ${d.rows.map(r => `<div class="perf-behavior-row"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('')}
+        </div>
+    `;
+}
+
+function renderArtifactsPanel(el) {
+    const artifacts = [
+        { title: '客户分析报告 - 张三', icon: '📊', time: '今天 14:30', color: '#9B7FD4' },
+        { title: '业务方案 - Q3规划', icon: '📋', time: '今天 11:20', color: '#F5A623' },
+        { title: '交叉验证结果', icon: '🔍', time: '昨天 16:45', color: '#5DADE2' },
+        { title: '客户回访记录', icon: '📝', time: '昨天 10:00', color: '#58D68D' },
+    ];
+    el.innerHTML = `
+        <div style="font-weight:600;font-size:13px;margin-bottom:12px;">AI 生成产物</div>
+        ${artifacts.map(a => `
+            <div class="artifact-item" onclick="alert('查看产物：${a.title}')">
+                <div class="file-icon" style="background:${a.color}12;color:${a.color}">${a.icon}</div>
+                <div class="file-info"><div class="file-name">${a.title}</div><div class="file-meta">${a.time}</div></div>
+            </div>
+        `).join('')}
+    `;
+}
+
+function renderFilesPanel(el) {
+    const files = [
+        { name: '客户资料 - 张三.xlsx', icon: '📊', size: '2.4 MB', time: '今天 14:20', color: '#27AE60' },
+        { name: 'Q3业务规划.pptx', icon: '📽️', size: '5.1 MB', time: '今天 11:00', color: '#F5A623' },
+        { name: '开户申请表.pdf', icon: '📄', size: '1.2 MB', time: '昨天 15:30', color: '#E74C3C' },
+        { name: '双录视频.mp4', icon: '🎬', size: '48 MB', time: '昨天 09:00', color: '#3498DB' },
+    ];
+    el.innerHTML = `
+        <div style="font-weight:600;font-size:13px;margin-bottom:12px;">相关文件</div>
+        ${files.map(f => `
+            <div class="file-item" onclick="alert('打开文件：${f.name}')">
+                <div class="file-icon" style="background:${f.color}12;color:${f.color}">${f.icon}</div>
+                <div class="file-info"><div class="file-name">${f.name}</div><div class="file-meta">${f.size} · ${f.time}</div></div>
+            </div>
+        `).join('')}
+    `;
+}
+
+function renderPreviewPanel(el) {
+    const previews = [
+        { title: '📊 客户分析报告预览', summary: '根据最近3个月的交易数据和客户画像分析，客户张三属于高净值稳健型投资者，近期资产波动主要受市场行情影响...' },
+        { title: '📋 业务方案预览', summary: 'Q3业务拓展方案围绕三个核心方向：存量客户深度经营、增量客户精准触达、交叉销售机会挖掘...' },
+        { title: '🔍 交叉验证结果预览', summary: '本次交叉验证共涉及5项关键指标，其中4项通过验证，1项需进一步核实...' },
+    ];
+    el.innerHTML = `
+        <div style="font-weight:600;font-size:13px;margin-bottom:12px;">内容预览</div>
+        ${previews.map(p => `
+            <div class="preview-card" onclick="alert('查看完整内容')">
+                <div class="preview-card-header">${p.title}</div>
+                <div class="preview-card-body">${p.summary}</div>
+            </div>
+        `).join('')}
+    `;
+}
+
+// ========== 新建会话弹窗 ==========
+function openNewChatModal() {
+    document.getElementById('new-chat-modal').classList.remove('hidden');
+    document.getElementById('modal-role-emp').checked = STATE.role === 'employee';
+    document.getElementById('modal-role-sup').checked = STATE.role === 'support';
+    document.querySelectorAll('input[name="modal-role"]').forEach(r => { r.onchange = renderModalAgentList; });
+    renderModalAgentList();
+}
+
+function renderModalAgentList() {
+    const list = document.getElementById('modal-agent-list');
+    const roleEl = document.querySelector('input[name="modal-role"]:checked');
+    const role = roleEl ? roleEl.value : 'employee';
+    const isEmp = role === 'employee';
+
+    list.innerHTML = isEmp
+        ? AI_AGENTS.map((a, i) => `
+            <div class="modal-agent-item" onclick="startChatFromModal(${i}, '${a.id}', 'employee')">
+                <div class="modal-agent-item-avatar ${a.cssClass}" style="color:#fff">${a.icon}</div>
+                <div class="modal-agent-item-info">
+                    <div class="modal-agent-item-name">${a.name}</div>
+                    <div class="modal-agent-item-desc">${a.desc}</div>
+                </div>
+            </div>`).join('')
+        : ASSISTANTS.map(a => `
+            <div class="modal-agent-item" onclick="startChatFromModal(0, '${a.id}', 'support')">
+                <div class="modal-agent-item-avatar" style="background:transparent;overflow:visible;line-height:0;">
+                    <img src="${a.img}" alt="${a.name}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+                    ${a.tasks > 0 ? `<span style="position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:#e85d4c;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid #fff;">${a.tasks}</span>` : ''}
+                </div>
+                <div class="modal-agent-item-info">
+                    <div class="modal-agent-item-name">${a.name}</div>
+                    <div class="modal-agent-item-desc">${a.tasks > 0 ? a.tasks + '项待办' : '暂无待办'}</div>
+                </div>
+            </div>`).join('');
+}
+
+function startChatFromModal(idx, id, role) {
+    if (STATE.role !== role) {
+        STATE.role = role;
+        updateRoleTabUI();
+        renderWelcomeAgents();
+    }
+    closeNewChatModal();
+    if (role === 'employee') startChat(idx, id);
+    else startChatAssist(id);
+}
+
+function closeNewChatModal() {
+    document.getElementById('new-chat-modal').classList.add('hidden');
+}
+
+// ========== 对话逻辑 ==========
+function startChat(idx, agentId) {
+    STATE.chatActive = true;
+    STATE.activeAgentIdx = idx;
+    document.getElementById('welcome-area').classList.add('hidden');
+    document.getElementById('chat-area').classList.remove('hidden');
+    document.getElementById('agents-mini-bar').classList.remove('hidden');
+    document.getElementById('quick-replies').classList.remove('hidden');
+    document.getElementById('chat-messages').innerHTML = '';
+
+    renderMiniAgents();
+    renderQuickReplies();
+    appendMsg(`你好！我是${AI_AGENTS[idx].icon} ${AI_AGENTS[idx].name}，有什么可以帮你的？`, 'assistant');
+}
+
+function startChatAssist(assistantId) {
+    const idx = ASSISTANTS.findIndex(a => a.id === assistantId);
+    STATE.chatActive = true;
+    STATE.activeAgentIdx = idx >= 0 ? idx : 0;
+    document.getElementById('welcome-area').classList.add('hidden');
+    document.getElementById('chat-area').classList.remove('hidden');
+    document.getElementById('agents-mini-bar').classList.remove('hidden');
+    document.getElementById('quick-replies').classList.remove('hidden');
+    document.getElementById('chat-messages').innerHTML = '';
+
+    renderMiniAgents();
+    renderQuickReplies();
+    const a = ASSISTANTS[idx >= 0 ? idx : 0];
+    appendMsg(`你好！我是${a.icon} ${a.name}，有什么可以帮你的？`, 'assistant');
+}
+
+function sendDefaultMessage() {
+    const input = document.getElementById('default-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const isEmp = STATE.role === 'employee';
+    if (isEmp) startChat(0, AI_AGENTS[0].id);
+    else startChatAssist(ASSISTANTS[0].id);
+
+    appendMsg(text, 'user');
+    input.value = '';
+    setTimeout(() => autoReply(text), 600);
+}
+
+function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    appendMsg(text, 'user');
+    input.value = '';
+    setTimeout(() => autoReply(text), 600);
+}
+
+function sendTaskToChat(taskId) {
+    const tasks = getTasks();
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    if (!STATE.chatActive) {
+        const isEmp = STATE.role === 'employee';
+        if (isEmp) startChat(0, AI_AGENTS[0].id);
+        else startChatAssist(task.assistantId || ASSISTANTS[0].id);
+    }
+
+    appendMsg(`处理任务：${task.title}`, 'user');
+    setTimeout(() => {
+        appendMsg(`收到任务「${task.title}」\n\n来源：${task.source}\n\n我将为你：\n• 分析任务要点\n• 生成执行步骤\n• 协调相关资源\n\n请确认是否开始执行？`, 'assistant');
+    }, 500);
+}
+
+function autoReply(text) {
+    const isEmp = STATE.role === 'employee';
+    if (isEmp) {
+        const agent = AI_AGENTS[STATE.activeAgentIdx];
+        appendMsg(`收到你的消息「${text}」。\n\n作为${agent.name}，我可以协助你：\n• 梳理任务背景与关键节点\n• 生成执行建议与协作清单\n• 跟进进展并同步相关事项\n\n请告诉我你需要从哪一步开始？`, 'assistant');
+    } else {
+        const a = ASSISTANTS[STATE.activeAgentIdx];
+        appendMsg(`已收到你的指令「${text}」。\n\n${a.name}正在处理中，我将协调相关资源并同步进度。`, 'assistant');
+    }
+}
+
+function appendMsg(text, role) {
+    const container = document.getElementById('chat-messages');
+    const isUser = role === 'user';
+    const isEmp = STATE.role === 'employee';
+    const agent = isEmp ? AI_AGENTS[STATE.activeAgentIdx] : ASSISTANTS[STATE.activeAgentIdx];
+
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role}`;
+    div.innerHTML = `
+        <div class="chat-msg-avatar ${isUser ? 'user-av' : 'assistant-av'}">
+            ${isUser ? '👤' : (agent ? agent.icon : '🤖')}
+        </div>
+        <div class="chat-msg-bubble">${text.replace(/\n/g, '<br>')}</div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+function renderMiniAgents() {
+    const bar = document.getElementById('agents-mini-bar');
+    const isEmp = STATE.role === 'employee';
+    bar.innerHTML = isEmp
+        ? AI_AGENTS.map((a, i) => `
+            <div class="agent-mini ${i === STATE.activeAgentIdx ? 'active' : ''}" onclick="STATE.activeAgentIdx=${i};renderMiniAgents();">
+                <span class="agent-mini-dot" style="background:${a.color}"></span>${a.icon} ${a.name}
+            </div>`).join('')
+        : ASSISTANTS.map((a, i) => `
+            <div class="agent-mini ${i === STATE.activeAgentIdx ? 'active' : ''}" onclick="STATE.activeAgentIdx=${i};renderMiniAgents();">
+                <span class="agent-mini-dot" style="background:${a.color}"></span>${a.icon} ${a.name}
+            </div>`).join('');
+}
+
+function renderQuickReplies() {
+    const el = document.getElementById('quick-replies');
+    const isEmp = STATE.role === 'employee';
+    el.innerHTML = (isEmp
+        ? ['查看我的今日任务', '分析客户数据', '生成业务方案', '检查合规事项']
+        : ['查看团队任务汇总', '分配今日任务', '查看助理进度', '生成日报']
+    ).map(r => `<button class="quick-reply-btn" onclick="document.getElementById('chat-input').value='${r}';sendChatMessage();">${r}</button>`).join('');
+}
+
+// ========== 重置到欢迎页 ==========
+function resetToWelcome() {
+    STATE.chatActive = false;
+    document.getElementById('welcome-area').classList.remove('hidden');
+    document.getElementById('chat-area').classList.add('hidden');
+    document.getElementById('agents-mini-bar').classList.add('hidden');
+    document.getElementById('quick-replies').classList.add('hidden');
+    document.getElementById('chat-messages').innerHTML = '';
+    document.getElementById('default-input').value = '';
+    document.getElementById('chat-input').value = '';
+}
+
+// ========== 工具函数 ==========
+function getTasks() {
+    try {
+        const raw = localStorage.getItem('employeeDailyTasks');
+        if (raw) {
+            const p = JSON.parse(raw);
+            if (Array.isArray(p) && p.length) {
+                return p.filter(t => t && t.id && t.assistantId && t.assistantId !== 'undefined');
+            }
+        }
+    } catch (e) {}
+    return DEFAULT_TASKS;
+}
+
+function loadSessions() {
+    try {
+        STATE.sessions = JSON.parse(localStorage.getItem('wbv2_sessions') || '[]');
+        renderSessions();
+    } catch (e) { STATE.sessions = []; }
+}
+
+function renderSessions() {
+    const list = document.getElementById('history-list');
+    if (!STATE.sessions.length) {
+        list.innerHTML = '<div class="left-empty">暂无历史会话</div>';
+        return;
+    }
+    list.innerHTML = STATE.sessions.slice().reverse().map(s => `
+        <div class="left-history-item" onclick="alert('历史会话功能开发中')">
+            <span>💬</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;">${s.title || '未命名会话'}</span>
+        </div>`).join('');
+}
+
+function handleAttach() { alert('附件上传功能'); }
+
+// 页面加载 - 清理可能存在的无效任务数据
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('login-overlay').classList.remove('hidden');
+    document.getElementById('app-main').classList.add('hidden');
+    // 清理 localStorage 中无效的任务数据
+    try {
+        const raw = localStorage.getItem('employeeDailyTasks');
+        if (raw) {
+            const tasks = JSON.parse(raw);
+            if (Array.isArray(tasks)) {
+                const cleaned = tasks.filter(t => t && t.id && t.assistantId && t.assistantId !== 'undefined');
+                if (cleaned.length !== tasks.length) {
+                    localStorage.setItem('employeeDailyTasks', JSON.stringify(cleaned));
+                }
+            }
+        }
+    } catch (e) {}
+});
+</script>
+</body>
+</html>

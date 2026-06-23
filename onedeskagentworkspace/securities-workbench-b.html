@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案B · LUI指令台·自然语言驱动 — 证券客户经理工作台</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #0D1B2A;
+  --primary-2: #1B2B3B;
+  --primary-3: #243447;
+  --gold: #C9A96E;
+  --gold-light: #E8D4A8;
+  --gold-dim: rgba(201,169,110,0.12);
+  --gold-glow: rgba(201,169,110,0.25);
+  --bg: #F2F1EB;
+  --card: #FFFFFF;
+  --text: #1A1A2E;
+  --text-2: #555566;
+  --text-3: #888899;
+  --border: #E2E0D8;
+  --green: #27AE60;
+  --red: #E74C3C;
+  --orange: #F39C12;
+  --blue: #2980B9;
+  --purple: #7B5EA7;
+  --result-bg: #FAFAF8;
+  --lui-shadow: 0 4px 24px rgba(13,27,42,0.12);
+}
+body { font-family: -apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+/* ===== 极简顶栏 ===== */
+.topbar {
+  height: 48px; background: var(--primary); display: flex; align-items: center;
+  padding: 0 20px; flex-shrink: 0;
+  border-bottom: 1px solid rgba(201,169,110,0.2);
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-logo { color: var(--gold); font-size: 14px; font-weight: 700; letter-spacing: 0.5px; }
+.topbar-scheme { font-size: 10px; color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 8px; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.topbar-greeting { color: rgba(255,255,255,0.5); font-size: 12px; }
+.topbar-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--primary); }
+
+/* ===== 主布局 ===== */
+.workspace { flex: 1; display: flex; overflow: hidden; }
+
+/* ===== 左栏：今日任务看板 ===== */
+.col-left {
+  width: 280px; flex-shrink: 0; background: var(--primary-2);
+  display: flex; flex-direction: column;
+  border-right: 1px solid rgba(201,169,110,0.15);
+}
+.left-brand { padding: 16px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.left-brand-title { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.left-brand-sub { color: rgba(255,255,255,0.35); font-size: 11px; }
+
+/* 今日结果总览 */
+.result-summary { padding: 12px 18px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.result-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; cursor: pointer; padding: 5px 8px; border-radius: 6px; transition: background 0.2s; }
+.result-row:hover { background: rgba(255,255,255,0.06); }
+.result-row:last-child { margin-bottom: 0; }
+.result-row-left { display: flex; align-items: center; gap: 8px; }
+.result-icon { font-size: 14px; }
+.result-label { color: rgba(255,255,255,0.6); font-size: 12px; }
+.result-count { font-size: 12px; font-weight: 700; }
+.result-count.green { color: #52D98F; }
+.result-count.orange { color: #FFB347; }
+.result-count.blue { color: #70B8FF; }
+.result-progress { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-top: 3px; overflow: hidden; }
+.result-bar { height: 100%; border-radius: 2px; transition: width 0.5s; }
+
+/* 任务列表 */
+.task-list-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 18px 6px; }
+.task-list-title { color: rgba(255,255,255,0.4); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; }
+.task-filter { font-size: 10px; color: rgba(201,169,110,0.7); cursor: pointer; }
+.task-scroll { flex: 1; overflow-y: auto; padding: 0 10px 6px; }
+.task-scroll::-webkit-scrollbar { width: 2px; }
+.task-scroll::-webkit-scrollbar-thumb { background: rgba(201,169,110,0.3); }
+
+.task-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 10px; border-radius: 7px; margin-bottom: 4px; cursor: pointer;
+  transition: background 0.2s; border: 1px solid transparent;
+}
+.task-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.08); }
+.task-item.pinned { background: var(--gold-dim); border-color: rgba(201,169,110,0.3); }
+.task-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.task-info { flex: 1; }
+.task-client { color: rgba(255,255,255,0.8); font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.task-action { color: rgba(255,255,255,0.4); font-size: 11px; }
+.task-time { color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 2px; }
+.pin-icon { font-size: 11px; color: var(--gold); flex-shrink: 0; }
+
+/* 业绩快照 */
+.perf-snapshot { padding: 12px 18px; border-top: 1px solid rgba(255,255,255,0.07); flex-shrink: 0; }
+.perf-title { color: rgba(255,255,255,0.35); font-size: 10px; margin-bottom: 8px; letter-spacing: 0.5px; }
+.perf-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+.perf-item { background: rgba(255,255,255,0.04); border-radius: 6px; padding: 6px 8px; text-align: center; }
+.perf-num { color: var(--gold-light); font-size: 13px; font-weight: 700; }
+.perf-label { color: rgba(255,255,255,0.3); font-size: 9px; margin-top: 2px; }
+
+/* ===== 右栏：主交互区 ===== */
+.col-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* 结果面板（上层 60%） */
+.result-panel { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.result-panel::-webkit-scrollbar { width: 4px; }
+.result-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* 初始状态：待跟进清单 */
+.welcome-header { display: flex; align-items: flex-start; justify-content: space-between; }
+.welcome-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.welcome-sub { font-size: 13px; color: var(--text-3); }
+.welcome-date { font-size: 12px; color: var(--text-3); text-align: right; }
+
+.priority-list { display: flex; flex-direction: column; gap: 10px; }
+.priority-card {
+  background: var(--card); border-radius: 10px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px; cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.priority-card:hover { box-shadow: var(--lui-shadow); border-color: rgba(201,169,110,0.4); transform: translateY(-1px); }
+.priority-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+.priority-info { flex: 1; }
+.priority-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.priority-reason { font-size: 12px; color: var(--text-3); }
+.priority-meta { display: flex; gap: 6px; margin-top: 5px; }
+.p-tag { font-size: 10px; padding: 2px 7px; border-radius: 3px; font-weight: 600; }
+.priority-action { text-align: right; }
+.p-asset { font-size: 13px; font-weight: 700; color: var(--text); }
+.p-contact { font-size: 11px; color: var(--text-3); }
+.p-btn { margin-top: 6px; font-size: 11px; color: var(--gold); cursor: pointer; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(201,169,110,0.3); display: inline-block; }
+.p-btn:hover { background: var(--gold-dim); }
+
+/* 结果卡片 */
+.result-cards { display: flex; flex-direction: column; gap: 12px; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+.r-card { background: var(--card); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); }
+.r-card-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.r-card-bar { width: 4px; height: 18px; border-radius: 2px; flex-shrink: 0; }
+.r-card-model { font-size: 9px; padding: 2px 7px; border-radius: 10px; font-weight: 700; letter-spacing: 0.5px; }
+.r-card-title { font-size: 13px; font-weight: 700; flex: 1; }
+.r-pin-btn { font-size: 11px; color: var(--text-3); cursor: pointer; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border); transition: all 0.2s; }
+.r-pin-btn:hover { color: var(--gold); border-color: rgba(201,169,110,0.4); }
+.r-card-body { padding: 14px 16px; }
+
+/* 客户分析结果卡 */
+.r-dim-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+.r-dim { background: var(--result-bg); border-radius: 6px; padding: 8px 10px; }
+.r-dim-l { font-size: 10px; color: var(--text-3); margin-bottom: 2px; }
+.r-dim-v { font-size: 12px; font-weight: 700; color: var(--text); }
+.r-ai-box { background: linear-gradient(135deg,#FFF8F0,#FFF4E8); border: 1px solid rgba(201,169,110,0.25); border-radius: 7px; padding: 10px 12px; }
+.r-ai-label { font-size: 10px; color: var(--gold); font-weight: 700; margin-bottom: 4px; }
+.r-ai-text { font-size: 12px; color: var(--text-2); line-height: 1.7; }
+
+/* 产品结果卡 */
+.r-product-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--result-bg); border-radius: 7px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; border-left: 3px solid transparent; }
+.r-product-row:hover { background: #F0EFE8; }
+.r-product-row.top { border-left-color: var(--gold); }
+.r-product-row:last-child { margin-bottom: 0; }
+.r-p-rank { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+.rk1 { background: var(--gold); color: var(--primary); }
+.rk2 { background: #D0D0D0; color: #555; }
+.rk3 { background: #F5DEB3; color: #8B7355; }
+.r-p-info { flex: 1; }
+.r-p-name { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.r-p-why { font-size: 11px; color: var(--text-3); }
+.r-p-score { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+.score-track { height: 3px; width: 60px; background: #E8E8E8; border-radius: 2px; overflow: hidden; }
+.score-fill-r { height: 100%; background: var(--gold); border-radius: 2px; }
+.r-p-ret { font-size: 13px; font-weight: 700; color: var(--green); text-align: right; }
+.r-p-type { font-size: 10px; color: var(--text-3); }
+
+/* 执行建议卡 */
+.r-action-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 7px; margin-bottom: 8px; transition: all 0.2s; }
+.r-action-row:last-child { margin-bottom: 0; }
+.r-action-row.done { opacity: 0.45; background: var(--result-bg); }
+.r-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; margin-top: 1px; transition: all 0.2s; }
+.r-check.on { background: var(--green); border-color: var(--green); color: white; }
+.r-act-info { flex: 1; }
+.r-act-name { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.r-act-std { font-size: 11px; color: var(--text-3); }
+.r-act-meta { display: flex; gap: 6px; margin-top: 4px; }
+.r-time-tag { font-size: 10px; background: var(--result-bg); color: var(--text-3); padding: 1px 6px; border-radius: 3px; }
+.r-prior-tag { font-size: 10px; padding: 1px 6px; border-radius: 3px; }
+.r-prior-h { background: rgba(231,76,60,0.09); color: var(--red); }
+.r-prior-m { background: rgba(243,156,18,0.09); color: var(--orange); }
+.r-exec-btn { font-size: 11px; color: var(--gold); cursor: pointer; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(201,169,110,0.3); margin-left: auto; flex-shrink: 0; }
+.r-exec-btn:hover { background: var(--gold-dim); }
+
+/* ===== LUI交互区（下层 40%） ===== */
+.lui-zone {
+  flex-shrink: 0; background: var(--card);
+  border-top: 2px solid rgba(201,169,110,0.2);
+  display: flex; flex-direction: column;
+  height: 280px;
+}
+
+/* 历史对话气泡（折叠） */
+.lui-history { flex: 1; overflow-y: auto; padding: 10px 20px 0; display: flex; flex-direction: column; gap: 6px; }
+.lui-history::-webkit-scrollbar { width: 3px; }
+.lui-history::-webkit-scrollbar-thumb { background: var(--border); }
+.lui-msg { display: flex; gap: 8px; }
+.lui-msg.user { justify-content: flex-end; }
+.lui-msg-bubble { max-width: 70%; padding: 7px 12px; border-radius: 10px; font-size: 12px; line-height: 1.6; }
+.lui-msg.ai .lui-msg-bubble { background: #F7F4EE; border: 1px solid var(--border); color: var(--text); border-radius: 2px 10px 10px 10px; }
+.lui-msg.user .lui-msg-bubble { background: var(--primary); color: rgba(255,255,255,0.9); border-radius: 10px 2px 10px 10px; }
+
+/* 联想指令 */
+.lui-suggests { padding: 8px 20px; display: flex; gap: 6px; flex-wrap: wrap; border-top: 1px solid var(--border); }
+.lui-chip { font-size: 11px; padding: 5px 11px; border-radius: 16px; background: var(--result-bg); border: 1px solid var(--border); color: var(--text-2); cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+.lui-chip:hover { background: var(--gold-dim); border-color: rgba(201,169,110,0.5); color: var(--text); }
+
+/* 核心输入框 */
+.lui-input-zone { padding: 10px 20px 14px; }
+.lui-input-wrap {
+  display: flex; align-items: flex-end; gap: 10px;
+  background: var(--bg); border: 1.5px solid rgba(201,169,110,0.35); border-radius: 12px;
+  padding: 10px 14px; box-shadow: 0 2px 12px rgba(201,169,110,0.1);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.lui-input-wrap:focus-within { border-color: var(--gold); box-shadow: 0 2px 20px rgba(201,169,110,0.2); }
+.lui-textarea { flex: 1; background: none; border: none; outline: none; font-size: 13px; color: var(--text); resize: none; max-height: 80px; line-height: 1.5; font-family: inherit; }
+.lui-textarea::placeholder { color: var(--text-3); font-size: 13px; }
+.lui-tools { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.lui-tool-btn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; }
+.lui-tool-btn:hover { border-color: rgba(201,169,110,0.4); background: var(--gold-dim); }
+.lui-send { width: 32px; height: 32px; border-radius: 8px; background: var(--gold); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+.lui-send:hover { background: var(--primary); transform: scale(1.05); }
+.lui-send svg { width: 15px; height: 15px; fill: white; }
+
+/* 工具底栏说明 */
+.lui-toolrow { display: flex; align-items: center; gap: 12px; padding: 4px 0 0; }
+.lui-tool-label { font-size: 10px; color: var(--text-3); }
+.lui-tool-entry { font-size: 10px; color: var(--gold); cursor: pointer; padding: 2px 7px; border-radius: 4px; background: var(--gold-dim); border: 1px solid rgba(201,169,110,0.25); }
+.lui-tool-entry:hover { opacity: 0.8; }
+
+/* 空结果提示 */
+.init-hint { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
+.init-hint-text { font-size: 12px; color: var(--text-3); }
+
+/* 加载动画 */
+.typing-indicator { display: flex; align-items: center; gap: 4px; padding: 8px 12px; background: #F7F4EE; border: 1px solid var(--border); border-radius: 2px 10px 10px 10px; width: fit-content; }
+.typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: typing 1.2s infinite; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%,80%,100%{opacity:0.3;transform:scale(0.7)} 40%{opacity:1;transform:scale(1)} }
+</style>
+</head>
+<body>
+
+<!-- 极简顶栏 -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">⚡ AI工作台</div>
+    <span class="topbar-scheme">方案B · LUI指令台</span>
+  </div>
+  <div class="topbar-right">
+    <span class="topbar-greeting">早上好，张伟</span>
+    <div class="topbar-avatar">张</div>
+  </div>
+</div>
+
+<div class="workspace">
+
+  <!-- 左栏：今日执行结果看板 -->
+  <div class="col-left">
+    <div class="left-brand">
+      <div class="left-brand-title">今日执行结果</div>
+      <div class="left-brand-sub">追踪结果 · 不追踪过程</div>
+    </div>
+
+    <!-- 原子模型执行结果统计 -->
+    <div class="result-summary">
+      <div class="result-row" onclick="showResultFilter('analysis')">
+        <div class="result-row-left">
+          <span class="result-icon">📊</span>
+          <span class="result-label">客户分析完成</span>
+        </div>
+        <span class="result-count green">3/8</span>
+      </div>
+      <div class="result-progress" style="margin:-4px 0 6px 22px;width:calc(100% - 22px)">
+        <div class="result-bar" style="background:#52D98F;width:37.5%"></div>
+      </div>
+
+      <div class="result-row" onclick="showResultFilter('product')">
+        <div class="result-row-left">
+          <span class="result-icon">📦</span>
+          <span class="result-label">产品方案已发送</span>
+        </div>
+        <span class="result-count orange">2/5</span>
+      </div>
+      <div class="result-progress" style="margin:-4px 0 6px 22px;width:calc(100% - 22px)">
+        <div class="result-bar" style="background:#FFB347;width:40%"></div>
+      </div>
+
+      <div class="result-row" onclick="showResultFilter('action')">
+        <div class="result-row-left">
+          <span class="result-icon">📞</span>
+          <span class="result-label">服务动作待完成</span>
+        </div>
+        <span class="result-count blue">7</span>
+      </div>
+    </div>
+
+    <!-- 任务列表 -->
+    <div class="task-list-header">
+      <span class="task-list-title">任务追踪</span>
+      <span class="task-filter" onclick="toggleTaskFilter()">全部 ▾</span>
+    </div>
+    <div class="task-scroll" id="task-scroll"></div>
+
+    <!-- 今日业绩快照 -->
+    <div class="perf-snapshot">
+      <div class="perf-title">今日业绩快照</div>
+      <div class="perf-grid">
+        <div class="perf-item"><div class="perf-num">+168万</div><div class="perf-label">新增AUM</div></div>
+        <div class="perf-item"><div class="perf-num">5</div><div class="perf-label">客户触达</div></div>
+        <div class="perf-item"><div class="perf-num">40%</div><div class="perf-label">转化率</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右栏：主交互区 -->
+  <div class="col-right">
+
+    <!-- 上层：动态结果面板 -->
+    <div class="result-panel" id="result-panel">
+      <!-- 初始状态：待跟进清单 -->
+      <div id="init-view">
+        <div class="welcome-header">
+          <div>
+            <div class="welcome-title">今日待跟进客户</div>
+            <div class="welcome-sub">AI 基于客户分类模型自动生成 · 2026年6月22日</div>
+          </div>
+          <div class="welcome-date">周一 · 09:00</div>
+        </div>
+        <div class="priority-list" id="priority-list"></div>
+      </div>
+      <!-- 动态结果容器（指令触发后替换） -->
+      <div id="dynamic-result" style="display:none"></div>
+    </div>
+
+    <!-- 下层：LUI 对话框 -->
+    <div class="lui-zone">
+
+      <!-- 历史对话（折叠） -->
+      <div class="lui-history" id="lui-history">
+        <div class="lui-msg ai">
+          <div class="lui-msg-bubble">今日有 <strong>12位客户</strong> 待跟进，已为您生成优先触达清单。请直接告诉我您要做什么。</div>
+        </div>
+      </div>
+
+      <!-- 联想指令气泡 -->
+      <div class="lui-suggests" id="lui-suggests">
+        <div class="lui-chip" onclick="quickCmd(this)">📊 分析今日重点高净值客户</div>
+        <div class="lui-chip" onclick="quickCmd(this)">📋 为王建国生成配置方案</div>
+        <div class="lui-chip" onclick="quickCmd(this)">🔍 查找近期有减仓意图的客户</div>
+        <div class="lui-chip" onclick="quickCmd(this)">📞 今日待完成的服务动作清单</div>
+      </div>
+
+      <!-- 核心输入框 -->
+      <div class="lui-input-zone">
+        <div class="lui-input-wrap">
+          <textarea class="lui-textarea" id="lui-input" rows="1" placeholder="告诉AI你要做什么..." onkeydown="handleKey(event)"></textarea>
+          <div class="lui-tools">
+            <button class="lui-tool-btn" title="客户选择器" onclick="insertCmd('@客户')">👤</button>
+            <button class="lui-tool-btn" title="产品库" onclick="insertCmd('#产品')">📦</button>
+            <button class="lui-tool-btn" title="合规检查" onclick="insertCmd('[合规]')">✅</button>
+          </div>
+          <button class="lui-send" onclick="sendInstruction()">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          </button>
+        </div>
+        <div class="lui-toolrow">
+          <span class="lui-tool-label">快速调用：</span>
+          <span class="lui-tool-entry" onclick="insertCmd('@客户')">@客户</span>
+          <span class="lui-tool-entry" onclick="insertCmd('#产品')">＃产品库</span>
+          <span class="lui-tool-entry" onclick="insertCmd('[合规检查]')">[合规检查]</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const priorityClients = [
+  { name:'王建国', avatar:'王', avatarBg:'linear-gradient(135deg,#C9A96E,#E8D4A8)', avatarColor:'#1A1A2E',
+    reason:'持仓浮亏8%，有减仓意图，建议优先触达并推送稳健替代方案', asset:'¥ 680万',
+    contact:'偏好电话', tags:[{text:'高净值',bg:'rgba(231,76,60,0.1)',color:'#E74C3C'},{text:'稳健型',bg:'rgba(41,128,185,0.1)',color:'#2980B9'}],
+    urgency:'high' },
+  { name:'赵静雯', avatar:'赵', avatarBg:'linear-gradient(135deg,#8E44AD,#C39BD3)', avatarColor:'white',
+    reason:'超高净值客户，持仓结构有优化空间，私行专属服务需落地', asset:'¥ 1200万',
+    contact:'偏好一对一', tags:[{text:'超高净值',bg:'rgba(142,68,173,0.1)',color:'#8E44AD'},{text:'平衡型',bg:'rgba(39,174,96,0.1)',color:'#27AE60'}],
+    urgency:'high' },
+  { name:'李淑华', avatar:'李', avatarBg:'linear-gradient(135deg,#F39C12,#FAD7A0)', avatarColor:'#1A1A2E',
+    reason:'近期收入增加，有新增申购意向，新能源主题研报已就绪', asset:'¥ 128万',
+    contact:'偏好微信', tags:[{text:'中产',bg:'rgba(243,156,18,0.1)',color:'#F39C12'},{text:'积极型',bg:'rgba(231,76,60,0.1)',color:'#E74C3C'}],
+    urgency:'mid' },
+  { name:'刘思远', avatar:'刘', avatarBg:'linear-gradient(135deg,#27AE60,#82E0AA)', avatarColor:'white',
+    reason:'货基持仓为主，固收+迁移窗口适合，已匹配产品对比分析', asset:'¥ 76万',
+    contact:'偏好短信', tags:[{text:'中产',bg:'rgba(243,156,18,0.1)',color:'#F39C12'},{text:'稳健型',bg:'rgba(41,128,185,0.1)',color:'#2980B9'}],
+    urgency:'mid' },
+  { name:'陈明浩', avatar:'陈', avatarBg:'linear-gradient(135deg,#2980B9,#7FB3D3)', avatarColor:'white',
+    reason:'新开户2个月，需基础投资教育引导，投顾讲座邀请待发送', asset:'¥ 18万',
+    contact:'APP推送', tags:[{text:'新开户',bg:'rgba(39,174,96,0.1)',color:'#27AE60'},{text:'平衡型',bg:'rgba(41,128,185,0.1)',color:'#2980B9'}],
+    urgency:'low' }
+];
+
+const taskItems = [
+  { client:'王建国', action:'发送月度持仓报告', status:'pending', time:'09:30', type:'action', pinned:true },
+  { client:'赵静雯', action:'发送专属配置报告', status:'pending', time:'10:00', type:'product', pinned:true },
+  { client:'李淑华', action:'推送新能源研报', status:'done', time:'08:45', type:'product', pinned:false },
+  { client:'陈明浩', action:'客户分析完成', status:'done', time:'08:30', type:'analysis', pinned:false },
+  { client:'刘思远', action:'固收+产品对比', status:'pending', time:'11:00', type:'product', pinned:false },
+  { client:'周宇航', action:'客户画像更新', status:'done', time:'08:20', type:'analysis', pinned:false },
+  { client:'吴雪梅', action:'预约线下复盘', status:'pending', time:'14:00', type:'action', pinned:false }
+];
+
+const statusColors = { pending:'#FFB347', done:'#52D98F', failed:'#FF6B6B' };
+
+function renderPriorityList() {
+  const container = document.getElementById('priority-list');
+  container.innerHTML = priorityClients.map((c,i) => `
+    <div class="priority-card" onclick="analyzeClient('${c.name}')">
+      <div class="priority-avatar" style="background:${c.avatarBg};color:${c.avatarColor}">${c.avatar}</div>
+      <div class="priority-info">
+        <div class="priority-name">${c.name}</div>
+        <div class="priority-reason">${c.reason}</div>
+        <div class="priority-meta">
+          ${c.tags.map(t=>`<span class="p-tag" style="background:${t.bg};color:${t.color}">${t.text}</span>`).join('')}
+        </div>
+      </div>
+      <div class="priority-action">
+        <div class="p-asset">${c.asset}</div>
+        <div class="p-contact">${c.contact}</div>
+        <div class="p-btn">立即分析 →</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTaskList() {
+  const scroll = document.getElementById('task-scroll');
+  scroll.innerHTML = taskItems.map((t,i) => `
+    <div class="task-item ${t.pinned?'pinned':''}" onclick="focusTask(${i})">
+      <div class="task-status-dot" style="background:${statusColors[t.status]}"></div>
+      <div class="task-info">
+        <div class="task-client">${t.client}</div>
+        <div class="task-action">${t.action}</div>
+        <div class="task-time">${t.time}</div>
+      </div>
+      ${t.pinned ? '<span class="pin-icon">📌</span>' : ''}
+    </div>
+  `).join('');
+}
+
+function analyzeClient(name) {
+  addHistory('user', `分析客户 ${name} 并给出执行建议`);
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    addHistory('ai', `✅ 已完成 ${name} 的原子模型调用：客户分析 · 产品匹配 · 服务动作 · 合规验证，结果已更新到上方面板。`);
+    renderDynamicResult(name);
+    updateSuggests(name);
+  }, 1000);
+}
+
+const clientData = {
+  '王建国': {
+    dims:[{l:'年龄',v:'52岁'},{l:'职业',v:'企业主'},{l:'风险偏好',v:'稳健型'},{l:'资产层级',v:'高净值 >500万'},{l:'触达偏好',v:'电话沟通'},{l:'客户分类',v:'高净值·激活型'}],
+    ai:'持仓浮亏8%，近期出现减仓意图信号。建议以固收替代方案为核心切入，优先推送月度持仓报告，同步预约线下复盘，重建客户持续持仓信心。',
+    products:[{rank:1,name:'华泰稳健固收六个月',type:'固收+',ret:'+5.2%',why:'稳健偏好匹配，浮亏客户降低波动诉求',score:92},{rank:2,name:'国债逆回购7天',type:'货币类',ret:'+2.8%',why:'短期流动性需求高，安全性优先',score:78}],
+    actions:[{name:'发送月度持仓报告',std:'PDF+3条核心持仓分析要点',time:'5分钟',priority:'high',done:false},{name:'预约线下复盘会',std:'提供3个备选时段，确认会议室',time:'2分钟',priority:'high',done:false}]
+  },
+  '赵静雯': {
+    dims:[{l:'年龄',v:'45岁'},{l:'职业',v:'上市公司高管'},{l:'风险偏好',v:'平衡型'},{l:'资产层级',v:'超高净值 >1000万'},{l:'触达偏好',v:'一对一服务'},{l:'客户分类',v:'高净值·激活型'}],
+    ai:'持仓结构分散，有资产配置优化需求。私行专属服务方案已匹配，建议优先落地专属配置报告，联动私行部门安排高端服务洽谈。',
+    products:[{rank:1,name:'私募股权FOF(合格投资者)',type:'另类投资',ret:'预期+15%',why:'超高净值，合格投资者认定有效，多元配置需求',score:91},{rank:2,name:'华夏债券ETF',type:'固收类',ret:'+4.5%',why:'股票仓位重，增配固收对冲风险',score:83}],
+    actions:[{name:'发送专属资产配置报告',std:'基于完整持仓数据生成配置建议PDF',time:'15分钟',priority:'high',done:false},{name:'预约私人银行服务洽谈',std:'联系私行部门协调专属顾问见面',time:'10分钟',priority:'high',done:false}]
+  }
+};
+
+function renderDynamicResult(name) {
+  const data = clientData[name] || clientData['王建国'];
+  document.getElementById('init-view').style.display = 'none';
+  const dr = document.getElementById('dynamic-result');
+  dr.style.display = 'flex';
+  dr.style.flexDirection = 'column';
+  dr.style.gap = '12px';
+  dr.innerHTML = `
+    <div class="result-cards">
+      <!-- 指令说明 -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">「${name}」原子模型调用结果</div>
+        <div style="font-size:11px;color:var(--text-3)">客户分析 · 产品匹配 · 执行建议</div>
+        <div style="margin-left:auto"><span style="font-size:11px;color:var(--gold);cursor:pointer;padding:3px 10px;border-radius:5px;border:1px solid rgba(201,169,110,0.3)" onclick="resetView()">← 返回待跟进</span></div>
+      </div>
+
+      <!-- 客户分析 -->
+      <div class="r-card">
+        <div class="r-card-header">
+          <div class="r-card-bar" style="background:#8E44AD"></div>
+          <span class="r-card-model" style="background:rgba(142,68,173,0.1);color:#8E44AD">客户分析模型</span>
+          <span class="r-card-title">客户画像 · 原子识别</span>
+          <span class="r-pin-btn" onclick="pinToBoard('客户分析·${name}')">📌 固定到看板</span>
+        </div>
+        <div class="r-card-body">
+          <div class="r-dim-grid">
+            ${(data.dims||[]).map(d=>`<div class="r-dim"><div class="r-dim-l">${d.l}</div><div class="r-dim-v">${d.v}</div></div>`).join('')}
+          </div>
+          <div class="r-ai-box">
+            <div class="r-ai-label">AI 判定结果</div>
+            <div class="r-ai-text">${data.ai||''}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 产品匹配 -->
+      <div class="r-card">
+        <div class="r-card-header">
+          <div class="r-card-bar" style="background:var(--gold)"></div>
+          <span class="r-card-model" style="background:var(--gold-dim);color:var(--gold)">产品匹配模型</span>
+          <span class="r-card-title">自动匹配 ${(data.products||[]).length} 项产品</span>
+          <span class="r-pin-btn" onclick="pinToBoard('产品匹配·${name}')">📌 固定到看板</span>
+        </div>
+        <div class="r-card-body">
+          ${(data.products||[]).map(p=>`
+            <div class="r-product-row ${p.rank===1?'top':''}">
+              <div class="r-p-rank rk${p.rank}">${p.rank}</div>
+              <div class="r-p-info">
+                <div class="r-p-name">${p.name}</div>
+                <div class="r-p-why">${p.why}</div>
+                <div class="r-p-score">
+                  <span style="font-size:10px;color:var(--text-3)">匹配度</span>
+                  <div class="score-track"><div class="score-fill-r" style="width:${p.score}%"></div></div>
+                  <span style="font-size:10px;color:var(--gold);font-weight:700">${p.score}%</span>
+                </div>
+              </div>
+              <div style="text-align:right">
+                <div class="r-p-ret">${p.ret}</div>
+                <div class="r-p-type">${p.type}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- 执行建议 -->
+      <div class="r-card">
+        <div class="r-card-header">
+          <div class="r-card-bar" style="background:var(--blue)"></div>
+          <span class="r-card-model" style="background:rgba(41,128,185,0.1);color:var(--blue)">员工动作模型</span>
+          <span class="r-card-title">标准执行动作 · ${(data.actions||[]).filter(a=>!a.done).length} 项待执行</span>
+          <span class="r-pin-btn" onclick="pinToBoard('执行动作·${name}')">📌 固定到看板</span>
+        </div>
+        <div class="r-card-body">
+          ${(data.actions||[]).map((a,i)=>`
+            <div class="r-action-row ${a.done?'done':''}" id="ract-${i}">
+              <div class="r-check ${a.done?'on':''}" onclick="toggleRAction(${i},'${name}')">${a.done?'✓':''}</div>
+              <div class="r-act-info">
+                <div class="r-act-name">${a.name}</div>
+                <div class="r-act-std">${a.std}</div>
+                <div class="r-act-meta">
+                  <span class="r-time-tag">⏱ ${a.time}</span>
+                  <span class="r-prior-tag r-prior-${a.priority}">${a.priority==='high'?'优先':'普通'}</span>
+                </div>
+              </div>
+              ${!a.done?`<div class="r-exec-btn" onclick="execAction('${a.name}','${name}')">执行 →</div>`:''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+  const panel = document.getElementById('result-panel');
+  panel.scrollTop = 0;
+}
+
+function toggleRAction(idx, name) {
+  const data = clientData[name];
+  if (!data) return;
+  data.actions[idx].done = !data.actions[idx].done;
+  renderDynamicResult(name);
+}
+
+function execAction(actionName, clientName) {
+  addHistory('user', `执行：${clientName} · ${actionName}`);
+  setTimeout(() => addHistory('ai', `✅ 「${actionName}」已完成，执行结果已记录。`), 600);
+}
+
+function pinToBoard(label) {
+  addHistory('ai', `📌 已将「${label}」固定到今日看板。`);
+  const taskScroll = document.getElementById('task-scroll');
+  const newTask = document.createElement('div');
+  newTask.className = 'task-item pinned';
+  newTask.innerHTML = `<div class="task-status-dot" style="background:#FFB347"></div><div class="task-info"><div class="task-client">${label.split('·')[1]||label}</div><div class="task-action">${label.split('·')[0]}</div></div><span class="pin-icon">📌</span>`;
+  taskScroll.insertBefore(newTask, taskScroll.firstChild);
+}
+
+function resetView() {
+  document.getElementById('init-view').style.display = 'block';
+  document.getElementById('dynamic-result').style.display = 'none';
+}
+
+function addHistory(role, text) {
+  const history = document.getElementById('lui-history');
+  const div = document.createElement('div');
+  div.className = `lui-msg ${role}`;
+  div.innerHTML = `<div class="lui-msg-bubble">${text}</div>`;
+  history.appendChild(div);
+  history.scrollTop = history.scrollHeight;
+}
+
+function showTyping() {
+  const history = document.getElementById('lui-history');
+  const div = document.createElement('div');
+  div.className = 'lui-msg ai';
+  div.id = 'typing-bubble';
+  div.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+  history.appendChild(div);
+  history.scrollTop = history.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-bubble');
+  if (t) t.remove();
+}
+
+function updateSuggests(name) {
+  document.getElementById('lui-suggests').innerHTML = `
+    <div class="lui-chip" onclick="quickCmd(this)">📄 为 ${name} 生成完整服务方案</div>
+    <div class="lui-chip" onclick="quickCmd(this)">📞 查看 ${name} 的历史联系记录</div>
+    <div class="lui-chip" onclick="quickCmd(this)">🔁 对比同类型客户转化路径</div>
+    <div class="lui-chip" onclick="quickCmd(this)">📊 分析下一位待跟进客户</div>
+  `;
+}
+
+function quickCmd(el) {
+  const text = el.textContent.trim();
+  const input = document.getElementById('lui-input');
+  input.value = text;
+  sendInstruction();
+}
+
+function insertCmd(text) {
+  const input = document.getElementById('lui-input');
+  input.value = (input.value + ' ' + text).trim();
+  input.focus();
+}
+
+const aiResponses = {
+  '高净值': { text:'正在调用客户分类模型筛选高净值客户...', action: () => analyzeClient('王建国') },
+  '王建国': { text:'正在为王建国调用原子模型...', action: () => analyzeClient('王建国') },
+  '赵静雯': { text:'正在为赵静雯调用原子模型...', action: () => analyzeClient('赵静雯') },
+  '减仓': { text:'正在扫描近期有减仓意图信号的客户...', action: () => analyzeClient('王建国') },
+  '服务动作': { text:'正在汇总今日服务动作清单...', action: null },
+  'default': { text:'正在理解您的指令，调用相关原子模型处理中...', action: null }
+};
+
+function sendInstruction() {
+  const input = document.getElementById('lui-input');
+  const text = input.value.trim();
+  if (!text) return;
+  addHistory('user', text);
+  input.value = '';
+  showTyping();
+
+  let matched = aiResponses.default;
+  for (const key of Object.keys(aiResponses)) {
+    if (text.includes(key)) { matched = aiResponses[key]; break; }
+  }
+
+  setTimeout(() => {
+    removeTyping();
+    addHistory('ai', matched.text);
+    if (matched.action) setTimeout(matched.action, 500);
+    else addHistory('ai', '已完成处理，请查看上方结果面板。');
+  }, 900);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendInstruction(); }
+}
+
+function focusTask(idx) {
+  const t = taskItems[idx];
+  if (!t) return;
+  addHistory('user', `查看任务：${t.client} · ${t.action}`);
+  setTimeout(() => addHistory('ai', `${t.client} 的「${t.action}」状态：${t.status==='done'?'✅ 已完成':'⏳ 待执行'}，时间：${t.time}`), 500);
+}
+
+function showResultFilter(type) {
+  const labels = { analysis:'客户分析', product:'产品方案', action:'服务动作' };
+  addHistory('user', `查看${labels[type]}结果汇总`);
+  setTimeout(() => addHistory('ai', `正在汇总今日${labels[type]}执行结果...`), 500);
+}
+
+function toggleTaskFilter() {
+  addHistory('ai', '可筛选：全部 / 待执行 / 已完成 / 已固定。请直接输入筛选指令，例如「只看待执行的任务」。');
+}
+
+// 初始化
+renderPriorityList();
+renderTaskList();
+</script>
+</body>
+</html>

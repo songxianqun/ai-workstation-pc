@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投行业务工作台 · AI智能引导</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ===== 页面专属变量与重置 ===== */
+        :root {
+            --ib-primary: #C9A96E;
+            --ib-primary-dark: #A88B52;
+            --ib-dark: #1A1A2E;
+            --ib-bg: #F5F5F0;
+            --ib-card: #FFFFFF;
+            --ib-text: #333333;
+            --ib-text-2: #666666;
+            --ib-text-3: #999999;
+            --ib-border: #E8E8E8;
+            --ib-assistant-bg: #F7F4EE;
+            --ib-gold-border: rgba(201, 169, 110, 0.3);
+            --ib-blue: #4A90E2;
+            --ib-purple: #667eea;
+            --ib-green: #27AE60;
+            --ib-orange: #F39C12;
+            --ib-red: #E74C3C;
+        }
+
+        body.ib-workbench-page {
+            background: var(--ib-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== 整体布局 ===== */
+        .ib-page-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 960px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 20px 24px 32px;
+            gap: 16px;
+        }
+
+        /* ===== 顶部导航 - 与 index.html 一致 ===== */
+        .ib-top-nav {
+            background: var(--ib-card);
+            border-radius: 16px;
+            padding: 15px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+        }
+        .ib-nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .ib-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ib-nav-logo {
+            font-size: 24px;
+            line-height: 1;
+        }
+        .ib-nav-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--ib-text);
+        }
+        .ib-nav-subtitle {
+            font-size: 12px;
+            color: var(--ib-primary-dark);
+            background: rgba(201,169,110,0.12);
+            padding: 3px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(201,169,110,0.25);
+            margin-left: 8px;
+        }
+        .ib-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ib-nav-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 14px;
+            border: 1px solid var(--ib-border);
+            border-radius: 8px;
+            background: #fafafa;
+            font-size: 13px;
+            color: var(--ib-text-2);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ib-nav-back-btn:hover {
+            border-color: var(--ib-primary);
+            color: var(--ib-primary-dark);
+            background: rgba(201,169,110,0.06);
+        }
+        .ib-nav-reset-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(201,169,110,0.1);
+            font-size: 13px;
+            color: var(--ib-primary-dark);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ib-nav-reset-btn:hover {
+            background: rgba(201,169,110,0.2);
+        }
+
+        /* ===== AI 欢迎/引导横幅 ===== */
+        .ib-welcome-banner {
+            background: var(--ib-card);
+            border-radius: 16px;
+            padding: 28px 28px 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(201,169,110,0.12);
+        }
+        .ib-welcome-banner.minimized {
+            padding: 14px 20px;
+        }
+        .ib-welcome-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .ib-welcome-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1A1A2E 0%, #2D2D44 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(26,26,46,0.2);
+        }
+        .ib-welcome-text {
+            flex: 1;
+            min-width: 0;
+        }
+        .ib-welcome-text h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ib-text);
+            margin: 0 0 4px;
+        }
+        .ib-welcome-text p {
+            font-size: 14px;
+            color: var(--ib-text-2);
+            margin: 0 0 6px;
+            line-height: 1.6;
+        }
+        .ib-welcome-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .ib-welcome-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .ib-welcome-tag.ipo {
+            background: #EBF5FB;
+            color: #2980B9;
+            border-color: #AED6F1;
+        }
+        .ib-welcome-tag.ma {
+            background: #FEF9E7;
+            color: #B7950B;
+            border-color: #F9E79F;
+        }
+        .ib-welcome-tag.bond {
+            background: #E8F8F5;
+            color: #1ABC9C;
+            border-color: #A3E4D7;
+        }
+        .ib-welcome-tag.restructure {
+            background: #F5EEF8;
+            color: #8E44AD;
+            border-color: #D2B4DE;
+        }
+        .ib-welcome-tag.fa {
+            background: #FDEDEC;
+            color: #E74C3C;
+            border-color: #F5B7B1;
+        }
+        .ib-welcome-tag.abs {
+            background: #FDEBD0;
+            color: #E67E22;
+            border-color: #FAD7A1;
+        }
+        .ib-welcome-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* ===== 对话区域 ===== */
+        .ib-chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--ib-card);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            min-height: 420px;
+            max-height: calc(100vh - 320px);
+        }
+        .ib-chat-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--ib-border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #FAFAF8;
+        }
+        .ib-chat-header-icon {
+            font-size: 18px;
+        }
+        .ib-chat-header-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ib-text);
+        }
+        .ib-chat-header-status {
+            font-size: 11px;
+            color: var(--ib-green);
+            background: rgba(39,174,96,0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .ib-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .ib-chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+        .ib-chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(201,169,110,0.3);
+            border-radius: 2px;
+        }
+
+        /* 与 index.html 一致的聊天气泡 */
+        .ib-chat-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .ib-chat-row.ib-chat-row-user {
+            justify-content: flex-end;
+        }
+        .ib-chat-row.ib-chat-row-assistant {
+            justify-content: flex-start;
+        }
+        .ib-chat-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .ib-chat-avatar.ib-avatar-ai {
+            background: linear-gradient(135deg, #1A1A2E 0%, #2D2D44 100%);
+            color: #C9A96E;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .ib-chat-avatar.ib-avatar-user {
+            background: #4A90E2;
+            color: white;
+            font-weight: 600;
+        }
+        .ib-chat-bubble {
+            max-width: 78%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+        .ib-chat-bubble.ib-bubble-user {
+            background: #4A90E2;
+            color: white;
+            border-radius: 12px 12px 4px 12px;
+        }
+        .ib-chat-bubble.ib-bubble-assistant {
+            background: #F7F4EE;
+            color: var(--ib-text);
+            border: 1px solid rgba(201, 169, 110, 0.18);
+            border-radius: 12px 12px 12px 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+        .ib-chat-bubble p {
+            margin: 0 0 6px;
+        }
+        .ib-chat-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .ib-chat-bubble ul {
+            margin: 6px 0;
+            padding-left: 18px;
+        }
+        .ib-chat-bubble ul li {
+            margin-bottom: 4px;
+        }
+        .ib-bubble-typing {
+            display: flex;
+            gap: 4px;
+            padding: 8px 0;
+        }
+        .ib-bubble-typing span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--ib-primary);
+            animation: ibTyping 1.4s infinite;
+        }
+        .ib-bubble-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .ib-bubble-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes ibTyping {
+            0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+            30% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== 业务确认卡片 ===== */
+        .ib-business-card {
+            background: #FFFFFF;
+            border: 1px solid var(--ib-border);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .ib-business-card-header {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ib-text);
+            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ib-business-card-sub {
+            font-size: 12px;
+            color: var(--ib-text-2);
+            margin-bottom: 12px;
+        }
+        .ib-business-card-detail {
+            background: #FAFAF8;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            color: var(--ib-text);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .ib-business-card-detail strong {
+            color: var(--ib-primary-dark);
+        }
+        .ib-business-card-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        /* ===== 步骤进度条 ===== */
+        .ib-steps-track {
+            background: #FFFFFF;
+            border: 1px solid var(--ib-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .ib-steps-track-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ib-text);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ib-steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .ib-step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            position: relative;
+            padding: 8px 0;
+            cursor: default;
+            transition: opacity 0.3s;
+        }
+        .ib-step-item.ib-step-completed {
+            opacity: 0.7;
+        }
+        .ib-step-item.ib-step-current {
+            /* highlighted */
+        }
+        .ib-step-item.ib-step-future {
+            opacity: 0.35;
+        }
+        .ib-step-dot-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+            width: 24px;
+        }
+        .ib-step-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+            transition: all 0.3s;
+            border: 2px solid var(--ib-border);
+            background: #fafafa;
+            color: var(--ib-text-3);
+        }
+        .ib-step-item.ib-step-current .ib-step-dot {
+            border-color: var(--ib-primary);
+            background: var(--ib-primary);
+            color: white;
+            box-shadow: 0 0 0 4px rgba(201,169,110,0.15);
+        }
+        .ib-step-item.ib-step-completed .ib-step-dot {
+            border-color: var(--ib-green);
+            background: var(--ib-green);
+            color: white;
+        }
+        .ib-step-line {
+            flex: 1;
+            width: 2px;
+            min-height: 16px;
+            background: var(--ib-border);
+            margin: 2px 0;
+        }
+        .ib-step-item.ib-step-completed .ib-step-line {
+            background: var(--ib-green);
+        }
+        .ib-step-item:last-child .ib-step-line {
+            display: none;
+        }
+        .ib-step-info {
+            flex: 1;
+            min-width: 0;
+            padding-bottom: 4px;
+        }
+        .ib-step-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ib-text);
+            margin-bottom: 2px;
+        }
+        .ib-step-desc {
+            font-size: 12px;
+            color: var(--ib-text-2);
+            line-height: 1.4;
+        }
+        .ib-step-action {
+            margin-top: 6px;
+        }
+        .ib-step-action-btn {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--ib-primary);
+            background: rgba(201,169,110,0.08);
+            color: var(--ib-primary-dark);
+            transition: all 0.2s;
+        }
+        .ib-step-action-btn:hover {
+            background: rgba(201,169,110,0.18);
+        }
+        .ib-step-item.ib-step-current .ib-step-action-btn {
+            background: var(--ib-primary);
+            color: white;
+        }
+        .ib-step-item.ib-step-current .ib-step-action-btn:hover {
+            background: var(--ib-primary-dark);
+        }
+
+        /* ===== 快捷回复按钮 ===== */
+        .ib-quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px 20px;
+            border-top: 1px solid var(--ib-border);
+            background: #FAFAF8;
+            min-height: 0;
+        }
+        .ib-quick-reply-btn {
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid rgba(201,169,110,0.25);
+            background: white;
+            color: var(--ib-primary-dark);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .ib-quick-reply-btn:hover {
+            background: rgba(201,169,110,0.1);
+            border-color: var(--ib-primary);
+            transform: translateY(-1px);
+        }
+        .ib-quick-reply-btn.ib-qr-primary {
+            background: var(--ib-primary);
+            color: white;
+            border-color: var(--ib-primary);
+        }
+        .ib-quick-reply-btn.ib-qr-primary:hover {
+            background: var(--ib-primary-dark);
+            border-color: var(--ib-primary-dark);
+        }
+        .ib-quick-reply-btn.ib-qr-danger {
+            border-color: #E74C3C;
+            color: #E74C3C;
+            background: white;
+        }
+        .ib-quick-reply-btn.ib-qr-danger:hover {
+            background: rgba(231,76,60,0.08);
+        }
+
+        /* ===== 底部输入区 ===== */
+        .ib-input-section {
+            padding: 12px 20px;
+            border-top: 1px solid var(--ib-border);
+            background: #FFFFFF;
+            border-radius: 0 0 16px 16px;
+        }
+        .ib-input-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--ib-gold-border);
+            box-shadow:
+                0 0 0 1px rgba(201,169,110,0.06),
+                0 0 12px rgba(201,169,110,0.14),
+                0 0 28px rgba(201,169,110,0.1),
+                0 4px 20px rgba(201,169,110,0.08);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .ib-input-container:focus-within {
+            border-color: rgba(201,169,110,0.55);
+            box-shadow:
+                0 0 0 1px rgba(201,169,110,0.1),
+                0 0 16px rgba(201,169,110,0.22),
+                0 0 36px rgba(201,169,110,0.14),
+                0 4px 24px rgba(201,169,110,0.1);
+        }
+        .ib-chat-input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 14px;
+            color: var(--ib-text);
+            outline: none;
+            min-width: 0;
+        }
+        .ib-chat-input::placeholder {
+            color: var(--ib-text-3);
+        }
+        .ib-send-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+        .ib-send-btn:hover {
+            background: linear-gradient(135deg, #5a6fd6 0%, #6a4199 100%);
+            transform: scale(1.05);
+        }
+
+        /* ===== 空状态 ===== */
+        .ib-empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: var(--ib-text-3);
+            padding: 40px 20px;
+        }
+        .ib-empty-icon {
+            font-size: 48px;
+            opacity: 0.3;
+        }
+        .ib-empty-text {
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .ib-empty-hint {
+            font-size: 13px;
+            max-width: 360px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .ib-page-wrap {
+                padding: 12px 12px 20px;
+                gap: 10px;
+            }
+            .ib-chat-section {
+                min-height: 340px;
+                max-height: calc(100vh - 250px);
+            }
+            .ib-chat-bubble {
+                max-width: 88%;
+                font-size: 13px;
+                padding: 10px 14px;
+            }
+            .ib-welcome-banner {
+                padding: 20px 16px 16px;
+            }
+            .ib-welcome-text h2 {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+<body class="ib-workbench-page">
+    <div class="ib-page-wrap">
+        <!-- 顶部导航 -->
+        <header class="ib-top-nav">
+            <div class="ib-nav-inner">
+                <div class="ib-nav-left">
+                    <span class="ib-nav-logo">📊</span>
+                    <span class="ib-nav-title">投行业务工作台</span>
+                    <span class="ib-nav-subtitle">AI智能引导</span>
+                </div>
+                <div class="ib-nav-right">
+                    <button class="ib-nav-reset-btn" onclick="resetWorkbench()" title="重新开始">
+                        🔄 新会话
+                    </button>
+                    <button class="ib-nav-back-btn" onclick="window.location.href='index.html'">
+                        ‹ 返回
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- AI 欢迎横幅 -->
+        <section class="ib-welcome-banner" id="ib-welcome-banner">
+            <div class="ib-welcome-main">
+                <div class="ib-welcome-avatar">🏦</div>
+                <div class="ib-welcome-text">
+                    <h2>你好，我是投行业务AI助手</h2>
+                    <p>不确定客户需要什么投行服务？没关系，我会一步步引导你判断业务类型，并带你完成标准动作。</p>
+                    <p style="font-size:12px;color:var(--ib-text-3);">💡 你可以直接描述客户情况，也可以点击下方常见业务类型快速开始</p>
+                    <div class="ib-welcome-tags">
+                        <span class="ib-welcome-tag ipo" onclick="quickStart('ipo')">🏢 企业上市IPO</span>
+                        <span class="ib-welcome-tag ma" onclick="quickStart('ma')">🤝 并购重组</span>
+                        <span class="ib-welcome-tag bond" onclick="quickStart('bond')">📜 债券发行</span>
+                        <span class="ib-welcome-tag restructure" onclick="quickStart('restructure')">🔄 破产重整</span>
+                        <span class="ib-welcome-tag fa" onclick="quickStart('fa')">💼 财务顾问</span>
+                        <span class="ib-welcome-tag abs" onclick="quickStart('abs')">📦 资产证券化ABS</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 对话区域 -->
+        <section class="ib-chat-section" id="ib-chat-section">
+            <div class="ib-chat-header">
+                <span class="ib-chat-header-icon">💬</span>
+                <span class="ib-chat-header-title">AI 对话引导</span>
+                <span class="ib-chat-header-status" id="ib-chat-status">在线</span>
+            </div>
+            <div class="ib-chat-messages" id="ib-chat-messages">
+                <!-- 初始空状态 -->
+                <div class="ib-empty-state" id="ib-empty-state">
+                    <div class="ib-empty-icon">💬</div>
+                    <div class="ib-empty-text">开始与AI对话</div>
+                    <div class="ib-empty-hint">请告诉我客户的基本情况，比如"有一家科技公司想上市"或"客户想做并购"等，我会帮你识别业务类型并逐步引导。</div>
+                </div>
+            </div>
+            <!-- 快捷回复区 -->
+            <div class="ib-quick-replies" id="ib-quick-replies">
+                <button class="ib-quick-reply-btn" onclick="sendQuickReply('客户是一家科技公司，想做上市')">客户想做上市</button>
+                <button class="ib-quick-reply-btn" onclick="sendQuickReply('客户想收购另一家公司')">客户想做并购</button>
+                <button class="ib-quick-reply-btn" onclick="sendQuickReply('客户需要发债融资')">客户想发债融资</button>
+                <button class="ib-quick-reply-btn" onclick="sendQuickReply('我不确定客户需要什么，请帮我判断')">我不确定业务类型</button>
+            </div>
+            <!-- 输入区 -->
+            <div class="ib-input-section">
+                <div class="ib-input-container">
+                    <input type="text" class="ib-chat-input" id="ib-chat-input" placeholder="描述客户需求，或回答AI的问题..." onkeypress="handleInputKey(event)">
+                    <button type="button" class="ib-send-btn" onclick="sendMessage()" aria-label="发送">➤</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+    // ==================== 投行 AI 引导工作台 - 核心逻辑 ====================
+
+    // --- 状态管理 ---
+    const STATE = {
+        phase: 'greeting',        // greeting | identifying | identified | executing | done
+        businessType: null,       // ipo | ma | bond | restructure | fa | abs
+        businessName: '',
+        currentStep: 0,
+        steps: [],
+        stepCompleted: [],
+        conversation: [],
+        clientInfo: {}
+    };
+
+    // --- 业务类型定义 ---
+    const BUSINESS_TYPES = {
+        'ipo': {
+            name: '企业上市（IPO）',
+            icon: '🏢',
+            keywords: ['上市', 'IPO', 'ipo', '首次公开发行', '挂牌', '登陆资本市场', '创业板', '科创板', '主板', '北交所', '纳斯达克', '港交所', 'A股'],
+            steps: [
+                { name: '初步尽职调查', desc: '了解企业基本情况、股权结构、财务状况，初步判断上市可行性' },
+                { name: '制定上市方案', desc: '确定上市板块、时间表、中介团队，形成上市整体方案' },
+                { name: '辅导与整改', desc: '协助企业完成股份制改造、规范治理结构、解决历史遗留问题' },
+                { name: '申报材料准备', desc: '编制招股说明书、法律意见书、审计报告等全套申报文件' },
+                { name: '审核与反馈', desc: '提交监管机构审核，组织回复反馈意见，准备上会' },
+                { name: '发行与上市', desc: '完成路演、定价、配售，正式挂牌上市' }
+            ]
+        },
+        'ma': {
+            name: '并购重组（M&A）',
+            icon: '🤝',
+            keywords: ['并购', '收购', '兼并', '重组', 'M&A', '买壳', '借壳', '合并', '整合', '股权收购', '资产收购'],
+            steps: [
+                { name: '并购战略梳理', desc: '明确并购目的、标的画像、交易规模与资金来源' },
+                { name: '标的筛选与初步接触', desc: '筛选潜在标的，进行初步沟通与意向确认' },
+                { name: '尽职调查', desc: '对标的进行财务、法务、业务全面尽职调查' },
+                { name: '交易方案设计', desc: '设计交易结构、估值定价、支付方式、对赌条款等' },
+                { name: '谈判与签约', desc: '协助双方谈判，起草并签署交易文件' },
+                { name: '交割与整合', desc: '完成交割条件，协助投后整合管理' }
+            ]
+        },
+        'bond': {
+            name: '债券发行',
+            icon: '📜',
+            keywords: ['发债', '债券', '融资券', '公司债', '企业债', '中期票据', '短融', '超短融', '可转债', '债务融资', '信用债'],
+            steps: [
+                { name: '融资需求分析', desc: '明确融资规模、期限、成本要求，分析适合的债券品种' },
+                { name: '信用评级与尽调', desc: '开展信用评级，完成财务与合规尽职调查' },
+                { name: '方案设计与申报', desc: '设计发行方案，准备募集说明书等注册/备案材料' },
+                { name: '销售与定价', desc: '组织路演推介，簿记建档，确定发行利率' },
+                { name: '发行与缴款', desc: '完成发行公告、申购、缴款、登记托管' },
+                { name: '存续期管理', desc: '信息披露、付息兑付、跟踪评级等持续管理' }
+            ]
+        },
+        'restructure': {
+            name: '破产重整',
+            icon: '🔄',
+            keywords: ['破产', '重整', '清算', '债务重组', '困境', '纾困', '预重整', '债权人', '资产处置', '重组'],
+            steps: [
+                { name: '困境诊断', desc: '分析企业困境原因、资产负债状况、重整可行性' },
+                { name: '申请与受理', desc: '协助向法院申请破产重整/预重整，准备申请材料' },
+                { name: '管理人协调', desc: '配合法院指定的管理人开展工作，梳理债权债务' },
+                { name: '重整计划制定', desc: '设计重整方案，包括债务清偿、资产重组、经营方案' },
+                { name: '债权人会议', desc: '组织债权人分组表决重整计划草案' },
+                { name: '执行与落地', desc: '法院裁定批准后，协助执行重整计划' }
+            ]
+        },
+        'fa': {
+            name: '财务顾问',
+            icon: '💼',
+            keywords: ['财务顾问', '顾问', 'FA', '融资顾问', '战略咨询', '估值', '引战', '引进战略投资者', '股权激励', '分拆'],
+            steps: [
+                { name: '需求诊断与方案', desc: '了解客户核心诉求，制定财务顾问服务方案' },
+                { name: '材料准备', desc: '协助准备商业计划书、财务模型、估值分析等材料' },
+                { name: '投资者对接', desc: '筛选并对接潜在投资者/合作方，组织路演' },
+                { name: '交易谈判', desc: '协助交易条款谈判、估值博弈' },
+                { name: '协议签署', desc: '协助起草、审阅并签署交易协议' },
+                { name: '后续服务', desc: '交易完成后持续提供财务顾问服务' }
+            ]
+        },
+        'abs': {
+            name: '资产证券化（ABS）',
+            icon: '📦',
+            keywords: ['资产证券化', 'ABS', 'abs', '资产支持证券', 'REITs', '类REITs', 'CMBS', '应收账款', '供应链金融', '消费金融'],
+            steps: [
+                { name: '资产池分析', desc: '筛选可证券化资产，分析现金流特征与信用质量' },
+                { name: '交易结构设计', desc: '设计SPV结构、分层方案、增信措施' },
+                { name: '尽职调查', desc: '对基础资产、原始权益人、各参与机构进行尽调' },
+                { name: '申报与注册', desc: '准备说明书、法律意见书等注册文件，提交交易所' },
+                { name: '销售与发行', desc: '组织路演推介，完成簿记建档与定价发行' },
+                { name: '存续期管理', desc: '资产服务报告、现金流分配、信息披露' }
+            ]
+        }
+    };
+
+    // --- DOM 引用 ---
+    const $ = (sel) => document.querySelector(sel);
+    const chatMessages = $('#ib-chat-messages');
+    const chatInput = $('#ib-chat-input');
+    const emptyState = $('#ib-empty-state');
+    const quickReplies = $('#ib-quick-replies');
+    const welcomeBanner = $('#ib-welcome-banner');
+    const chatStatus = $('#ib-chat-status');
+
+    // --- 工具函数 ---
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addMessage(role, html, delay = 0) {
+        return new Promise(resolve => {
+            if (emptyState && !emptyState.hidden) {
+                emptyState.style.display = 'none';
+            }
+            setTimeout(() => {
+                const row = document.createElement('div');
+                row.className = role === 'user' ? 'ib-chat-row ib-chat-row-user' : 'ib-chat-row ib-chat-row-assistant';
+                row.innerHTML = `
+                    <div class="ib-chat-avatar ${role === 'user' ? 'ib-avatar-user' : 'ib-avatar-ai'}">${role === 'user' ? '我' : '🏦'}</div>
+                    <div class="ib-chat-bubble ${role === 'user' ? 'ib-bubble-user' : 'ib-bubble-assistant'}">${html}</div>
+                `;
+                chatMessages.appendChild(row);
+                scrollToBottom();
+                STATE.conversation.push({ role, html });
+                resolve();
+            }, delay);
+        });
+    }
+
+    function showTyping(duration = 1200) {
+        return new Promise(resolve => {
+            const row = document.createElement('div');
+            row.className = 'ib-chat-row ib-chat-row-assistant';
+            row.id = 'typing-indicator';
+            row.innerHTML = `
+                <div class="ib-chat-avatar ib-avatar-ai">🏦</div>
+                <div class="ib-chat-bubble ib-bubble-assistant">
+                    <div class="ib-bubble-typing"><span></span><span></span><span></span></div>
+                </div>
+            `;
+            chatMessages.appendChild(row);
+            scrollToBottom();
+            setTimeout(() => {
+                const el = document.getElementById('typing-indicator');
+                if (el) el.remove();
+                resolve();
+            }, duration);
+        });
+    }
+
+    // --- 业务类型识别 ---
+    function identifyBusinessType(text) {
+        const lower = text.toLowerCase();
+        const scores = {};
+        for (const [key, biz] of Object.entries(BUSINESS_TYPES)) {
+            scores[key] = 0;
+            for (const kw of biz.keywords) {
+                if (lower.includes(kw.toLowerCase())) scores[key] += 1;
+            }
+        }
+        // 得分最高的
+        let best = null, bestScore = 0;
+        for (const [key, score] of Object.entries(scores)) {
+            if (score > bestScore) { best = key; bestScore = score; }
+        }
+        return bestScore > 0 ? best : null;
+    }
+
+    // --- 业务确认卡片 ---
+    function renderBusinessCard(bizKey) {
+        const biz = BUSINESS_TYPES[bizKey];
+        return `
+            <div class="ib-business-card">
+                <div class="ib-business-card-header">${biz.icon} 我判断这是：<strong>${biz.name}</strong></div>
+                <div class="ib-business-card-sub">请确认是否正确，确认后我将引导你按标准动作逐步推进</div>
+                <div class="ib-business-card-detail">
+                    📋 <strong>标准动作共 ${biz.steps.length} 个步骤：</strong><br>
+                    ${biz.steps.map((s, i) => `${i + 1}. ${s.name}`).join('<br>')}
+                </div>
+                <div class="ib-business-card-actions">
+                    <button class="ib-quick-reply-btn ib-qr-danger" onclick="handleBusinessConfirm('no')">❌ 不对，重新判断</button>
+                    <button class="ib-quick-reply-btn ib-qr-primary" onclick="handleBusinessConfirm('yes')">✅ 确认，开始执行</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- 步骤进度条 ---
+    function renderStepsTrack() {
+        const biz = BUSINESS_TYPES[STATE.businessType];
+        if (!biz) return '';
+        const stepsHtml = biz.steps.map((s, i) => {
+            let statusClass = 'ib-step-future';
+            if (i < STATE.currentStep) statusClass = 'ib-step-completed';
+            else if (i === STATE.currentStep) statusClass = 'ib-step-current';
+            const dotContent = i < STATE.currentStep ? '✓' : (i + 1);
+            const isLast = i === biz.steps.length - 1;
+            const actionHtml = (i === STATE.currentStep)
+                ? `<div class="ib-step-action"><button class="ib-step-action-btn" onclick="executeCurrentStep()">▶ 开始此步骤</button></div>`
+                : (i < STATE.currentStep ? `<div class="ib-step-action" style="color:var(--ib-green);font-size:11px;">✅ 已完成</div>` : '');
+            return `
+                <div class="ib-step-item ${statusClass}">
+                    <div class="ib-step-dot-col">
+                        <div class="ib-step-dot">${dotContent}</div>
+                        ${!isLast ? '<div class="ib-step-line"></div>' : ''}
+                    </div>
+                    <div class="ib-step-info">
+                        <div class="ib-step-name">${s.name}</div>
+                        <div class="ib-step-desc">${s.desc}</div>
+                        ${actionHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        return `<div class="ib-steps-track">
+            <div class="ib-steps-track-title">📋 当前进度：${biz.icon} ${biz.name}（步骤 ${STATE.currentStep + 1}/${biz.steps.length}）</div>
+            <div class="ib-steps-list">${stepsHtml}</div>
+        </div>`;
+    }
+
+    // --- 核心逻辑 ---
+    async function sendMessage(text) {
+        if (!text) text = chatInput.value.trim();
+        if (!text) return;
+        chatInput.value = '';
+        chatInput.focus();
+
+        // 隐藏空状态
+        if (emptyState) emptyState.style.display = 'none';
+
+        await addMessage('user', `<p>${escapeHtml(text)}</p>`);
+        await showTyping();
+
+        switch (STATE.phase) {
+            case 'greeting':
+                await handleGreetingPhase(text);
+                break;
+            case 'identifying':
+                await handleIdentifyingPhase(text);
+                break;
+            case 'executing':
+                await handleExecutingPhase(text);
+                break;
+            default:
+                await handleGreetingPhase(text);
+        }
+    }
+
+    async function handleGreetingPhase(text) {
+        const bizKey = identifyBusinessType(text);
+
+        if (bizKey) {
+            STATE.phase = 'identifying';
+            STATE.businessType = bizKey;
+            const biz = BUSINESS_TYPES[bizKey];
+            await addMessage('assistant', `
+                <p>根据您的描述，我初步判断这个客户的需求属于：<strong>${biz.name}</strong></p>
+                ${renderBusinessCard(bizKey)}
+            `);
+            updateQuickReplies([]);
+            updateWelcomeBanner(false);
+        } else {
+            await addMessage('assistant', `
+                <p>我暂时还不太确定客户具体需要什么投行服务。能再详细描述一下吗？比如：</p>
+                <ul>
+                    <li>客户的行业和基本情况</li>
+                    <li>客户主动提了什么需求</li>
+                    <li>或者客户遇到了什么问题需要解决</li>
+                </ul>
+                <p>你也可以点击上方标签快速选择业务类型。</p>
+            `);
+            updateQuickReplies([
+                { text: '客户想做上市融资', action: 'quickStart("ipo")' },
+                { text: '客户想并购其他公司', action: 'quickStart("ma")' },
+                { text: '客户需要发债', action: 'quickStart("bond")' },
+                { text: '我还是不确定', action: "sendQuickReply('我不确定客户需要什么，请帮我判断')" }
+            ]);
+        }
+    }
+
+    async function handleIdentifyingPhase(text) {
+        const bizKey = identifyBusinessType(text);
+        if (bizKey && bizKey !== STATE.businessType) {
+            STATE.businessType = bizKey;
+            const biz = BUSINESS_TYPES[bizKey];
+            await addMessage('assistant', `
+                <p>根据您的新描述，我重新判断：客户需求是 <strong>${biz.name}</strong></p>
+                ${renderBusinessCard(bizKey)}
+            `);
+            return;
+        }
+        // 仍在确认
+        await addMessage('assistant', `
+            <p>请先确认业务类型。如果上面显示的判断有误，请描述更多细节——我会重新帮你判断。</p>
+            <p>也可以直接说"不对，是XXX业务"。</p>
+        `);
+    }
+
+    async function handleExecutingPhase(text) {
+        // 处理在执行过程中的对话
+        const biz = BUSINESS_TYPES[STATE.businessType];
+        await addMessage('assistant', `
+            <p>好的，我已记录下来。</p>
+            ${renderStepsTrack()}
+        `);
+    }
+
+    // --- 业务确认 ---
+    async function handleBusinessConfirm(choice) {
+        if (choice === 'no') {
+            STATE.phase = 'greeting';
+            STATE.businessType = null;
+            await addMessage('user', '<p>不对，重新判断</p>');
+            await showTyping();
+            await addMessage('assistant', `
+                <p>好的，请重新描述客户的需求。你觉得客户可能需要什么类型的投行服务？</p>
+                <p>你可以：直接输入客户信息，或点击下方快捷选项。</p>
+            `);
+            updateQuickReplies([
+                { text: '企业上市IPO', action: 'quickStart("ipo")' },
+                { text: '并购重组', action: 'quickStart("ma")' },
+                { text: '债券发行', action: 'quickStart("bond")' },
+                { text: '破产重整', action: 'quickStart("restructure")' },
+                { text: '财务顾问', action: 'quickStart("fa")' },
+                { text: '资产证券化ABS', action: 'quickStart("abs")' }
+            ]);
+            updateWelcomeBanner(true);
+            return;
+        }
+
+        // 确认业务
+        STATE.phase = 'executing';
+        STATE.currentStep = 0;
+        STATE.steps = BUSINESS_TYPES[STATE.businessType].steps;
+        STATE.stepCompleted = new Array(STATE.steps.length).fill(false);
+
+        await addMessage('user', '<p>确认，开始执行</p>');
+        await showTyping();
+        await addMessage('assistant', `
+            <p>好的，我们开始执行 <strong>${BUSINESS_TYPES[STATE.businessType].name}</strong> 的标准动作。</p>
+            <p>共 <strong>${STATE.steps.length} 个步骤</strong>，我会逐步引导你完成每一步。</p>
+            ${renderStepsTrack()}
+        `);
+        updateQuickReplies([
+            { text: '▶ 开始第一步', action: 'executeCurrentStep()' },
+            { text: '📋 查看全部步骤', action: "sendQuickReply('查看全部步骤')" },
+        ]);
+        updateWelcomeBanner(false);
+        updateStatus('执行中');
+    }
+
+    // --- 执行当前步骤 ---
+    async function executeCurrentStep() {
+        if (STATE.currentStep >= STATE.steps.length) {
+            await addMessage('assistant', '<p>🎉 所有步骤已完成！恭喜完成本次投行业务！</p>');
+            updateQuickReplies([{ text: '🔄 开始新业务', action: 'resetWorkbench()' }]);
+            updateStatus('已完成');
+            STATE.phase = 'done';
+            return;
+        }
+
+        const step = STATE.steps[STATE.currentStep];
+        const stepNum = STATE.currentStep + 1;
+        const total = STATE.steps.length;
+
+        await addMessage('user', `<p>开始步骤${stepNum}：${step.name}</p>`);
+        await showTyping();
+
+        let guidanceHtml = `
+            <p><strong>📌 步骤 ${stepNum}/${total}：${step.name}</strong></p>
+            <p>${step.desc}</p>
+            <p>请按以下清单准备：</p>
+        `;
+
+        // 根据步骤生成具体清单
+        switch (STATE.businessType) {
+            case 'ipo':
+                guidanceHtml += getIpoStepChecklist(stepNum);
+                break;
+            case 'ma':
+                guidanceHtml += getMAStepChecklist(stepNum);
+                break;
+            case 'bond':
+                guidanceHtml += getBondStepChecklist(stepNum);
+                break;
+            case 'restructure':
+                guidanceHtml += getRestructureStepChecklist(stepNum);
+                break;
+            case 'fa':
+                guidanceHtml += getFAStepChecklist(stepNum);
+                break;
+            case 'abs':
+                guidanceHtml += getABSStepChecklist(stepNum);
+                break;
+            default:
+                guidanceHtml += '<ul><li>请按标准动作推进</li><li>遇到问题随时问我</li></ul>';
+        }
+
+        await addMessage('assistant', guidanceHtml);
+
+        // 完成后询问
+        updateQuickReplies([
+            { text: `✅ 步骤${stepNum}已完成`, action: 'completeCurrentStep()' },
+            { text: '💬 我有疑问', action: "sendQuickReply('这个步骤我有个疑问')" },
+            { text: '⏭ 跳过此步骤', action: 'skipCurrentStep()' },
+        ]);
+    }
+
+    // --- 完成当前步骤 ---
+    async function completeCurrentStep() {
+        STATE.stepCompleted[STATE.currentStep] = true;
+        await addMessage('user', `<p>步骤${STATE.currentStep + 1}已完成</p>`);
+        await showTyping();
+        STATE.currentStep++;
+
+        if (STATE.currentStep >= STATE.steps.length) {
+            await addMessage('assistant', `
+                <p>🎉 <strong>恭喜！所有标准动作步骤已全部完成！</strong></p>
+                <p>本次投行项目（${BUSINESS_TYPES[STATE.businessType].name}）的核心步骤已走完。</p>
+                <p>如有需要，我可以帮你：</p>
+                <ul>
+                    <li>生成项目总结报告</li>
+                    <li>回顾已完成的各步骤</li>
+                    <li>开始新的业务</li>
+                </ul>
+            `);
+            updateQuickReplies([
+                { text: '📄 生成总结报告', action: "sendQuickReply('生成项目总结报告')" },
+                { text: '🔄 开始新业务', action: 'resetWorkbench()' },
+            ]);
+            updateStatus('已完成');
+            STATE.phase = 'done';
+        } else {
+            const nextStep = STATE.steps[STATE.currentStep];
+            await addMessage('assistant', `
+                <p>✅ 步骤完成！现在进入 <strong>步骤 ${STATE.currentStep + 1}：${nextStep.name}</strong></p>
+                ${renderStepsTrack()}
+            `);
+            updateQuickReplies([
+                { text: `▶ 开始步骤${STATE.currentStep + 1}`, action: 'executeCurrentStep()' },
+                { text: '📋 查看当前进度', action: "sendQuickReply('查看当前进度')" },
+            ]);
+        }
+    }
+
+    // --- 跳过当前步骤 ---
+    async function skipCurrentStep() {
+        await addMessage('user', `<p>跳过步骤${STATE.currentStep + 1}</p>`);
+        await showTyping();
+        STATE.currentStep++;
+        if (STATE.currentStep >= STATE.steps.length) {
+            await addMessage('assistant', '<p>所有步骤都已处理完毕。</p>');
+            updateStatus('已完成');
+            STATE.phase = 'done';
+        } else {
+            await addMessage('assistant', `
+                <p>已跳过。当前进入步骤${STATE.currentStep + 1}。</p>
+                ${renderStepsTrack()}
+            `);
+            updateQuickReplies([
+                { text: `▶ 开始步骤${STATE.currentStep + 1}`, action: 'executeCurrentStep()' },
+            ]);
+        }
+    }
+
+    // --- 快捷启动 ---
+    async function quickStart(bizKey) {
+        const biz = BUSINESS_TYPES[bizKey];
+        if (!biz) return;
+        STATE.phase = 'identifying';
+        STATE.businessType = bizKey;
+        await addMessage('user', `<p>我选择：${biz.name}</p>`);
+        await showTyping();
+        await addMessage('assistant', `
+            <p>好的，客户需求是 <strong>${biz.name}</strong>，请确认。</p>
+            ${renderBusinessCard(bizKey)}
+        `);
+        updateQuickReplies([]);
+        updateWelcomeBanner(false);
+    }
+
+    // --- 快捷回复 ---
+    function sendQuickReply(text) {
+        chatInput.value = text;
+        sendMessage(text);
+    }
+
+    // --- UI 更新 ---
+    function updateQuickReplies(replies) {
+        if (!replies || replies.length === 0) {
+            quickReplies.innerHTML = '';
+            quickReplies.style.display = 'none';
+        } else {
+            quickReplies.style.display = 'flex';
+            quickReplies.innerHTML = replies.map(r => {
+                const cls = r.text.includes('确认') || r.text.includes('开始') || r.text.includes('完成') || r.text.includes('▶') ? ' ib-qr-primary' : '';
+                return `<button class="ib-quick-reply-btn${cls}" onclick="${r.action}">${r.text}</button>`;
+            }).join('');
+        }
+    }
+
+    function updateWelcomeBanner(show) {
+        if (show) {
+            welcomeBanner.style.display = '';
+            welcomeBanner.classList.remove('minimized');
+        } else {
+            welcomeBanner.classList.add('minimized');
+        }
+    }
+
+    function updateStatus(status) {
+        chatStatus.textContent = status;
+        if (status === '已完成') {
+            chatStatus.style.background = 'rgba(39,174,96,0.1)';
+            chatStatus.style.color = '#27AE60';
+        }
+    }
+
+    // --- 各业务步骤清单 ---
+    function getIpoStepChecklist(step) {
+        const checklists = {
+            1: '<ul><li>收集企业营业执照、公司章程</li><li>获取近三年审计报告</li><li>了解股东结构及历史沿革</li><li>确认实际控制人及关联方</li></ul>',
+            2: '<ul><li>确定目标上市板块</li><li>选定保荐机构、律所、会所</li><li>制定IPO时间表与里程碑</li><li>初步估值区间判断</li></ul>',
+            3: '<ul><li>完成股份制改造（如需）</li><li>规范关联交易与同业竞争</li><li>完善内控制度</li><li>解决历史出资、税务等问题</li></ul>',
+            4: '<ul><li>编制招股说明书</li><li>律师出具法律意见书</li><li>会计师出具审计报告及内控鉴证报告</li><li>准备高管访谈与尽职调查底稿</li></ul>',
+            5: '<ul><li>提交IPO申请文件</li><li>回复交易所/证监会问询</li><li>更新财务数据</li><li>准备上市委/发审会上会答辩</li></ul>',
+            6: '<ul><li>确定发行价格区间</li><li>组织路演与投资者沟通</li><li>完成簿记建档与定价</li><li>办理股份登记与挂牌上市</li></ul>'
+        };
+        return checklists[step] || '<ul><li>按标准动作推进</li></ul>';
+    }
+
+    function getMAStepChecklist(step) {
+        const checklists = {
+            1: '<ul><li>明确并购战略目标</li><li>分析行业趋势与竞争格局</li><li>确定标的筛选标准</li><li>初估交易规模与资金来源</li></ul>',
+            2: '<ul><li>筛选潜在标的清单</li><li>进行初步调研与画像</li><li>发送意向书/保密协议</li><li>安排初步接洽会议</li></ul>',
+            3: '<ul><li>财务尽职调查</li><li>法律尽职调查</li><li>业务与技术尽调</li><li>人力资源尽调</li></ul>',
+            4: '<ul><li>设计交易结构（股权/资产）</li><li>确定估值方法与定价</li><li>设计支付方案</li><li>起草交易条款与对赌方案</li></ul>',
+            5: '<ul><li>协助双方谈判交易条款</li><li>起草股权转让/资产购买协议</li><li>审阅并定稿交易文件</li><li>签署正式交易协议</li></ul>',
+            6: '<ul><li>完成交割先决条件</li><li>办理工商变更/产权过户</li><li>协助制定整合计划</li><li>投后管理与协同价值跟踪</li></ul>'
+        };
+        return checklists[step] || '<ul><li>按标准动作推进</li></ul>';
+    }
+
+    function getBondStepChecklist(step) {
+        const checklists = {
+            1: '<ul><li>明确融资规模与期限</li><li>分析企业信用状况</li><li>评估适合的债券品种</li><li>估算融资成本</li></ul>',
+            2: '<ul><li>聘请信用评级机构</li><li>开展主体与债项评级</li><li>完成财务尽调与合规审查</li></ul>',
+            3: '<ul><li>选定主承销商与中介</li><li>设计发行条款</li><li>编制募集说明书</li><li>提交注册/备案材料</li></ul>',
+            4: '<ul><li>组织路演推介</li><li>进行簿记建档</li><li>确定发行利率</li><li>完成配售</li></ul>',
+            5: '<ul><li>发布发行公告</li><li>接受申购/缴款</li><li>完成债券登记托管</li><li>资金划付至发行人</li></ul>',
+            6: '<ul><li>按时进行信息披露</li><li>按期还本付息</li><li>持续跟踪评级</li><li>重大事项报告</li></ul>'
+        };
+        return checklists[step] || '<ul><li>按标准动作推进</li></ul>';
+    }
+
+    function getRestructureStepChecklist(step) {
+        const checklists = {
+            1: '<ul><li>了解企业陷入困境的原因</li><li>梳理资产负债情况</li><li>分析重整可行性</li><li>评估持续经营价值</li></ul>',
+            2: '<ul><li>准备重整申请书</li><li>整理债务人/债权人材料</li><li>提交法院立案</li><li>跟进法院受理进展</li></ul>',
+            3: '<ul><li>配合管理人接管企业</li><li>协助债权申报与审核</li><li>参与第一次债权人会议</li><li>协助资产清查与评估</li></ul>',
+            4: '<ul><li>设计债务清偿方案</li><li>制定资产重组方案</li><li>规划未来经营方案</li><li>编制重整计划草案</li></ul>',
+            5: '<ul><li>分组召开债权人会议</li><li>组织表决重整计划</li><li>统计表决结果</li><li>处理异议与补充</li></ul>',
+            6: '<ul><li>提请法院裁定批准</li><li>执行债务清偿</li><li>完成资产处置/重组</li><li>恢复正常经营</li></ul>'
+        };
+        return checklists[step] || '<ul><li>按标准动作推进</li></ul>';
+    }
+
+    function getFAStepChecklist(step) {
+        const checklists = {
+            1: '<ul><li>了解客户核心诉求</li><li>分析企业所在行业</li><li>梳理企业发展阶段</li><li>制定服务方案框架</li></ul>',
+            2: '<ul><li>协助撰写商业计划书</li><li>搭建财务模型</li><li>完成估值分析</li><li>准备推介材料</li></ul>',
+            3: '<ul><li>筛选潜在投资者名单</li><li>发送推介材料</li><li>NBO/意向收集</li><li>安排管理层路演</li></ul>',
+            4: '<ul><li>协助交易条款谈判</li><li>估值博弈与调整</li><li>协助条款清单谈判</li><li>配合尽调安排</li></ul>',
+            5: '<ul><li>起草交易协议</li><li>参与协议谈判</li><li>协调各方签署</li><li>完成交割</li></ul>',
+            6: '<ul><li>跟踪投后表现</li><li>定期出具顾问报告</li><li>后续融资/资本运作建议</li></ul>'
+        };
+        return checklists[step] || '<ul><li>按标准动作推进</li></ul>';
+    }
+
+    function getABSStepChecklist(step) {
+        const checklists = {
+            1: '<ul><li>筛选可证券化基础资产</li><li>分析资产历史表现数据</li><li>评估现金流稳定性</li><li>确定资产池规模</li></ul>',
+            2: '<ul><li>设计SPV/专项计划结构</li><li>确定优先级/次级分层</li><li>设计信用增级措施</li><li>选聘各参与机构</li></ul>',
+            3: '<ul><li>对原始权益人尽调</li><li>对基础资产抽样尽调</li><li>对各参与机构尽调</li><li>出具法律/会计意见</li></ul>',
+            4: '<ul><li>编制计划说明书</li><li>律师出具法律意见书</li><li>评级机构出具评级报告</li><li>提交交易所注册</li></ul>',
+            5: '<ul><li>组织投资者路演</li><li>进行簿记建档</li><li>确定各档利率</li><li>完成份额配售</li></ul>',
+            6: '<ul><li>定期出具资产服务报告</li><li>进行现金流归集与分配</li><li>年度审计与跟踪评级</li><li>到期清算</li></ul>'
+        };
+        return checklists[step] || '<ul><li>按标准动作推进</li></ul>';
+    }
+
+    // --- 输入事件 ---
+    function handleInputKey(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    }
+
+    // --- 重置工作台 ---
+    function resetWorkbench() {
+        STATE.phase = 'greeting';
+        STATE.businessType = null;
+        STATE.businessName = '';
+        STATE.currentStep = 0;
+        STATE.steps = [];
+        STATE.stepCompleted = [];
+        STATE.conversation = [];
+        STATE.clientInfo = {};
+        chatMessages.innerHTML = `
+            <div class="ib-empty-state" id="ib-empty-state">
+                <div class="ib-empty-icon">💬</div>
+                <div class="ib-empty-text">开始与AI对话</div>
+                <div class="ib-empty-hint">请告诉我客户的基本情况，比如"有一家科技公司想上市"或"客户想做并购"等，我会帮你识别业务类型并逐步引导。</div>
+            </div>
+        `;
+        updateQuickReplies([
+            { text: '客户想做上市', action: 'quickStart("ipo")' },
+            { text: '客户想做并购', action: 'quickStart("ma")' },
+            { text: '客户想发债融资', action: 'quickStart("bond")' },
+            { text: '我不确定业务类型', action: "sendQuickReply('我不确定客户需要什么，请帮我判断')" }
+        ]);
+        updateWelcomeBanner(true);
+        updateStatus('在线');
+        chatStatus.style.background = 'rgba(39,174,96,0.1)';
+        chatStatus.style.color = '#27AE60';
+        chatInput.value = '';
+        chatInput.focus();
+    }
+
+    // --- HTML 转义 ---
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // --- 初始化 ---
+    function init() {
+        chatInput.focus();
+    }
+
+    // 全局函数暴露
+    window.quickStart = quickStart;
+    window.sendQuickReply = sendQuickReply;
+    window.sendMessage = sendMessage;
+    window.handleBusinessConfirm = handleBusinessConfirm;
+    window.executeCurrentStep = executeCurrentStep;
+    window.completeCurrentStep = completeCurrentStep;
+    window.skipCurrentStep = skipCurrentStep;
+    window.resetWorkbench = resetWorkbench;
+    window.handleInputKey = handleInputKey;
+
+    document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

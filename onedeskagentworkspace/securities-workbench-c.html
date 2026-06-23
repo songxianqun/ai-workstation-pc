@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>证券客户经理工作台 · AI对话驱动</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #EFEFEA;
+  --dark: #111827;
+  --dark2: #1F2937;
+  --gold: #C9A96E;
+  --gold-l: #E8D4A8;
+  --gold-dim: rgba(201,169,110,0.12);
+  --card: #FFFFFF;
+  --border: #E5E3DB;
+  --t1: #111827;
+  --t2: #4B5563;
+  --t3: #9CA3AF;
+  --green: #059669;
+  --red: #DC2626;
+  --orange: #D97706;
+  --blue: #2563EB;
+  --chat-w: 520px;
+  --panel-w: 580px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================
+   顶栏（极简）
+   ============================ */
+.topbar {
+  height: 48px;
+  background: var(--dark);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(201,169,110,0.18);
+  z-index: 100;
+}
+.tb-logo { color: var(--gold); font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.tb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--gold); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.tb-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.tb-today { font-size: 11px; color: rgba(255,255,255,0.3); }
+.tb-user { display: flex; align-items: center; gap: 7px; }
+.tb-avatar { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg,var(--gold),var(--gold-l)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--dark); }
+.tb-name { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+/* ============================
+   主区域：左对话 + 右面板
+   ============================ */
+.main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ============================
+   左：对话区（居中窄列）
+   ============================ */
+.chat-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  transition: flex 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+.chat-scroll {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 0 16px;
+}
+.chat-scroll::-webkit-scrollbar { width: 4px; }
+.chat-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 2px; }
+
+.chat-inner {
+  width: 100%;
+  max-width: var(--chat-w);
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ——— 消息气泡 ——— */
+.msg { display: flex; flex-direction: column; gap: 5px; }
+.msg.user { align-items: flex-end; }
+.msg.ai { align-items: flex-start; }
+
+.msg-row { display: flex; align-items: flex-end; gap: 8px; }
+.msg.user .msg-row { flex-direction: row-reverse; }
+
+.ai-avatar {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  background: var(--dark);
+  border: 1px solid rgba(201,169,110,0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+
+.bubble {
+  max-width: 88%;
+  padding: 11px 15px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+.msg.ai .bubble {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px 14px 14px 14px;
+  color: var(--t1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.msg.user .bubble {
+  background: var(--dark);
+  color: rgba(255,255,255,0.9);
+  border-radius: 14px 4px 14px 14px;
+  font-size: 13px;
+}
+.msg-time { font-size: 10px; color: var(--t3); padding: 0 5px; }
+
+/* 消息内展开按钮组 */
+.expand-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.exp-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--t2);
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.exp-btn:hover, .exp-btn.active { border-color: var(--gold); background: var(--gold-dim); color: var(--t1); font-weight: 500; }
+
+/* 联想行动指令 */
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip {
+  font-size: 12px; padding: 5px 12px; border-radius: 20px;
+  border: 1px solid rgba(201,169,110,0.3);
+  background: rgba(201,169,110,0.07);
+  color: var(--t1); cursor: pointer; transition: all 0.18s;
+}
+.chip:hover { background: var(--gold-dim); border-color: var(--gold); }
+
+/* 打字动画 */
+.typing-row { display: flex; align-items: center; gap: 8px; }
+.typing-bub {
+  padding: 11px 15px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 4px 14px 14px 14px;
+  display: flex; gap: 5px; align-items: center;
+}
+.td { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: td 1.2s infinite; }
+.td:nth-child(2) { animation-delay: 0.2s; }
+.td:nth-child(3) { animation-delay: 0.4s; }
+@keyframes td { 0%,80%,100%{opacity:0.25;transform:scale(0.6)} 40%{opacity:1;transform:scale(1)} }
+
+/* ——— 底部输入区 ——— */
+.input-zone {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: var(--chat-w);
+  padding: 10px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.suggests { display: flex; gap: 6px; flex-wrap: wrap; }
+.sg {
+  font-size: 12px; padding: 5px 13px; border-radius: 16px;
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--t2); cursor: pointer; transition: all 0.18s; white-space: nowrap;
+}
+.sg:hover { border-color: var(--gold); background: var(--gold-dim); color: var(--t1); }
+
+.input-box {
+  background: var(--card);
+  border: 1.5px solid rgba(201,169,110,0.3);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+  display: flex; align-items: flex-end; gap: 8px;
+  padding: 10px 12px 10px 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.input-box:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 2px 20px rgba(201,169,110,0.15);
+}
+.input-box textarea {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 14px; color: var(--t1); resize: none;
+  max-height: 100px; line-height: 1.5; font-family: inherit;
+}
+.input-box textarea::placeholder { color: var(--t3); }
+.tool-btns { display: flex; align-items: center; gap: 5px; }
+.tbtn {
+  width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg); cursor: pointer; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; transition: all 0.18s;
+}
+.tbtn:hover { border-color: var(--gold); background: var(--gold-dim); }
+.send-btn {
+  width: 34px; height: 34px; border-radius: 10px; background: var(--dark);
+  border: none; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; transition: all 0.2s;
+}
+.send-btn:hover { background: var(--gold); }
+.send-btn svg { width: 16px; height: 16px; fill: white; }
+.input-hint { font-size: 10px; color: var(--t3); text-align: center; }
+
+
+/* ============================
+   右：文档画布面板（Canvas 风格）
+   ============================ */
+.canvas-panel {
+  width: var(--panel-w);
+  flex-shrink: 0;
+  background: #FAFAF8;
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  z-index: 50;
+  box-shadow: -2px 0 20px rgba(0,0,0,0.07);
+}
+.canvas-panel.open {
+  transform: translateX(0);
+  position: relative;
+}
+
+/* 面板顶栏 */
+.cp-bar {
+  height: 48px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: white;
+}
+.cp-close {
+  width: 28px; height: 28px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--t3); font-size: 13px; transition: all 0.18s;
+}
+.cp-close:hover { background: var(--border); color: var(--t1); }
+.cp-label {
+  font-size: 11px; padding: 2px 9px; border-radius: 10px;
+  font-weight: 600; letter-spacing: 0.3px;
+}
+.cp-title { font-size: 14px; font-weight: 600; color: var(--t1); flex: 1; }
+.cp-actions { display: flex; gap: 6px; }
+.cp-action-btn {
+  font-size: 11px; padding: 4px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--t2); cursor: pointer; transition: all 0.18s;
+}
+.cp-action-btn:hover { border-color: var(--gold); background: var(--gold-dim); color: var(--t1); }
+
+/* 面板标签栏 */
+.cp-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  background: white;
+  flex-shrink: 0;
+}
+.cptab {
+  font-size: 12.5px; padding: 10px 14px;
+  color: var(--t3); border-bottom: 2px solid transparent;
+  cursor: pointer; transition: all 0.18s; white-space: nowrap;
+}
+.cptab.on { color: var(--t1); border-bottom-color: var(--gold); font-weight: 600; }
+.cptab:hover:not(.on) { color: var(--t2); }
+
+/* ——— 文档正文区域（Canvas 核心） ——— */
+.cp-doc {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 48px;
+  background: white;
+  line-height: 1.8;
+}
+.cp-doc::-webkit-scrollbar { width: 4px; }
+.cp-doc::-webkit-scrollbar-thumb { background: #E5E3DB; border-radius: 2px; }
+
+/* 文档内排版 */
+.doc-eyebrow {
+  font-size: 11px; font-weight: 700; color: var(--gold);
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
+}
+.doc-h1 {
+  font-size: 22px; font-weight: 700; color: var(--t1);
+  line-height: 1.3; margin-bottom: 6px;
+}
+.doc-h2 {
+  font-size: 16px; font-weight: 700; color: var(--t1);
+  margin: 28px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.doc-h3 {
+  font-size: 13.5px; font-weight: 700; color: var(--t1);
+  margin: 18px 0 6px;
+}
+.doc-meta {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;
+  padding-bottom: 20px; border-bottom: 1px solid var(--border);
+}
+.doc-meta-tag {
+  font-size: 11px; padding: 3px 9px; border-radius: 4px; font-weight: 600;
+}
+.doc-p {
+  font-size: 14px; color: var(--t2); line-height: 1.85; margin-bottom: 14px;
+}
+.doc-p strong { color: var(--t1); font-weight: 600; }
+
+/* 信息表格 */
+.doc-table {
+  width: 100%; border-collapse: collapse; margin: 14px 0 20px;
+  font-size: 13px;
+}
+.doc-table th {
+  text-align: left; padding: 8px 12px;
+  background: #F5F4F0; color: var(--t3);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.doc-table td {
+  padding: 10px 12px; color: var(--t1);
+  border-bottom: 1px solid #F0EFEA; vertical-align: top;
+  font-size: 13px; line-height: 1.6;
+}
+.doc-table tr:last-child td { border-bottom: none; }
+.doc-table td strong { color: var(--t1); }
+
+/* AI判定框 */
+.doc-ai-box {
+  background: linear-gradient(135deg, #FFFBF3, #FFF7EB);
+  border: 1px solid rgba(201,169,110,0.3);
+  border-left: 3px solid var(--gold);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 14px 0;
+}
+.doc-ai-box-label {
+  font-size: 10px; font-weight: 700; color: var(--gold);
+  letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px;
+}
+.doc-ai-box-text {
+  font-size: 14px; color: var(--t1); line-height: 1.8;
+}
+
+/* 产品推荐条目 */
+.doc-product {
+  padding: 14px 0;
+  border-bottom: 1px solid #F0EFEA;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.doc-product:last-child { border-bottom: none; }
+.doc-prod-rank {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+}
+.doc-prod-body { flex: 1; }
+.doc-prod-name { font-size: 14px; font-weight: 700; color: var(--t1); margin-bottom: 3px; }
+.doc-prod-reason { font-size: 13px; color: var(--t2); line-height: 1.6; margin-bottom: 6px; }
+.doc-prod-meta { display: flex; gap: 8px; align-items: center; }
+.doc-prod-ret { font-size: 14px; font-weight: 700; color: var(--green); }
+.doc-prod-type { font-size: 11px; color: var(--t3); }
+.doc-prod-score {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--t3);
+}
+.score-track { width: 60px; height: 3px; background: #E5E3DB; border-radius: 2px; overflow: hidden; }
+.score-fill { height: 100%; background: var(--gold); border-radius: 2px; }
+.doc-prod-match { font-size: 11px; color: var(--gold); font-weight: 600; }
+
+/* 动作清单 */
+.doc-action {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px 0; border-bottom: 1px solid #F0EFEA;
+  transition: opacity 0.2s;
+}
+.doc-action:last-child { border-bottom: none; }
+.doc-action.done { opacity: 0.4; }
+.doc-act-chk {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border); flex-shrink: 0; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; margin-top: 2px; transition: all 0.18s;
+}
+.doc-act-chk.on { background: var(--green); border-color: var(--green); color: white; }
+.doc-act-body { flex: 1; }
+.doc-act-name { font-size: 14px; font-weight: 700; color: var(--t1); margin-bottom: 3px; }
+.doc-act-std { font-size: 13px; color: var(--t2); line-height: 1.6; margin-bottom: 6px; }
+.doc-act-tags { display: flex; gap: 6px; }
+.doc-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+.tag-time { background: #F0EFEA; color: var(--t3); }
+.tag-h { background: rgba(220,38,38,0.07); color: var(--red); }
+.tag-m { background: rgba(217,119,6,0.07); color: var(--orange); }
+.doc-act-exec {
+  font-size: 12px; color: var(--gold); cursor: pointer;
+  padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(201,169,110,0.3);
+  flex-shrink: 0; transition: all 0.18s; align-self: flex-start;
+}
+.doc-act-exec:hover { background: var(--gold-dim); }
+
+/* 合规列表 */
+.doc-verify {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid #F0EFEA;
+}
+.doc-verify:last-child { border-bottom: none; }
+.dv-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.dv-body { flex: 1; }
+.dv-label { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.dv-desc { font-size: 13px; color: var(--t2); }
+.dv-result { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; flex-shrink: 0; align-self: flex-start; }
+.dvp { background: rgba(5,150,105,0.1); color: var(--green); }
+.dvw { background: rgba(217,119,6,0.1); color: var(--orange); }
+.dvf { background: rgba(220,38,38,0.1); color: var(--red); }
+
+/* 业绩指标行 */
+.doc-kpi-row { display: flex; gap: 1px; margin: 16px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+.doc-kpi-cell { flex: 1; padding: 16px 18px; background: white; text-align: center; border-right: 1px solid var(--border); }
+.doc-kpi-cell:last-child { border-right: none; }
+.doc-kpi-num { font-size: 20px; font-weight: 700; color: var(--t1); margin-bottom: 3px; }
+.doc-kpi-label { font-size: 11px; color: var(--t3); }
+.doc-kpi-delta { font-size: 11px; margin-top: 3px; }
+.up { color: var(--green); }
+.dn { color: var(--red); }
+
+/* 进度条组 */
+.doc-progress-row { margin-bottom: 16px; }
+.doc-prog-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 7px; }
+.doc-prog-label { color: var(--t2); }
+.doc-prog-val { font-weight: 700; }
+.doc-prog-bar { height: 6px; background: #F0EFEA; border-radius: 3px; overflow: hidden; }
+.doc-prog-fill { height: 100%; border-radius: 3px; }
+
+/* 任务看板列表 */
+.doc-task-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid #F0EFEA; cursor: pointer;
+}
+.doc-task-row:last-child { border-bottom: none; }
+.doc-task-row:hover { opacity: 0.8; }
+.dtdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dt-client { font-size: 14px; font-weight: 600; flex: 1; }
+.dt-action { font-size: 13px; color: var(--t2); }
+.dt-time { font-size: 11px; color: var(--t3); }
+.dt-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+.dst-p { background: rgba(217,119,6,0.1); color: var(--orange); }
+.dst-d { background: rgba(5,150,105,0.1); color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- 顶栏 -->
+<div class="topbar">
+  <div class="tb-logo">
+    <div class="tb-dot"></div>
+    AI 工作台
+  </div>
+  <div class="tb-right">
+    <span class="tb-today">2026年6月22日 · 周一</span>
+    <div class="tb-user">
+      <div class="tb-avatar">张</div>
+      <span class="tb-name">张伟</span>
+    </div>
+  </div>
+</div>
+
+<div class="main" id="main">
+
+  <!-- 左：对话列 -->
+  <div class="chat-col" id="chat-col">
+    <div class="chat-scroll" id="chat-scroll">
+      <div class="chat-inner" id="chat-inner"></div>
+    </div>
+    <div class="input-zone">
+      <div class="suggests" id="suggests">
+        <div class="sg" onclick="qs(this)">📊 今日待跟进客户</div>
+        <div class="sg" onclick="qs(this)">📋 分析王建国</div>
+        <div class="sg" onclick="qs(this)">📦 产品匹配结果</div>
+        <div class="sg" onclick="qs(this)">📞 今日待执行动作</div>
+      </div>
+      <div class="input-box">
+        <textarea id="main-input" rows="1" placeholder="告诉我你要做什么…" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <div class="tool-btns">
+          <div class="tbtn" title="@客户" onclick="ins('@')">👤</div>
+          <div class="tbtn" title="#产品" onclick="ins('#')">📦</div>
+        </div>
+        <button class="send-btn" onclick="sendMsg()">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">Enter 发送 · Shift+Enter 换行</div>
+    </div>
+  </div>
+
+  <!-- 右：文档画布面板 -->
+  <div class="canvas-panel" id="canvas-panel">
+    <div class="cp-bar">
+      <div class="cp-close" onclick="closeCanvas()">✕</div>
+      <div class="cp-label" id="cp-label"></div>
+      <div class="cp-title" id="cp-title"></div>
+      <div class="cp-actions" id="cp-actions"></div>
+    </div>
+    <div class="cp-tabs" id="cp-tabs"></div>
+    <div class="cp-doc" id="cp-doc"></div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   数据
+   ============================================================ */
+const CLIENTS = {
+  '王建国': {
+    label:'高净值·激活型', asset:'¥ 680万', risk:'稳健型', contact:'电话沟通',
+    age:'52岁', job:'企业主', lastContact:'昨日',
+    labelBg:'rgba(220,38,38,0.1)', labelColor:'#DC2626',
+    ai:'持仓浮亏 8%，出现减仓意图信号。核心判定：短期内客户存在从权益类向固收类转移的意向，触发时机是近期的市场下行。建议以固收替代产品为核心切入点，优先推送月度持仓报告，同步预约线下复盘，通过客观数据重建持仓信心。',
+    products:[
+      {rank:1, name:'华泰稳健固收六个月定开A', type:'固收+', ret:'+5.2%', why:'客户风险偏好稳健，当前持仓浮亏背景下降低波动是首要诉求，固收+能在保本基础上提供超额收益。', score:92},
+      {rank:2, name:'国债逆回购（7天）', type:'货币类', ret:'+2.8%', why:'短期流动性需求高，安全性优先，作为资金过渡工具适配性强。', score:78},
+      {rank:3, name:'平安资产配置FOF', type:'混合型', ret:'+7.1%', why:'长期资产配置需求，风险适配，适合作为中期底仓配置。', score:65}
+    ],
+    actions:[
+      {name:'发送月度持仓报告', std:'发送PDF格式报告，附3条核心持仓分析要点，重点说明浮亏原因及修复路径。', time:'5分钟', priority:'high', done:false},
+      {name:'预约线下复盘会', std:'提供3个备选时段供客户确认，同步准备会议室及资产配置分析材料。', time:'2分钟', priority:'high', done:false},
+      {name:'推送稳健型产品说明书', std:'发送匹配度第一的产品完整说明书，附收益对比图表。', time:'3分钟', priority:'mid', done:true}
+    ],
+    verifies:[
+      {icon:'✅', label:'适当性匹配', desc:'客户风险等级（稳健型）与推荐产品（固收+/货基）匹配，合规通过。', r:'pass'},
+      {icon:'⚠️', label:'集中度提示', desc:'当前股票持仓占可投资资产55%，超过内部预警阈值50%，建议在服务记录中主动提示客户。', r:'warn'},
+      {icon:'✅', label:'KYC 核验', desc:'客户KYC信息已在2026年3月完成年度更新，有效期内。', r:'pass'}
+    ]
+  },
+  '赵静雯': {
+    label:'超高净值·激活型', asset:'¥ 1200万', risk:'平衡型', contact:'专属顾问',
+    age:'45岁', job:'上市公司高管', lastContact:'上周三',
+    labelBg:'rgba(139,92,246,0.1)', labelColor:'#7C3AED',
+    ai:'持仓结构分散，股票/债券/现金比例约6:2:2，整体收益表现平稳。核心需求：资产配置优化，希望通过私行专属服务引入另类资产（私募股权）。已满足合格投资者认定条件，产品匹配空间大，是近期重点维护客户。',
+    products:[
+      {rank:1, name:'私募股权FOF（合格投资者）', type:'另类投资', ret:'预期年化 +15%', why:'客户资产规模超过私募门槛，合格投资者认定有效，另类资产配置可有效分散风险、提升长期收益。', score:91},
+      {rank:2, name:'华夏债券ETF', type:'固收类', ret:'+4.5%', why:'当前股票仓位偏重，增配债券ETF可降低组合波动，增强防御性。', score:83}
+    ],
+    actions:[
+      {name:'发送专属资产配置报告', std:'基于完整持仓数据生成个性化配置建议PDF，包含优化前后对比分析。', time:'15分钟', priority:'high', done:false},
+      {name:'预约私人银行服务洽谈', std:'联系私行部门协调专属顾问安排见面，准备私募产品尽调资料。', time:'10分钟', priority:'high', done:false},
+      {name:'确认年度KYC更新', std:'发送KYC更新表单，确认回收时限不超过5个工作日。', time:'5分钟', priority:'mid', done:false}
+    ],
+    verifies:[
+      {icon:'✅', label:'合格投资者认定', desc:'赵静雯女士金融资产超过300万元，合格投资者认定有效，可购买私募产品。', r:'pass'},
+      {icon:'⚠️', label:'大额交易预警', desc:'近90日累计申购已达内部预警阈值，需人工复核并留存服务记录。', r:'warn'},
+      {icon:'✅', label:'适当性匹配', desc:'推荐产品风险等级与客户平衡型偏好匹配。', r:'pass'}
+    ]
+  },
+  '李淑华': {
+    label:'中产·潜力型', asset:'¥ 128万', risk:'积极型', contact:'微信',
+    age:'38岁', job:'公务员', lastContact:'3天前',
+    labelBg:'rgba(245,158,11,0.1)', labelColor:'#D97706',
+    ai:'近期工资性收入增加，有新增申购意向。历史申购记录显示偏好新能源及科技赛道。当前市场窗口适合推进，建议本周内完成研报推送并跟进申购转化。',
+    products:[
+      {rank:1, name:'招商新能源主题基金', type:'权益型', ret:'+18.4%', why:'积极型风险偏好，持续关注新能源赛道，历史申购记录验证偏好一致性。', score:88},
+      {rank:2, name:'光大科技创新混合C', type:'混合型', ret:'+12.6%', why:'近期申购偏好科技方向，混合型降低单一赛道风险。', score:75}
+    ],
+    actions:[
+      {name:'推送新能源主题研报', std:'发送最新研报及核心投资逻辑3条，微信推送。', time:'3分钟', priority:'mid', done:false},
+      {name:'发送新增申购邀请函', std:'包含产品介绍、申购步骤及时间窗口截止日期。', time:'5分钟', priority:'high', done:false}
+    ],
+    verifies:[
+      {icon:'✅', label:'适当性匹配', desc:'积极型客户与权益类/混合型产品匹配，合规通过。', r:'pass'},
+      {icon:'✅', label:'KYC核验', desc:'客户信息有效，风险测评2025年更新。', r:'pass'}
+    ]
+  }
+};
+
+const TODAY_TASKS = [
+  {client:'王建国', action:'发送月度持仓报告', time:'09:30', status:'pending'},
+  {client:'赵静雯', action:'发送专属配置报告', time:'10:00', status:'pending'},
+  {client:'李淑华', action:'推送新能源研报', time:'已完成', status:'done'},
+  {client:'刘思远', action:'固收+产品对比发送', time:'11:00', status:'pending'},
+  {client:'陈明浩', action:'投顾讲座邀请函', time:'14:00', status:'pending'},
+  {client:'周宇航', action:'KYC信息更新确认', time:'已完成', status:'done'},
+];
+
+/* ============================================================
+   画布面板
+   ============================================================ */
+let canvasOpen = false;
+let _tabRender = null;
+
+function openCanvas(title, label, labelBg, labelColor, tabs, actions, renderFn) {
+  document.getElementById('cp-title').textContent = title;
+  const lbl = document.getElementById('cp-label');
+  lbl.textContent = label;
+  lbl.style.background = labelBg;
+  lbl.style.color = labelColor;
+
+  // tabs
+  const tabsEl = document.getElementById('cp-tabs');
+  if (tabs.length > 1) {
+    tabsEl.style.display = 'flex';
+    tabsEl.innerHTML = tabs.map((t,i) => `<div class="cptab ${i===0?'on':''}" onclick="switchTab(${i})">${t}</div>`).join('');
+  } else {
+    tabsEl.style.display = 'none';
+  }
+
+  // actions
+  document.getElementById('cp-actions').innerHTML = actions.map(a => `<div class="cp-action-btn" onclick="${a.fn}">${a.label}</div>`).join('');
+
+  _tabRender = renderFn;
+  renderFn(0);
+
+  if (!canvasOpen) {
+    document.getElementById('canvas-panel').classList.add('open');
+    canvasOpen = true;
+  }
+}
+
+function switchTab(i) {
+  document.querySelectorAll('.cptab').forEach((t,idx) => t.classList.toggle('on', idx===i));
+  _tabRender && _tabRender(i);
+}
+
+function closeCanvas() {
+  document.getElementById('canvas-panel').classList.remove('open');
+  canvasOpen = false;
+}
+
+/* ——— 客户文档面板 ——— */
+function openClientCanvas(name) {
+  const c = CLIENTS[name];
+  if (!c) return;
+  openCanvas(
+    name, c.label, c.labelBg, c.labelColor,
+    ['客户分析', '产品匹配', '执行动作', '合规核查'],
+    [
+      {label:'执行首要动作', fn:`execTopAction('${name}')`},
+    ],
+    (tab) => {
+      const doc = document.getElementById('cp-doc');
+      if (tab === 0) {
+        doc.innerHTML = `
+          <div class="doc-eyebrow">客户分析模型</div>
+          <div class="doc-h1">${name}</div>
+          <div class="doc-meta">
+            <span class="doc-meta-tag" style="background:${c.labelBg};color:${c.labelColor}">${c.label}</span>
+            <span class="doc-meta-tag" style="background:#F0EFEA;color:var(--t2)">${c.risk}</span>
+            <span class="doc-meta-tag" style="background:#F0EFEA;color:var(--t2)">最近联系：${c.lastContact}</span>
+          </div>
+
+          <div class="doc-h2">基本维度</div>
+          <table class="doc-table">
+            <tr><th>维度</th><th>内容</th></tr>
+            <tr><td>年龄</td><td><strong>${c.age}</strong></td></tr>
+            <tr><td>职业</td><td><strong>${c.job}</strong></td></tr>
+            <tr><td>风险偏好</td><td><strong>${c.risk}</strong></td></tr>
+            <tr><td>资产规模</td><td><strong>${c.asset}</strong></td></tr>
+            <tr><td>触达偏好</td><td><strong>${c.contact}</strong></td></tr>
+            <tr><td>客户分类</td><td><strong>${c.label}</strong></td></tr>
+          </table>
+
+          <div class="doc-h2">AI 判定结果</div>
+          <div class="doc-ai-box">
+            <div class="doc-ai-box-label">当前状态判定</div>
+            <div class="doc-ai-box-text">${c.ai}</div>
+          </div>
+        `;
+      } else if (tab === 1) {
+        doc.innerHTML = `
+          <div class="doc-eyebrow">产品匹配模型</div>
+          <div class="doc-h1">为 ${name} 匹配的产品</div>
+          <div class="doc-p" style="margin-bottom:20px">基于客户风险偏好、持仓结构及历史申购记录，自动匹配 <strong>${c.products.length} 项</strong> 产品。</div>
+
+          <div class="doc-h2">匹配结果</div>
+          ${c.products.map(p => `
+            <div class="doc-product">
+              <div class="doc-prod-rank" style="${p.rank===1?'background:var(--gold);color:var(--dark)':p.rank===2?'background:#D0D0D0;color:#555':'background:#EDD9A3;color:#7A6020'}">${p.rank}</div>
+              <div class="doc-prod-body">
+                <div class="doc-prod-name">${p.name}</div>
+                <div class="doc-prod-reason">${p.why}</div>
+                <div class="doc-prod-meta">
+                  <span class="doc-prod-ret">${p.ret}</span>
+                  <span class="doc-prod-type">${p.type}</span>
+                  <div class="doc-prod-score">
+                    <div class="score-track"><div class="score-fill" style="width:${p.score}%"></div></div>
+                    <span class="doc-prod-match">匹配度 ${p.score}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        `;
+      } else if (tab === 2) {
+        const pending = c.actions.filter(a=>!a.done).length;
+        doc.innerHTML = `
+          <div class="doc-eyebrow">员工动作模型</div>
+          <div class="doc-h1">执行动作清单</div>
+          <div class="doc-p">共 <strong>${c.actions.length} 项</strong>标准动作，<strong style="color:var(--orange)">${pending} 项待执行</strong>。</div>
+
+          <div class="doc-h2">动作清单</div>
+          ${c.actions.map((a,i) => `
+            <div class="doc-action ${a.done?'done':''}" id="dact-${name}-${i}">
+              <div class="doc-act-chk ${a.done?'on':''}" onclick="toggleAct('${name}',${i})">${a.done?'✓':''}</div>
+              <div class="doc-act-body">
+                <div class="doc-act-name">${a.name}</div>
+                <div class="doc-act-std">${a.std}</div>
+                <div class="doc-act-tags">
+                  <span class="doc-tag tag-time">⏱ ${a.time}</span>
+                  <span class="doc-tag tag-${a.priority}">${a.priority==='high'?'优先执行':'普通'}</span>
+                </div>
+              </div>
+              ${!a.done ? `<div class="doc-act-exec" onclick="doExec('${name}','${a.name}')">执行 →</div>` : ''}
+            </div>
+          `).join('')}
+        `;
+      } else if (tab === 3) {
+        doc.innerHTML = `
+          <div class="doc-eyebrow">交叉验证模型</div>
+          <div class="doc-h1">合规核查结果</div>
+          <div class="doc-p">AI 自动完成适当性匹配、KYC核验和风险集中度检查。</div>
+
+          <div class="doc-h2">核查项目</div>
+          ${c.verifies.map(v => `
+            <div class="doc-verify">
+              <span class="dv-icon">${v.icon}</span>
+              <div class="dv-body">
+                <div class="dv-label">${v.label}</div>
+                <div class="dv-desc">${v.desc}</div>
+              </div>
+              <span class="dv-result dv${v.r==='pass'?'p':v.r==='warn'?'w':'f'}">${v.r==='pass'?'通过':v.r==='warn'?'注意':'未通过'}</span>
+            </div>
+          `).join('')}
+        `;
+      }
+    }
+  );
+}
+
+/* ——— 今日看板面板 ——— */
+function openDashboardCanvas() {
+  openCanvas(
+    '今日看板', '结果追踪', 'rgba(5,150,105,0.1)', 'var(--green)',
+    ['业绩快照', '任务列表'],
+    [],
+    (tab) => {
+      const doc = document.getElementById('cp-doc');
+      if (tab === 0) {
+        doc.innerHTML = `
+          <div class="doc-eyebrow">今日业绩</div>
+          <div class="doc-h1">业绩快照</div>
+          <div class="doc-p">2026年6月22日 · 周一 · 实时更新</div>
+
+          <div class="doc-kpi-row">
+            <div class="doc-kpi-cell">
+              <div class="doc-kpi-num">+168万</div>
+              <div class="doc-kpi-label">新增 AUM</div>
+              <div class="doc-kpi-delta up">↑ 环比 +12%</div>
+            </div>
+            <div class="doc-kpi-cell">
+              <div class="doc-kpi-num">5</div>
+              <div class="doc-kpi-label">客户触达</div>
+              <div class="doc-kpi-delta up">↑ 较昨日 +2</div>
+            </div>
+            <div class="doc-kpi-cell">
+              <div class="doc-kpi-num">40%</div>
+              <div class="doc-kpi-label">方案转化率</div>
+              <div class="doc-kpi-delta dn">↓ 较上周 -5%</div>
+            </div>
+          </div>
+
+          <div class="doc-h2">原子模型执行进度</div>
+          ${[
+            {label:'客户分析完成', done:3, total:8, color:'#059669'},
+            {label:'产品方案已发送', done:2, total:5, color:'#D97706'},
+            {label:'服务动作完成', done:4, total:11, color:'#2563EB'}
+          ].map(r => `
+            <div class="doc-progress-row">
+              <div class="doc-prog-header">
+                <span class="doc-prog-label">${r.label}</span>
+                <span class="doc-prog-val" style="color:${r.color}">${r.done} / ${r.total}</span>
+              </div>
+              <div class="doc-prog-bar">
+                <div class="doc-prog-fill" style="width:${r.done/r.total*100}%;background:${r.color}"></div>
+              </div>
+            </div>
+          `).join('')}
+
+          <div class="doc-h2">本周业绩趋势</div>
+          <div class="doc-ai-box">
+            <div class="doc-ai-box-label">AI 分析</div>
+            <div class="doc-ai-box-text">本周新增 AUM 累计 +420万，方案转化率较上周下降，主要原因是高净值客户赵静雯的私行服务方案尚未落地。建议本周内完成专属配置报告发送，预计可带动 +300万 AUM。</div>
+          </div>
+        `;
+      } else {
+        const statusColor = {pending:'#D97706', done:'#059669'};
+        doc.innerHTML = `
+          <div class="doc-eyebrow">今日任务</div>
+          <div class="doc-h1">任务列表</div>
+          <div class="doc-p"><strong>${TODAY_TASKS.filter(t=>t.status==='pending').length} 项</strong>待处理，<strong style="color:var(--green)">${TODAY_TASKS.filter(t=>t.status==='done').length} 项</strong>已完成。</div>
+
+          <div class="doc-h2">全部任务</div>
+          ${TODAY_TASKS.map(t => `
+            <div class="doc-task-row" onclick="handleTaskClick('${t.client}')">
+              <div class="dtdot" style="background:${statusColor[t.status]}"></div>
+              <div style="flex:1">
+                <div class="dt-client">${t.client}</div>
+                <div class="dt-action">${t.action}</div>
+              </div>
+              <div class="dt-time">${t.time}</div>
+              <div class="dt-status dst-${t.status==='done'?'d':'p'}">${t.status==='done'?'已完成':'待处理'}</div>
+            </div>
+          `).join('')}
+        `;
+      }
+    }
+  );
+}
+
+/* ——— 产品总览面板 ——— */
+function openProductsCanvas() {
+  openCanvas(
+    '产品匹配总览', '按需调用', 'rgba(201,169,110,0.15)', 'var(--gold)',
+    ['全部客户'],
+    [],
+    () => {
+      const doc = document.getElementById('cp-doc');
+      doc.innerHTML = `
+        <div class="doc-eyebrow">产品匹配模型</div>
+        <div class="doc-h1">今日客户产品匹配</div>
+        <div class="doc-p">基于各客户分析模型，自动匹配最优产品。</div>
+        ${Object.entries(CLIENTS).map(([name, c]) => `
+          <div class="doc-h2">${name} · <span style="font-weight:400;font-size:13px;color:var(--t3)">${c.label}</span></div>
+          ${c.products.slice(0,1).map(p => `
+            <div class="doc-product">
+              <div class="doc-prod-rank" style="background:var(--gold);color:var(--dark)">1</div>
+              <div class="doc-prod-body">
+                <div class="doc-prod-name">${p.name}</div>
+                <div class="doc-prod-reason">${p.why}</div>
+                <div class="doc-prod-meta">
+                  <span class="doc-prod-ret">${p.ret}</span>
+                  <span class="doc-prod-type">${p.type}</span>
+                  <span class="doc-prod-match">匹配度 ${p.score}%</span>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        `).join('')}
+      `;
+    }
+  );
+}
+
+/* ——— 动作总览面板 ——— */
+function openActionsCanvas() {
+  openCanvas(
+    '待执行动作', '员工动作模型', 'rgba(37,99,235,0.1)', 'var(--blue)',
+    ['今日全部'],
+    [],
+    () => {
+      const doc = document.getElementById('cp-doc');
+      doc.innerHTML = `
+        <div class="doc-eyebrow">员工动作模型</div>
+        <div class="doc-h1">今日待执行动作清单</div>
+        <div class="doc-p">所有标准动作，按客户分组展示。</div>
+        ${Object.entries(CLIENTS).map(([name, c]) => {
+          const pending = c.actions.filter(a=>!a.done);
+          if (!pending.length) return '';
+          return `
+            <div class="doc-h2">${name} · <span style="font-weight:400;font-size:13px;color:var(--orange)">${pending.length} 项待执行</span></div>
+            ${pending.map((a,i) => `
+              <div class="doc-action">
+                <div class="doc-act-chk" onclick="toggleAct('${name}',${c.actions.indexOf(a)})"></div>
+                <div class="doc-act-body">
+                  <div class="doc-act-name">${a.name}</div>
+                  <div class="doc-act-std">${a.std}</div>
+                  <div class="doc-act-tags">
+                    <span class="doc-tag tag-time">⏱ ${a.time}</span>
+                    <span class="doc-tag tag-${a.priority}">${a.priority==='high'?'优先执行':'普通'}</span>
+                  </div>
+                </div>
+                <div class="doc-act-exec" onclick="doExec('${name}','${a.name}')">执行 →</div>
+              </div>
+            `).join('')}
+          `;
+        }).join('')}
+      `;
+    }
+  );
+}
+
+function toggleAct(name, idx) {
+  CLIENTS[name].actions[idx].done = !CLIENTS[name].actions[idx].done;
+  openClientCanvas(name);
+  setTimeout(() => switchTab(2), 20);
+}
+
+function doExec(name, actionName) {
+  addMsg('ai', `✅ 已执行「${actionName}」，执行结果已记录到 ${name} 的服务档案。`);
+}
+
+function execTopAction(name) {
+  const c = CLIENTS[name];
+  const first = c.actions.find(a => !a.done);
+  if (first) doExec(name, first.name);
+}
+
+function handleTaskClick(name) {
+  if (CLIENTS[name]) {
+    openClientCanvas(name);
+    addMsg('ai', `已打开 ${name} 的详情文档，可在右侧查看客户分析、产品匹配和执行动作。`);
+  }
+}
+
+/* ============================================================
+   消息系统
+   ============================================================ */
+let msgId = 0;
+
+function addMsg(role, html, extras) {
+  const inner = document.getElementById('chat-inner');
+  const now = new Date();
+  const t = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.id = 'msg-' + (++msgId);
+
+  if (role === 'ai') {
+    div.innerHTML = `
+      <div class="msg-row">
+        <div class="ai-avatar">⚡</div>
+        <div class="bubble">${html}
+          ${extras?.expand ? `<div class="expand-row">${extras.expand.map(e => `<div class="exp-btn" data-fn="${e.fn}" onclick="handleExpBtn(this)">${e.icon} ${e.label}</div>`).join('')}</div>` : ''}
+          ${extras?.chips ? `<div class="chip-row">${extras.chips.map(c => `<div class="chip" onclick="qs(this)">${c}</div>`).join('')}</div>` : ''}
+        </div>
+      </div>
+      <div class="msg-time">${t}</div>`;
+  } else {
+    div.innerHTML = `
+      <div class="msg-row"><div class="bubble">${html}</div></div>
+      <div class="msg-time">${t}</div>`;
+  }
+  inner.appendChild(div);
+  scrollDown();
+}
+
+function handleExpBtn(btn) {
+  document.querySelectorAll('.exp-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const fn = btn.dataset.fn;
+  if (fn) eval(fn);
+}
+
+function addTyping() {
+  const inner = document.getElementById('chat-inner');
+  const d = document.createElement('div');
+  d.className = 'msg ai'; d.id = 'typing-msg';
+  d.innerHTML = `<div class="msg-row"><div class="ai-avatar">⚡</div><div class="typing-bub"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  inner.appendChild(d);
+  scrollDown();
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-msg');
+  if (t) t.remove();
+}
+
+function scrollDown() {
+  const s = document.getElementById('chat-scroll');
+  setTimeout(() => s.scrollTop = s.scrollHeight, 60);
+}
+
+/* ============================================================
+   意图处理
+   ============================================================ */
+const INTENTS = [
+  {
+    test: t => /今日待跟进|待跟进|今天的客户|跟进/.test(t),
+    run: () => addMsg('ai',
+      '今日 <strong>12位客户</strong> 待跟进，优先触达3位：',
+      { expand:[
+          {icon:'👤', label:'王建国 · 持仓浮亏', fn:"openClientCanvas('王建国')"},
+          {icon:'👤', label:'赵静雯 · 配置优化', fn:"openClientCanvas('赵静雯')"},
+          {icon:'👤', label:'李淑华 · 新增申购', fn:"openClientCanvas('李淑华')"},
+          {icon:'📊', label:'今日看板', fn:'openDashboardCanvas()'}
+        ],
+        chips: ['📞 今日待执行动作', '📦 产品匹配结果']
+      })
+  },
+  {
+    test: t => t.includes('王建国'),
+    run: () => { openClientCanvas('王建国'); addMsg('ai', '已打开 <strong>王建国</strong> 的客户文档。核心判定：持仓浮亏8%，有减仓意图，建议优先推送固收替代方案并预约复盘会。',
+      {expand:[{icon:'📋', label:'查看客户文档', fn:"openClientCanvas('王建国')"}]}); }
+  },
+  {
+    test: t => t.includes('赵静雯'),
+    run: () => { openClientCanvas('赵静雯'); addMsg('ai', '已打开 <strong>赵静雯</strong> 的客户文档。超高净值，合格投资者，私行专属服务方案已匹配。',
+      {expand:[{icon:'📋', label:'查看客户文档', fn:"openClientCanvas('赵静雯')"}]}); }
+  },
+  {
+    test: t => t.includes('李淑华'),
+    run: () => { openClientCanvas('李淑华'); addMsg('ai', '已打开 <strong>李淑华</strong> 的客户文档，新能源主题研报匹配度最高。'); }
+  },
+  {
+    test: t => /产品匹配|产品推荐|推荐产品/.test(t),
+    run: () => { openProductsCanvas(); addMsg('ai', '已打开产品匹配总览，右侧展示各客户最优匹配方案。', {expand:[{icon:'📦', label:'产品匹配总览', fn:'openProductsCanvas()'}]}); }
+  },
+  {
+    test: t => /待执行|今日动作|动作清单|执行清单/.test(t),
+    run: () => { openActionsCanvas(); addMsg('ai', '今日待执行动作共 <strong>5项</strong>，按客户分组展示在右侧文档中。', {expand:[{icon:'📞', label:'执行动作清单', fn:'openActionsCanvas()'}]}); }
+  },
+  {
+    test: t => /看板|业绩|今日业绩|完成情况/.test(t),
+    run: () => { openDashboardCanvas(); addMsg('ai', '今日业绩快照已打开，新增AUM +168万，客户触达5位。', {expand:[{icon:'📊', label:'今日看板', fn:'openDashboardCanvas()'}]}); }
+  }
+];
+
+function process(text) {
+  const t = text.trim();
+  if (!t) return;
+  addMsg('user', t);
+  addTyping();
+
+  // 检查意图
+  for (const intent of INTENTS) {
+    if (intent.test(t)) {
+      setTimeout(() => { removeTyping(); intent.run(); }, 750);
+      return;
+    }
+  }
+  // 检查客户名
+  for (const name of Object.keys(CLIENTS)) {
+    if (t.includes(name)) {
+      setTimeout(() => {
+        removeTyping();
+        openClientCanvas(name);
+        addMsg('ai', `已打开 <strong>${name}</strong> 的客户文档，右侧查看详细分析。`);
+      }, 750);
+      return;
+    }
+  }
+  // 默认回复
+  setTimeout(() => {
+    removeTyping();
+    addMsg('ai', '明白了。您可以直接说出目标，例如：',
+      {chips: ['📊 今日待跟进客户', '📋 分析王建国', '📊 今日看板', '📞 今日待执行动作']});
+  }, 650);
+}
+
+function sendMsg() {
+  const inp = document.getElementById('main-input');
+  const t = inp.value.trim();
+  if (!t) return;
+  inp.value = ''; inp.style.height = 'auto';
+  process(t);
+}
+function qs(el) { process(el.textContent.trim()); }
+function ins(t) { const inp = document.getElementById('main-input'); inp.value = (inp.value+t).trimStart(); inp.focus(); }
+function handleKey(e) { if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} }
+function autoResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
+
+/* ============================================================
+   初始化
+   ============================================================ */
+window.onload = () => {
+  setTimeout(() => addMsg('ai',
+    '早上好，张伟。今日 <strong>12位客户</strong> 待跟进，其中 <strong>3位建议优先触达</strong>。',
+    { expand:[
+        {icon:'📊', label:'今日看板', fn:'openDashboardCanvas()'},
+        {icon:'👤', label:'王建国 · 持仓浮亏', fn:"openClientCanvas('王建国')"},
+        {icon:'👤', label:'赵静雯 · 配置优化', fn:"openClientCanvas('赵静雯')"}
+      ],
+      chips: ['📊 今日待跟进客户', '📞 今日待执行动作', '📦 产品匹配结果']
+    }), 300);
+};
+</script>
+</body>
+</html>
