@@ -5335,40 +5335,202 @@
             sendMainMessage(promptText);
         }
 
-        async function getAssistantReply(message, index, panel) {
-            const assistant = aiAssistants[index];
-            const p = panel || getActiveWorkbenchPanel();
-
-            // 显示加载中状态
-            appendChatMessage('正在分析中，请稍候...', 'assistant', p);
-
-            try {
-                const agentIdMap = ['customer', 'business', 'plan', 'verify', 'service'];
-                const response = await fetch('/api/ib-assistant', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        input: message,
-                        agentId: agentIdMap[index] || 'customer',
-                        agentName: assistant.name
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    // 移除加载消息，显示 ib-business-assistant 的回复
-                    removeLastAssistantMessage(p);
-                    return data.content;
-                } else {
-                    removeLastAssistantMessage(p);
-                    return data.error || '处理失败，请重试';
-                }
-            } catch (err) {
-                removeLastAssistantMessage(p);
-                console.error('投行助手API调用失败:', err);
-                return '投行助手服务暂时不可用，请确认服务已启动（node proxy-server.js）';
+        // ===== 纯前端本地AI回复逻辑（无需后端服务）=====
+        function ibAnyKeyword(text, keywords) {
+            return keywords.some(kw => text.includes(kw));
+        }
+        function ibExtractBusinessName(text) {
+            const map = {'定增':'定增','定向增发':'定增','ipo':'IPO','上市':'IPO','可转债':'可转债','转债':'可转债','公司债':'公司债','重整':'破产重整','破产':'破产重整','信披':'信披判断','信息披露':'信披判断'};
+            for (const [kw, biz] of Object.entries(map)) { if (text.includes(kw)) return biz; }
+            return null;
+        }
+        function ibExtractCustomerInfo(text) {
+            const info = {};
+            if (text.includes('上市公司')) info.nature = '上市公司';
+            const industries = ['制造业','科技','金融','房地产','医药','能源','消费'];
+            for (const ind of industries) { if (text.includes(ind)) { info.industry = ind; break; } }
+            const rm = text.match(/(\d+(?:\.\d+)?)\s*(亿|万)/);
+            if (rm) info.revenue = rm[0];
+            return info;
+        }
+        function ibGenerateAdmission(bizName) {
+            const L = [];
+            L.push('## ' + bizName + '发行条件与准入标准');
+            L.push('');
+            L.push('### 一、监管基本标准');
+            L.push('- 符合《上市公司证券发行注册管理办法》');
+            L.push('- 最近一年财报无保留/否定意见');
+            L.push('- 近三年无重大违法行为');
+            L.push('- 募集资金用途合规');
+            L.push('');
+            L.push('### 二、公司资质要求');
+            L.push('- 实控人持股30%-60%，质押≤50%');
+            L.push('- 近三年扣非净利润为正');
+            L.push('- 资产负债率行业合理水平');
+            L.push('- 细分领域有市场地位');
+            L.push('');
+            L.push('### 三、募集资金用途要求');
+            L.push('- 项目建设：符合产业政策');
+            L.push('- 补充流动资金：≤30%');
+            L.push('- 偿还债务：说明必要性');
+            L.push('- 禁止：财务性投资、限制类行业');
+            L.push('');
+            L.push('### 四、合规性要求');
+            L.push('- 近三年无重大违法违规');
+            L.push('- 无损害投资者权益情形');
+            L.push('- 无立案调查情形');
+            L.push('- 舆情风险可控');
+            L.push('');
+            L.push('> 💡 提示：以上标准为通用准入参考，具体项目需经投行部门尽职调查后确定可行性。');
+            L.push('');
+            L.push('---');
+            L.push('📌 联系支持：张明（工号8012）');
+            L.push('');
+            L.push('>>> 帮我设计一个' + bizName + '方案');
+            L.push('>>> ' + bizName + '找谁支持？');
+            L.push('>>> ' + bizName + '业务怎么做？');
+            return L.join('\n');
+        }
+        function ibGenerateDesign(bizName) {
+            const L = [];
+            L.push('# ' + bizName + '方案设计模板');
+            L.push('');
+            L.push('## 一、发行基本要素');
+            L.push('| 要素 | 标准方案 | 说明 |');
+            L.push('|------|---------|------|');
+            L.push('| 发行方式 | 向特定对象非公开发行 | 对象≤35名 |');
+            L.push('| 发行价格 | 不低于前20日均价80% | 定价基准日为发行期首日 |');
+            L.push('| 发行规模 | 不超过总股本30% | 按需确定 |');
+            L.push('| 锁定期 | 6个月 | 自发行结束日起 |');
+            L.push('| 募集资金 | 按需确定 | 需明确用途 |');
+            L.push('');
+            L.push('## 二、发行时间安排（标准周期4-6个月）');
+            L.push('| 阶段 | 时间 | 主要工作 |');
+            L.push('|------|------|---------|');
+            L.push('| 方案论证 | 1-2周 | 定规模、用途、定价策略 |');
+            L.push('| 尽职调查 | 2-4周 | 财务、法律、业务尽调 |');
+            L.push('| 董事会审议 | T日 | 审议通过方案 |');
+            L.push('| 股东大会 | T+1月 | 股东大会批准 |');
+            L.push('| 申报审核 | 2-3月 | 交易所审核、证监会注册 |');
+            L.push('| 发行阶段 | 1月 | 路演、簿记建档、定价 |');
+            L.push('| **合计** | **4-6个月** | 自董事会决议至资金到账 |');
+            L.push('');
+            L.push('## 三、募集资金用途（典型结构）');
+            L.push('- 项目建设：70%，符合产业政策方向');
+            L.push('- 补充流动资金：≤30%，提升运营能力');
+            L.push('- 偶尔可包含偿还展期内带息债务（需说明必要性）');
+            L.push('');
+            L.push('## 四、认购对象类型');
+            L.push('| 类型 | 特点 | 适用情形 |');
+            L.push('|------|------|---------|');
+            L.push('| 控股股东/实控人 | 体现信心，锁定控制权 | 建议优先参与 |');
+            L.push('| 战略投资者 | 带来产业资源 | 有战略合作需求时 |');
+            L.push('| 机构投资者 | 公募、券商、保险等 | 主要资金来源 |');
+            L.push('| 员工持股计划 | 绑定核心团队 | 规模一般较小 |');
+            L.push('');
+            L.push('## 五、关键条款设计');
+            L.push('**1. 定价机制**：前20日均价×80%（底价），簿记建档市场化确定');
+            L.push('**2. 配售原则**：同股同价，优先满足控股股东，机构按报价排序');
+            L.push('**3. 调整机制**：派息送转需调整发行价，异常波动时价格稳定');
+            L.push('');
+            L.push('## 📄 可下载文档');
+            L.push('- **[定增方案设计手册（完整版）](/docs/定向增发方案设计手册.pdf)** - PDF，25页');
+            L.push('- **[定增方案Word模板](/templates/定增方案设计模板.docx)** - 可编辑');
+            L.push('- **[募集资金可研报告模板](/templates/募集资金可行性研究报告.docx)** - 框架示例');
+            L.push('');
+            L.push('> 💡 点击文档名称即可下载，或联系张明（工号8012）获取定制化方案支持');
+            L.push('> 👤 方案支持：张明（工号8012）| 邮箱：zhangm@company.com');
+            L.push('');
+            L.push('---');
+            L.push('>>> ' + bizName + '的发行条件和准入标准是什么？');
+            L.push('>>> ' + bizName + '找谁支持？');
+            L.push('>>> 帮我核验这个' + bizName + '方案，看看有没有合规问题');
+            return L.join('\n');
+        }
+        function ibGenerateRecommend(rawInput) {
+            const L = [];
+            const il = (rawInput || '').toLowerCase();
+            const rm = (rawInput || '').match(/(\d+(?:\.\d+)?)\s*(亿|万)/);
+            const revenueStr = rm ? rm[0] : '';
+            let purpose = '融资';
+            if (il.includes('扩产')) purpose = '扩产';
+            else if (il.includes('并购') || il.includes('收购')) purpose = '并购';
+            else if (il.includes('建设')) purpose = '项目建设';
+            const isListed = il.includes('上市公司');
+            const info = ibExtractCustomerInfo(rawInput);
+            L.push('根据您提供的客户信息，我为您分析了以下投行业务机会：');
+            L.push('');
+            L.push('📊 业务推荐结果');
+            L.push('');
+            L.push('1. 定增（推荐度：95%）');
+            L.push('最匹配您客户的需求');
+            L.push('');
+            L.push('适用情形：上市公司股权融资首选，募集资金可直接用于' + purpose + '项目建设');
+            L.push('关键要素：');
+            L.push('实控人持股比例（建议30%-60%）');
+            L.push('融资用途需符合国家产业政策');
+            L.push('发行时机选择（市场平稳期）');
+            L.push('支持人员：张明（工号8012）— 方案设计、发行定价');
+            L.push('');
+            L.push('2. 可转债（推荐度：85%）');
+            L.push('兼顾股债优势');
+            L.push('');
+            L.push('适用情形：票面利率低于普通公司债，转股后可优化资本结构');
+            L.push('关键要素：');
+            L.push('主体信用评级（建议AA及以上）');
+            L.push('转股溢价率设定');
+            L.push('赎回/回售条款设计');
+            L.push('支持人员：王强（工号8034）— 条款设计、转股测算');
+            L.push('');
+            L.push('3. 公司债（推荐度：80%）');
+            L.push('快速融资通道');
+            L.push('');
+            L.push('适用情形：发行周期短，资金用途灵活，可补充' + purpose + '配套流动资金');
+            L.push('关键要素：');
+            L.push('主体评级（一般需AA及以上）');
+            L.push('偿债保障能力');
+            L.push('发行窗口选择');
+            L.push('支持人员：赵敏（工号8045）— 评级沟通、发行窗口');
+            L.push('');
+            L.push('💡 下一步建议');
+            L.push('推荐优先级：定增 > 可转债 > 公司债');
+            L.push('');
+            L.push('理由：');
+            L.push('');
+            if (isListed) L.push('客户为上市公司，定增是股权融资最直接的方式');
+            if (purpose === '扩产') L.push('扩产属于资本性支出，定增的募集资金用途匹配度最高');
+            if (revenueStr) L.push(revenueStr + '营收规模表明公司具备较好的市场地位');
+            if (info.industry) L.push(info.industry + '行业内定增案例多，审核路径相对成熟');
+            L.push('');
+            L.push('您可以继续问我：');
+            L.push('');
+            L.push('>>> 定增业务怎么做？— 获取详细的操作指引');
+            L.push('>>> 定增找谁支持？— 直接对接投行支持人员');
+            L.push('>>> 定增需要准备什么材料？— 查看客户材料清单');
+            return L.join('\n');
+        }
+        function ibLocalReply(message) {
+            const il = (message || '').toLowerCase();
+            const bizName = ibExtractBusinessName(il);
+            if (ibAnyKeyword(il, ['发行条件','准入标准','准入条件','发行要求','资质要求'])) {
+                return ibGenerateAdmission(bizName || '定增');
+            } else if (ibAnyKeyword(il, ['设计','帮我设计']) || (ibAnyKeyword(il, ['方案']) && !ibAnyKeyword(il, ['核验','合规','风险']))) {
+                return ibGenerateDesign(bizName || '定增');
+            } else if (ibAnyKeyword(il, ['找谁','联系','对接','谁负责','支持'])) {
+                const biz = bizName || '定增';
+                return '**' + biz + '业务支持人员**\n\n- **张明**（工号8012）— 方案设计、发行定价\n- **王强**（工号8034）— 条款设计、转股测算\n- **赵敏**（工号8045）— 评级沟通、发行窗口\n\n可直接发邮件至 zhangm@company.com 发起支持申请。\n\n>>> 帮我设计一个' + biz + '方案\n>>> ' + biz + '的发行条件和准入标准是什么？';
+            } else {
+                return ibGenerateRecommend(message);
             }
+        }
+        // ===== 本地逻辑结束 =====
+
+        async function getAssistantReply(message, index, panel) {
+            const p = panel || getActiveWorkbenchPanel();
+            appendChatMessage('正在分析中，请稍候...', 'assistant', p);
+            await new Promise(r => setTimeout(r, 400));
+            removeLastAssistantMessage(p);
+            return ibLocalReply(message);
         }
 
         // 移除最后一条助手消息（用于移除加载中状态）
