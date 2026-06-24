@@ -1334,7 +1334,7 @@ function startChat(idx, agentId) {
 
     renderMiniAgents();
     renderQuickReplies();
-    appendMsg(`你好！我是${AI_AGENTS[idx].icon} ${AI_AGENTS[idx].name}，有什么可以帮你的？`, 'assistant');
+    // 业务团队模式：不输出固定欢迎语，等待用户输入后由 ib-business-assistant 生成回答
 }
 
 function startChatAssist(assistantId) {
@@ -1376,7 +1376,7 @@ function sendChatMessage() {
     setTimeout(() => autoReply(text), 600);
 }
 
-function sendTaskToChat(taskId) {
+async function sendTaskToChat(taskId) {
     const tasks = getTasks();
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
@@ -1389,29 +1389,57 @@ function sendTaskToChat(taskId) {
 
     appendMsg(`处理任务：${task.title}`, 'user');
     setTimeout(() => {
-        appendMsg(`收到任务「${task.title}」\n\n来源：${task.source}\n\n我将为你：\n• 分析任务要点\n• 生成执行步骤\n• 协调相关资源\n\n请确认是否开始执行？`, 'assistant');
+        autoReply(task.title);
     }, 500);
 }
 
-function autoReply(text) {
+async function autoReply(text) {
     const isEmp = STATE.role === 'employee';
     if (isEmp) {
-        const agent = AI_AGENTS[STATE.activeAgentIdx];
-        appendMsg(`收到你的消息「${text}」。\n\n作为${agent.name}，我可以协助你：\n• 梳理任务背景与关键节点\n• 生成执行建议与协作清单\n• 跟进进展并同步相关事项\n\n请告诉我你需要从哪一步开始？`, 'assistant');
+        // 业务团队模式：只通过 ib-business-assistant 输出回答
+        appendMsg('正在分析中，请稍候...', 'assistant', true);
+        try {
+            const response = await fetch('/api/ib-assistant', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    input: text,
+                    agentId: AI_AGENTS[STATE.activeAgentIdx].id,
+                    agentName: AI_AGENTS[STATE.activeAgentIdx].name
+                })
+            });
+            const data = await response.json();
+            // 移除加载消息
+            const msgs = document.getElementById('chat-messages');
+            const loadingMsg = msgs.querySelector('.chat-msg.loading');
+            if (loadingMsg) loadingMsg.remove();
+
+            if (data.success) {
+                appendMsg(data.content, 'assistant');
+            } else {
+                appendMsg(data.error || '处理失败，请重试', 'assistant');
+            }
+        } catch (err) {
+            // 移除加载消息
+            const msgs = document.getElementById('chat-messages');
+            const loadingMsg = msgs.querySelector('.chat-msg.loading');
+            if (loadingMsg) loadingMsg.remove();
+            appendMsg('投行助手服务暂时不可用，请确认服务已启动（node proxy-server.js）', 'assistant');
+        }
     } else {
         const a = ASSISTANTS[STATE.activeAgentIdx];
         appendMsg(`已收到你的指令「${text}」。\n\n${a.name}正在处理中，我将协调相关资源并同步进度。`, 'assistant');
     }
 }
 
-function appendMsg(text, role) {
+function appendMsg(text, role, isLoading) {
     const container = document.getElementById('chat-messages');
     const isUser = role === 'user';
     const isEmp = STATE.role === 'employee';
     const agent = isEmp ? AI_AGENTS[STATE.activeAgentIdx] : ASSISTANTS[STATE.activeAgentIdx];
 
     const div = document.createElement('div');
-    div.className = `chat-msg ${role}`;
+    div.className = `chat-msg ${role}${isLoading ? ' loading' : ''}`;
     div.innerHTML = `
         <div class="chat-msg-avatar ${isUser ? 'user-av' : 'assistant-av'}">
             ${isUser ? '👤' : (agent ? agent.icon : '🤖')}

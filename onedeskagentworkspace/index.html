@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>员工工作台</title>
+    <title>业务团队工作台</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -19,7 +19,7 @@
             <section class="login-panel">
                 <div class="login-card">
                     <div class="login-welcome">
-                        <h1 class="login-welcome-sys">员工工作台</h1>
+                        <h1 class="login-welcome-sys">业务团队工作台</h1>
                         <p class="login-welcome-desc">智能办公助手，让工作更高效</p>
                     </div>
                     <form class="login-form" id="login-form" onsubmit="handleLoginSubmit(event)">
@@ -82,7 +82,7 @@
                     <div class="nav-brand">
                         <span class="nav-logo">📊</span>
                         <div class="nav-brand-main">
-                            <span class="nav-title" id="nav-page-title">员工工作台</span>
+                            <span class="nav-title" id="nav-page-title">业务团队工作台</span>
                         </div>
                     </div>
                     <button type="button" class="workbench-logout-btn" onclick="logoutWorkbench()" aria-label="退出登录">
@@ -182,8 +182,11 @@
             <div class="work-tips-container">
                 <div class="work-tips-header">
                     <span class="tips-icon">📋</span>
-                    <h3 class="tips-title">今日任务</h3>
-                    <span class="tips-count">4</span>
+                    <div class="work-tips-tabs" id="work-tips-tabs">
+                        <div class="work-tips-tab active" data-tab="tasks" onclick="switchWorkTipsTab('tasks')">今日任务</div>
+                        <div class="work-tips-tab" data-tab="reminders" onclick="switchWorkTipsTab('reminders')">今日提醒</div>
+                    </div>
+                    <span class="tips-count" id="work-tips-count">5</span>
                     <button class="work-log-btn" onclick="openWorkLog()">
                         <span class="log-icon">📝</span>
                         <span>今日任务</span>
@@ -191,9 +194,41 @@
                     <button class="section-toggle-btn" id="work-tips-toggle" onclick="toggleSection('work-tips')">收起</button>
                 </div>
                 <div class="section-collapsible-body" id="work-tips-body">
+                <!-- 今日任务 -->
                 <div class="employee-tasks-layout" id="employee-tasks-layout">
                     <div class="employee-tasks-scroll" id="employee-daily-tasks-scroll">
                         <ul class="tips-list" id="employee-daily-tasks-list"></ul>
+                    </div>
+                </div>
+                <!-- 今日提醒 -->
+                <div class="employee-reminders-layout" id="employee-reminders-layout" style="display: none;">
+                    <div class="employee-tasks-scroll">
+                        <ul class="tips-list" id="employee-reminders-list">
+                            <li class="tip-item tip-item-reminder">
+                                <span class="tip-number">1</span>
+                                <p class="tip-content tip-content-title">客户张某某已补充营业执照和财务报表等资料，可继续推进开户流程</p>
+                            </li>
+                            <li class="tip-item tip-item-reminder">
+                                <span class="tip-number">2</span>
+                                <p class="tip-content tip-content-title">差旅住宿超标提醒：上月住宿费用超出标准15%，建议合理预订住宿</p>
+                            </li>
+                            <li class="tip-item tip-item-reminder">
+                                <span class="tip-number">3</span>
+                                <p class="tip-content tip-content-title">合规培训截止日期还剩5天，请尽快完成在线学习</p>
+                            </li>
+                            <li class="tip-item tip-item-reminder">
+                                <span class="tip-number">4</span>
+                                <p class="tip-content tip-content-title">客户周八风险测评结果已更新为C3，原持有产品适当性已重新匹配</p>
+                            </li>
+                            <li class="tip-item tip-item-reminder">
+                                <span class="tip-number">5</span>
+                                <p class="tip-content tip-content-title">6月份营业部绩效考核指标已发布，请关注新增客户资产考核项</p>
+                            </li>
+                            <li class="tip-item tip-item-reminder">
+                                <span class="tip-number">6</span>
+                                <p class="tip-content tip-content-title">系统将于本周六凌晨进行升级维护，届时在线服务将暂停2小时</p>
+                            </li>
+                        </ul>
                     </div>
                 </div>
                 </div>
@@ -400,8 +435,19 @@
             </div>
 
             <!-- 聊天对话区（点击卡片后显示） -->
-            <div class="ai-chat-view" id="ai-chat-view" style="display: none;">
-                <div class="ai-chat-messages" id="ai-chat-messages"></div>
+            <div class="ai-chat-area-wrap" id="ai-chat-area-wrap" style="display: none;">
+                <!-- 对话流工具栏 - 在对话内容外侧右上角，不覆盖对话流 -->
+                <div class="chat-toolbar-bar" id="chat-toolbar">
+                    <button type="button" class="chat-toolbar-btn" id="chat-new-btn" onclick="newChatSession()" aria-label="新建会话" title="新建会话">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                    <button type="button" class="chat-toolbar-btn" id="chat-expand-btn" onclick="expandChatView()" aria-label="全屏展示" title="全屏展示">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                    </button>
+                </div>
+                <div class="ai-chat-view" id="ai-chat-view">
+                    <div class="ai-chat-messages" id="ai-chat-messages"></div>
+                </div>
             </div>
 
             <div class="input-section">
@@ -430,6 +476,25 @@
             </div><!-- /workbench-panel-employee -->
         </div><!-- /workbench-panels -->
     </main>
+
+    <!-- 全屏对话覆盖层 -->
+    <div class="chat-fullscreen-overlay" id="chat-fullscreen-overlay" style="display: none;">
+        <div class="chat-fullscreen-container">
+            <div class="chat-fullscreen-header">
+                <div class="chat-fullscreen-title" id="chat-fullscreen-title">新对话</div>
+                <div class="chat-fullscreen-actions">
+                    <button type="button" class="chat-toolbar-btn" onclick="newChatSession()" aria-label="新建会话" title="新建会话">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                    <button type="button" class="chat-toolbar-btn" onclick="collapseChatView()" aria-label="缩小回原尺寸" title="缩小回原尺寸">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="chat-fullscreen-body" id="chat-fullscreen-body"></div>
+            <div class="chat-fullscreen-input-wrap" id="chat-fullscreen-input-wrap"></div>
+        </div>
+    </div>
 
     <!-- 二级页面：探马详情 - 潜在客户与业务线索 -->
     <div id="tanma-page" class="detail-page" style="display: none;">
@@ -1020,6 +1085,148 @@
                         <button class="secondary-btn" onclick="clearAnalysis()">清除</button>
                         <button class="primary-btn" onclick="saveAnalysis()">保存分析</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 二级页面：迪阿股份智能体页面 -->
+    <!-- 二级页面：迪阿股份智能体对话流页面 -->
+    <div id="agent-daia-page" class="detail-page" style="display: none;">
+        <div class="detail-page-overlay" onclick="closeAgentDaiaPage()"></div>
+        <div class="detail-page-container agent-daia-container">
+            <!-- 页面头部 -->
+            <div class="detail-page-header agent-daia-header">
+                <button class="back-btn" onclick="closeAgentDaiaPage()">
+                    <span class="back-icon">‹</span>
+                    <span>返回</span>
+                </button>
+                <div class="agent-daia-header-info">
+                    <div class="agent-daia-header-avatar">🤖</div>
+                    <div class="agent-daia-header-text">
+                        <h3>迪阿股份 · 客户业务机会</h3>
+                        <span class="agent-daia-header-status">智能体在线</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 对话流区域 -->
+            <div class="agent-daia-chat-body" id="agent-daia-chat-body">
+                <!-- AI首条消息：客户信息卡片 -->
+                <div class="agent-daia-chat-row agent-daia-chat-ai">
+                    <div class="agent-daia-chat-avatar">🤖</div>
+                    <div class="agent-daia-chat-bubble">
+                        <!-- 客户基本信息 -->
+                        <div class="agent-daia-card">
+                            <div class="agent-daia-card-header">
+                                <div class="agent-daia-company-info">
+                                    <div class="agent-daia-logo">迪</div>
+                                    <div>
+                                        <div class="agent-daia-company-name">迪阿股份有限公司</div>
+                                        <div class="agent-daia-company-tag">上市公司 | 股票代码：301177.SZ</div>
+                                    </div>
+                                </div>
+                                <div class="agent-daia-stage-badge">业务阶段 · 准备材料</div>
+                            </div>
+
+                            <!-- 流程标签 -->
+                            <div class="agent-daia-flow-tags">
+                                <span class="agent-daia-flow-tag agent-daia-flow-tag-time">1天</span>
+                                <span class="agent-daia-flow-sep">|</span>
+                                <span class="agent-daia-flow-tag">商机线索</span>
+                                <span class="agent-daia-flow-sep">|</span>
+                                <span class="agent-daia-flow-tag">线索跟进</span>
+                                <span class="agent-daia-flow-sep">|</span>
+                                <span class="agent-daia-flow-tag">初步了解</span>
+                            </div>
+
+                            <!-- 业务范围 -->
+                            <div class="agent-daia-section">
+                                <div class="agent-daia-section-title">📋 业务范围</div>
+                                <p class="agent-daia-section-text">珠宝首饰品牌企业，主营业务为钻石镶嵌首饰的研发、设计和销售，产品涵盖婚恋钻石首饰、时尚首饰等</p>
+                            </div>
+
+                            <!-- 联系方式 -->
+                            <div class="agent-daia-section">
+                                <div class="agent-daia-section-title">📞 联系方式</div>
+                                <div class="agent-daia-contact-row">
+                                    <span class="agent-daia-contact-label">客户公司</span>
+                                    <span class="agent-daia-contact-value">待确认</span>
+                                </div>
+                                <div class="agent-daia-contact-row">
+                                    <span class="agent-daia-contact-label">内部对接</span>
+                                    <span class="agent-daia-contact-value">佛山营业部 · 李经理 138****8888</span>
+                                </div>
+                            </div>
+
+                            <!-- 关键提示 -->
+                            <div class="agent-daia-key-tip">
+                                <div class="agent-daia-key-tip-title">⚠️ 关键提示</div>
+                                <div class="agent-daia-key-tip-item">• 2026年一季度约8亿结构性存款到期</div>
+                                <div class="agent-daia-key-tip-item">• 存量资管产品业绩基准 1.6%~4.6%</div>
+                                <div class="agent-daia-key-tip-item">• 需尽快安排客户拜访</div>
+                            </div>
+                        </div>
+
+                        <!-- 任务描述 -->
+                        <div class="agent-daia-card">
+                            <div class="agent-daia-section-title" style="margin-bottom: 10px;">📝 任务描述</div>
+                            <p class="agent-daia-section-text">上市公司迪阿股份在2026年一季度将有8亿左右银行结构性存款到期。该客户自有资金充裕，投过其他券商资管计划，存续产品业绩基准在1.6%-4.6%之间，是公司资管业务的潜在客户。请尽快安排客户拜访。</p>
+
+                            <!-- 智能体状态 -->
+                            <div class="agent-daia-ai-ready">
+                                <span class="agent-daia-ai-icon">✦</span>
+                                <span>智能体已为您准备好</span>
+                            </div>
+
+                            <!-- 操作按钮 -->
+                            <div class="agent-daia-actions">
+                                <button type="button" class="agent-daia-btn agent-daia-btn-primary" onclick="handleDaiaAction('report')">
+                                    <span>📄</span> 客户调研报告
+                                </button>
+                                <button type="button" class="agent-daia-btn agent-daia-btn-primary" onclick="handleDaiaAction('roadshow')">
+                                    <span>📊</span> 路演方案
+                                </button>
+                            </div>
+
+                            <!-- 立即处理 -->
+                            <div class="agent-daia-process-now">
+                                <button type="button" class="agent-daia-process-btn" onclick="handleDaiaAction('process')">
+                                    立即处理 →
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 推荐操作 -->
+                        <div class="agent-daia-suggest-area">
+                            <div class="agent-daia-suggest-label">💬 您可以继续询问</div>
+                            <div class="agent-daia-suggest-list">
+                                <div class="agent-daia-suggest-item" onclick="sendDaiaChat('迪阿股份的资管产品配置建议是什么？')">迪阿股份的资管产品配置建议是什么？</div>
+                                <div class="agent-daia-suggest-item" onclick="sendDaiaChat('帮我生成迪阿股份的客户拜访话术')">帮我生成迪阿股份的客户拜访话术</div>
+                                <div class="agent-daia-suggest-item" onclick="sendDaiaChat('同类上市公司的资管业务成交案例有哪些？')">同类上市公司的资管业务成交案例有哪些？</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部操作栏 -->
+            <div class="agent-daia-bottom-bar">
+                <button type="button" class="agent-daia-btn agent-daia-btn-secondary" onclick="handleDaiaAction('confirm')">
+                    确认接收需求 →
+                </button>
+                <button type="button" class="agent-daia-btn agent-daia-btn-secondary" onclick="handleDaiaAction('contact')">
+                    联系内部联系人 →
+                </button>
+            </div>
+
+            <!-- 对话输入区 -->
+            <div class="agent-daia-input-area">
+                <div class="agent-daia-input-wrap">
+                    <input type="text" id="agent-daia-input" class="agent-daia-input" placeholder="输入您的问题，智能体将继续为您服务..." onkeypress="if(event.key==='Enter')sendDaiaChat()">
+                    <button type="button" class="agent-daia-send-btn" onclick="sendDaiaChat()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
                 </div>
             </div>
         </div>
@@ -2433,7 +2640,7 @@
             } else {
                 titleEl.classList.remove('nav-title-multiline');
                 brandEl?.classList.remove('nav-brand-support-title');
-                titleEl.textContent = '员工工作台';
+                titleEl.textContent = '业务团队工作台';
             }
         }
 
@@ -2478,6 +2685,10 @@
                 workbenchInitialized = true;
             }
             switchWorkbenchTab(resolvedRole);
+            // 业务团队角色默认激活「今日任务」tab
+            if (resolvedRole === 'employee') {
+                switchWorkTipsTab('tasks');
+            }
         }
 
         function handleLoginSubmit(event) {
@@ -2536,7 +2747,8 @@
             if (key === 'support') {
                 return getPanelEl('ai-chat-view', p);
             }
-            return getPanelEl('ai-chat-view', p);
+            // employee 面板滚动容器是 ai-chat-messages
+            return getPanelEl('ai-chat-messages', p);
         }
 
         function scrollWorkbenchChatToBottom(panel) {
@@ -2597,6 +2809,27 @@
             const miniAvatars = panel.querySelector('#ai-mini-avatars-support');
             if (miniAvatars) miniAvatars.remove();
 
+            const chatAreaWrap = panel.querySelector('#ai-chat-area-wrap-support');
+            if (chatAreaWrap) {
+                chatAreaWrap.style.display = 'flex';
+                chatAreaWrap.style.flexDirection = 'column';
+                chatAreaWrap.style.flex = '1';
+                chatAreaWrap.style.minHeight = '0';
+                chatAreaWrap.style.marginBottom = '0';
+                chatAreaWrap.style.borderRadius = '0';
+                chatAreaWrap.style.overflow = 'hidden';
+                // 替换工具栏按鈕为 support 专属功能
+                const newBtn = chatAreaWrap.querySelector('#chat-new-btn-support');
+                if (newBtn) {
+                    newBtn.onclick = null;
+                    newBtn.addEventListener('click', () => resetSupportChatView(panel));
+                }
+                const expandBtn = chatAreaWrap.querySelector('#chat-expand-btn-support');
+                if (expandBtn) {
+                    expandBtn.onclick = null;
+                    expandBtn.addEventListener('click', () => expandChatView());
+                }
+            }
             const chatView = panel.querySelector('#ai-chat-view-support');
             if (chatView) chatView.style.display = '';
 
@@ -2614,9 +2847,13 @@
                 jumpBar.appendChild(agentBtn);
                 workbench.insertBefore(jumpBar, workbench.firstChild);
 
-                if (chatView && !panel.querySelector('.support-daily-task-panel')) {
+                if (chatView && !panel.querySelector('.support-panels-row')) {
+                    const panelsRow = document.createElement('div');
+                    panelsRow.className = 'support-panels-row';
+
+                    // 今日任务面板
                     const dailyPanel = document.createElement('section');
-                    dailyPanel.className = 'support-daily-task-panel';
+                    dailyPanel.className = 'support-daily-task-panel support-tasks-panel';
                     dailyPanel.innerHTML = `
                         <div class="support-daily-task-header">
                             ${getSupportDailyTaskRobotAvatarHtml()}
@@ -2632,7 +2869,134 @@
                     dailyPanel.querySelector('.support-daily-task-toggle')?.addEventListener('click', () => {
                         toggleSupportDailyTaskPanel(panel);
                     });
-                    workbench.insertBefore(dailyPanel, workbench.firstChild);
+
+                    // 异常提醒面板——默认折叠
+                    const anomalyPanel = document.createElement('section');
+                    anomalyPanel.className = 'support-daily-task-panel support-anomaly-panel is-collapsed';
+                    anomalyPanel.innerHTML = `
+                        <div class="support-daily-task-header" onclick="toggleSupportAnomalyPanel()" style="cursor:pointer">
+                            <div class="support-daily-task-robot-avatar" title="异常提醒">
+                                <div class="support-anomaly-avatar-icon">&#x26A0;&#xFE0F;</div>
+                            </div>
+                            <div class="support-daily-task-title-wrap">
+                                <span class="support-daily-task-title">异常提醒</span>
+                                <span class="support-anomaly-badge">4</span>
+                                <button type="button" class="support-daily-task-toggle" aria-expanded="true" aria-label="收起">
+                                    ${getSupportDailyTaskChevronHtml()}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="support-daily-task-body support-anomaly-body">
+                            <div class="support-anomaly-stats">
+                                <div class="support-anomaly-stat support-anomaly-stat-new"><span class="support-anomaly-stat-num">2</span><span class="support-anomaly-stat-label">今日新增</span></div>
+                                <div class="support-anomaly-stat support-anomaly-stat-progress"><span class="support-anomaly-stat-num">1</span><span class="support-anomaly-stat-label">处理中</span></div>
+                                <div class="support-anomaly-stat support-anomaly-stat-done"><span class="support-anomaly-stat-num">1</span><span class="support-anomaly-stat-label">已处理</span></div>
+                            </div>
+                            <div class="support-anomaly-tabs">
+                                <div class="support-anomaly-tab active" data-atab="behavior" onclick="switchAnomalyTab('behavior')"><span class="support-anomaly-tab-dot"></span>行为异常</div>
+                                <div class="support-anomaly-tab" data-atab="employee" onclick="switchAnomalyTab('employee')"><span class="support-anomaly-tab-dot"></span>员工异常</div>
+                            </div>
+                            <div class="support-anomaly-list" id="support-anomaly-list">
+                                <!-- 行为异常 -->
+                                <div class="support-anomaly-group" id="anomaly-group-behavior">
+                                    <div class="support-anomaly-item support-anomaly-item-pending" onclick="sendAnomalyToChat('疑似代客理财','经分析，XXX营业部XXX正在使用本人电子设备登录客户金汇理财平台账户买卖理财产品，疑似代客交易，相关情况已同步推送公司合规与风控部门，请及时处理。')">
+                                        <div class="support-anomaly-item-bar support-anomaly-bar-red"></div>
+                                        <div class="support-anomaly-item-main">
+                                            <div class="support-anomaly-item-top">
+                                                <span class="support-anomaly-item-title">疑似代客理财</span>
+                                                <span class="support-anomaly-item-dept">某营业部-XXX</span>
+                                            </div>
+                                            <div class="support-anomaly-item-desc">经分析，XXX营业部XXX正在使用本人电子设备登录客户金汇理财平台账户买卖理财产品，疑似代客交易，相关情况已同步推送公司合规与风控部门，请及时处理。</div>
+                                            <span class="support-anomaly-item-status support-anomaly-status-pending">待处理</span>
+                                        </div>
+                                        <div class="support-anomaly-item-arrow">&rsaquo;</div>
+                                    </div>
+                                    <div class="support-anomaly-item support-anomaly-item-pending" onclick="sendAnomalyToChat('两融余额大幅波动','5月19日至6月15日，两融余额下降超过30%，请组织研判，20个工作日提交解决方案。')">
+                                        <div class="support-anomaly-item-bar support-anomaly-bar-red"></div>
+                                        <div class="support-anomaly-item-main">
+                                            <div class="support-anomaly-item-top">
+                                                <span class="support-anomaly-item-title">两融余额大幅波动</span>
+                                                <span class="support-anomaly-item-dept">信用交易部</span>
+                                            </div>
+                                            <div class="support-anomaly-item-desc">5月19日至6月15日，两融余额下降超过30%，请组织研判，20个工作日提交解决方案。</div>
+                                            <span class="support-anomaly-item-status support-anomaly-status-pending">待处理</span>
+                                        </div>
+                                        <div class="support-anomaly-item-arrow">&rsaquo;</div>
+                                    </div>
+                                    <div class="support-anomaly-item support-anomaly-item-progress" onclick="sendAnomalyToChat('止盈止损预警','截至6月15日，权益投资部盈亏比例为-16.05%，已触发盈亏预警（预警线0.84），请及时关注。')">
+                                        <div class="support-anomaly-item-bar support-anomaly-bar-orange"></div>
+                                        <div class="support-anomaly-item-main">
+                                            <div class="support-anomaly-item-top">
+                                                <span class="support-anomaly-item-title">止盈止损预警</span>
+                                                <span class="support-anomaly-item-dept">权益投资部</span>
+                                            </div>
+                                            <div class="support-anomaly-item-desc">截至6月15日，权益投资部盈亏比例为-16.05%，已触发盈亏预警（预警线0.84），请及时关注。</div>
+                                            <span class="support-anomaly-item-status support-anomaly-status-progress">处理中</span>
+                                        </div>
+                                        <div class="support-anomaly-item-arrow">&rsaquo;</div>
+                                    </div>
+                                    <div class="support-anomaly-item support-anomaly-item-done" onclick="sendAnomalyToChat('交易集中度过高','2026年5月，投资交易部XXX与XXX成交占比63%（红线60%），XXX已提交说明，请知悉。')">
+                                        <div class="support-anomaly-item-bar support-anomaly-bar-red"></div>
+                                        <div class="support-anomaly-item-main">
+                                            <div class="support-anomaly-item-top">
+                                                <span class="support-anomaly-item-title">交易集中度过高</span>
+                                                <span class="support-anomaly-item-dept">投资交易部-XXX</span>
+                                            </div>
+                                            <div class="support-anomaly-item-desc">2026年5月，投资交易部XXX与XXX成交占比63%（红线60%），XXX已提交说明，请知悉。</div>
+                                            <span class="support-anomaly-item-status support-anomaly-status-done">已处理</span>
+                                        </div>
+                                        <div class="support-anomaly-item-arrow">&rsaquo;</div>
+                                    </div>
+                                </div>
+                                <!-- 员工异常 -->
+                                <div class="support-anomaly-group" id="anomaly-group-employee" style="display:none">
+                                    <div class="support-anomaly-item support-anomaly-item-pending" onclick="sendAnomalyToChat('员工高频费报销','投行一部XXX6月用餐报销超过部门均值50%，XXX已提交相关说明情况，请审阅。')">
+                                        <div class="support-anomaly-item-bar support-anomaly-bar-orange"></div>
+                                        <div class="support-anomaly-item-main">
+                                            <div class="support-anomaly-item-top">
+                                                <span class="support-anomaly-item-title">员工高频费报销</span>
+                                                <span class="support-anomaly-item-dept">投行一部·XXX</span>
+                                            </div>
+                                            <span class="support-anomaly-item-tag">投行</span>
+                                            <div class="support-anomaly-item-desc">投行一部XXX6月用餐报销超过部门均值50%，XXX已提交相关说明情况，请审阅。</div>
+                                            <span class="support-anomaly-item-status support-anomaly-status-pending">待处理</span>
+                                        </div>
+                                        <div class="support-anomaly-item-arrow">&rsaquo;</div>
+                                    </div>
+                                    <div class="support-anomaly-item support-anomaly-item-progress" onclick="sendAnomalyToChat('员工高频超标报销','固定收益部XXX二季度超标次数超过80%，XXX已提交相关说明情况，请审阅。')">
+                                        <div class="support-anomaly-item-bar support-anomaly-bar-orange"></div>
+                                        <div class="support-anomaly-item-main">
+                                            <div class="support-anomaly-item-top">
+                                                <span class="support-anomaly-item-title">员工高频超标报销</span>
+                                                <span class="support-anomaly-item-dept">固定收益部·XXX</span>
+                                            </div>
+                                            <span class="support-anomaly-item-tag">固收</span>
+                                            <div class="support-anomaly-item-desc">固定收益部XXX二季度超标次数超过80%，XXX已提交相关说明情况，请审阅。</div>
+                                            <span class="support-anomaly-item-status support-anomaly-status-progress">处理中</span>
+                                        </div>
+                                        <div class="support-anomaly-item-arrow">&rsaquo;</div>
+                                    </div>
+                                    <div class="support-anomaly-item support-anomaly-item-done" onclick="sendAnomalyToChat('关联交易行为异常','6月2日，某营业部聘请甲装修公司进行营业部装修作业，报销装修款项15万元；经分析，甲装修公司法人张某与营业部员工存在关联关系，已请负责人核实，并请合规团队跟进调查。')">
+                                        <div class="support-anomaly-item-bar support-anomaly-bar-red"></div>
+                                        <div class="support-anomaly-item-main">
+                                            <div class="support-anomaly-item-top">
+                                                <span class="support-anomaly-item-title">关联交易行为异常</span>
+                                                <span class="support-anomaly-item-dept">某营业部·XXX</span>
+                                            </div>
+                                            <span class="support-anomaly-item-tag">分支机构</span>
+                                            <div class="support-anomaly-item-desc">6月2日，某营业部聘请甲装修公司进行营业部装修作业，报销装修款项15万元；经分析，甲装修公司法人张某与营业部员工存在关联关系，已请负责人核实，并请合规团队跟进调查。</div>
+                                            <span class="support-anomaly-item-status support-anomaly-status-done">已处理</span>
+                                        </div>
+                                        <div class="support-anomaly-item-arrow">&rsaquo;</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    panelsRow.appendChild(dailyPanel);
+                    panelsRow.appendChild(anomalyPanel);
+                    workbench.insertBefore(panelsRow, workbench.firstChild);
                 }
             }
 
@@ -2642,8 +3006,10 @@
             panel.dataset.supportCustomized = 'true';
         }
 
+
         const SUPPORT_DAILY_TASK_AVATAR_SRC = 'images/daily-task-assistant-avatar.png';
         const SUPPORT_INPUT_AGENT_DAILY_TASK = 'daily-task';
+        const SUPPORT_INPUT_AGENT_ANOMALY = 'anomaly';
 
         function getSupportDailyTaskRobotAvatarHtml() {
             return `<div class="support-daily-task-robot-avatar" title="今日任务">
@@ -2669,7 +3035,7 @@
 
         function getSupportDailyTaskPanel(panel) {
             const p = panel || document.getElementById('workbench-panel-support');
-            return p?.querySelector('.support-daily-task-panel') || null;
+            return p?.querySelector('.support-tasks-panel') || null;
         }
 
         function renderSupportDailyTaskContent(html, panel) {
@@ -2680,10 +3046,24 @@
         }
 
         function toggleSupportDailyTaskPanel(panel) {
-            const dailyPanel = getSupportDailyTaskPanel(panel);
+            const p = panel || document.getElementById('workbench-panel-support');
+            const dailyPanel = getSupportDailyTaskPanel(p);
             if (!dailyPanel) return;
+            const willExpand = dailyPanel.classList.contains('is-collapsed');
             dailyPanel.classList.toggle('is-collapsed');
-            syncSupportDailyTaskToggle(panel);
+            syncSupportDailyTaskToggle(p);
+            // 打开今日任务时自动收起异常提醒
+            if (willExpand) {
+                const anomalyPanel = p.querySelector('.support-anomaly-panel');
+                if (anomalyPanel && !anomalyPanel.classList.contains('is-collapsed')) {
+                    anomalyPanel.classList.add('is-collapsed');
+                    const toggle = anomalyPanel.querySelector('.support-daily-task-toggle');
+                    if (toggle) {
+                        toggle.setAttribute('aria-expanded', 'false');
+                        toggle.setAttribute('aria-label', '展开');
+                    }
+                }
+            }
         }
 
         function updateSupportDailyTaskPanelState(panel, hasChat) {
@@ -2691,10 +3071,78 @@
             if (!dailyPanel) return;
             if (hasChat) {
                 dailyPanel.classList.add('is-collapsed');
+                // 有对话时同时收起异常提醒
+                const anomalyPanel = panel?.querySelector('.support-anomaly-panel') ||
+                    document.getElementById('workbench-panel-support')?.querySelector('.support-anomaly-panel');
+                if (anomalyPanel) anomalyPanel.classList.add('is-collapsed');
             } else {
                 dailyPanel.classList.remove('is-collapsed');
             }
             syncSupportDailyTaskToggle(panel);
+        }
+
+        // ========== 异常提醒面板交互 ==========
+
+        function toggleSupportAnomalyPanel() {
+            const panel = document.getElementById('workbench-panel-support');
+            const anomalyPanel = panel?.querySelector('.support-anomaly-panel');
+            if (!anomalyPanel) return;
+            const willExpand = anomalyPanel.classList.contains('is-collapsed');
+            anomalyPanel.classList.toggle('is-collapsed');
+            const toggle = anomalyPanel.querySelector('.support-daily-task-toggle');
+            const collapsed = anomalyPanel.classList.contains('is-collapsed');
+            if (toggle) {
+                toggle.setAttribute('aria-expanded', String(!collapsed));
+                toggle.setAttribute('aria-label', collapsed ? '展开' : '收起');
+            }
+            // 打开异常提醒时自动收起今日任务
+            if (willExpand) {
+                const dailyPanel = getSupportDailyTaskPanel(panel);
+                if (dailyPanel && !dailyPanel.classList.contains('is-collapsed')) {
+                    dailyPanel.classList.add('is-collapsed');
+                    syncSupportDailyTaskToggle(panel);
+                }
+            }
+        }
+
+        function switchAnomalyTab(tab) {
+            const tabs = document.querySelectorAll('.support-anomaly-tab');
+            tabs.forEach(t => t.classList.toggle('active', t.dataset.atab === tab));
+            const behaviorGroup = document.getElementById('anomaly-group-behavior');
+            const employeeGroup = document.getElementById('anomaly-group-employee');
+            if (tab === 'behavior') {
+                if (behaviorGroup) behaviorGroup.style.display = '';
+                if (employeeGroup) employeeGroup.style.display = 'none';
+            } else {
+                if (behaviorGroup) behaviorGroup.style.display = 'none';
+                if (employeeGroup) employeeGroup.style.display = '';
+            }
+        }
+
+        function sendAnomalyToChat(title, desc) {
+            const panel = document.getElementById('workbench-panel-support');
+            if (!panel) return;
+            const chatView = panel.querySelector('.ai-chat-view');
+            if (!chatView) return;
+
+            // 切换到异常提醒助理
+            setSupportInputAgent(panel, SUPPORT_INPUT_AGENT_ANOMALY);
+
+            const message = `异常提醒：${title}。${desc}\n\n请帮我分析该异常情况并提供处置建议。`;
+            const input = panel.querySelector('.support-chat-input');
+            if (input) { input.value = message; input.focus(); }
+
+            // 直接发送到对话
+            appendSupportChatMessage(message, 'user', panel);
+            setTimeout(() => {
+                appendSupportAssistantReply(message, SUPPORT_INPUT_AGENT_ANOMALY, panel);
+            }, 400);
+
+            // 收起两个面板
+            const anomalyPanel = panel.querySelector('.support-anomaly-panel');
+            if (anomalyPanel) anomalyPanel.classList.add('is-collapsed');
+            const dailyPanel = getSupportDailyTaskPanel(panel);
+            if (dailyPanel) dailyPanel.classList.add('is-collapsed');
         }
 
         function getSupportAgent(agentId) {
@@ -2789,6 +3237,7 @@
 
         function getSupportAgentDisplayLabel(agentId) {
             if (agentId === SUPPORT_INPUT_AGENT_DAILY_TASK) return '今日任务助理';
+            if (agentId === SUPPORT_INPUT_AGENT_ANOMALY) return '异常提醒助理';
             return getSupportAgent(agentId)?.name || '';
         }
 
@@ -2796,6 +3245,9 @@
             if (!agentId) return null;
             if (agentId === SUPPORT_INPUT_AGENT_DAILY_TASK) {
                 return { id: SUPPORT_INPUT_AGENT_DAILY_TASK, name: '今日任务助理', image: SUPPORT_DAILY_TASK_AVATAR_SRC };
+            }
+            if (agentId === SUPPORT_INPUT_AGENT_ANOMALY) {
+                return { id: SUPPORT_INPUT_AGENT_ANOMALY, name: '异常提醒助理', image: 'images/jiaocha-assistant-avatar.png' };
             }
             const agent = getSupportAgent(agentId);
             return agent ? { id: agentId, name: agent.name, image: agent.image } : null;
@@ -2858,7 +3310,10 @@
         }
 
         function getSupportInputAgentOptions() {
-            const options = [getSupportInputAgentMeta(SUPPORT_INPUT_AGENT_DAILY_TASK)];
+            const options = [
+                getSupportInputAgentMeta(SUPPORT_INPUT_AGENT_DAILY_TASK),
+                getSupportInputAgentMeta(SUPPORT_INPUT_AGENT_ANOMALY)
+            ];
             supportAgents.forEach((agent) => {
                 options.push(getSupportInputAgentMeta(agent.id));
             });
@@ -3372,6 +3827,9 @@
             }
             if (agentId === SUPPORT_INPUT_AGENT_DAILY_TASK) {
                 return `您好，我是今日任务助理。关于「${message}」，我将为您汇总待办并协助跟进处理。请补充具体需求或相关材料。`;
+            }
+            if (agentId === SUPPORT_INPUT_AGENT_ANOMALY) {
+                return `您好，我是异常提醒助理。关于「${message}」，我将结合当前异常记录为您分析问题并提供处置建议。请补充具体情况或可能受影响的相关人员。`;
             }
             return `您好，我是${getSupportAgentDisplayLabel(agentId)}。关于「${message}」，我将结合当前任务进展为您提供支持。请补充具体需求或相关材料。`;
         }
@@ -3947,7 +4405,24 @@
                 emoji: '🧠',
                 avatarClass: 'canmou',
                 modelName: '零售/资管/投行客户标准化分析模型',
-                welcomeText: `请选择业务条线开始客户综合分析：`
+                welcomeText: `我是您的客户分析助手，当前已加载以下能力模型：
+
+**【投行业务】12项业务分析维度**
+• 股权类分析：定增、IPO、可转债 — 评估客户股权融资资质
+• 债权类分析：公司债、银行间债务工具、ABS — 评估客户偿债与融资能力
+• 并购类分析：收购资产、收购上市公司、破产重整 — 评估客户并购重组机会
+• 客户服务分析：买方分析、信披判断、公告生成 — 评估客户服务需求
+
+**【我能帮您】**
+1. 客户综合画像 — 描述客户情况，我输出全方位客户分析报告
+2. 风险约束识别 — 自动识别客户风险等级与业务准入限制
+3. 现金流拆解 — 分析客户资金状况，匹配融资需求
+
+请直接描述您的客户情况，我开始协助您。
+
+💡 您可以直接描述客户情况，例如：
+
+>>> 我手头有个制造业上市公司客户，营收20亿，想融资扩产`
             },
             {
                 index: 1,
@@ -3955,7 +4430,24 @@
                 emoji: '🐎',
                 avatarClass: 'tanma',
                 modelName: '全品类产品业务智能匹配模型',
-                welcomeText: `请选择业务条线开始业务产品匹配：`
+                welcomeText: `我是您的业务分析助手，当前已加载以下能力模型：
+
+**【投行业务】12项业务类型**
+• 股权类：定增、IPO、可转债 — 根据客户资质推荐融资方案
+• 债权类：公司债、银行间债务工具、ABS — 匹配债务融资需求
+• 并购类：收购资产、收购上市公司、破产重整 — 识别并购重组机会
+• 客户服务：买方分析、信披判断、公告生成 — 辅助日常客户服务
+
+**【我能帮您】**
+1. 识别业务机会 — 描述客户情况，我推荐适合的业务类型
+2. 获取操作指引 — 询问"怎么做"，我提供步骤和材料清单
+3. 对接支持人员 — 查询各业务的投行专业人员
+
+请直接描述您的客户情况或需求，我开始协助您。
+
+💡 您可以直接描述客户情况，例如：
+
+>>> 我手头有个制造业上市公司客户，营收20亿，想融资扩产`
             },
             {
                 index: 2,
@@ -3963,7 +4455,23 @@
                 emoji: '📋',
                 avatarClass: 'junshi',
                 modelName: '标准化资产配置自动生成模型',
-                welcomeText: `请选择业务条线开始生成配置方案：`
+                welcomeText: `我是您的方案生成助手，当前已加载以下能力模型：
+
+**【投行业务】9项业务方案设计**
+• 股权类方案：定增发行方案、IPO上市方案、可转债条款设计 — 定制股权融资方案
+• 债权类方案：公司债发行方案、银行间工具注册方案、ABS结构设计 — 定制债务融资方案
+• 并购类方案：收购资产交易方案、收购上市公司方案、破产重整计划 — 定制并购重组方案
+
+**【我能帮您】**
+1. 生成业务方案 — 描述客户需求与业务类型，我输出定制化方案
+2. 设计核心条款 — 询问定价、期限、结构，我提供专业设计建议
+3. 编制操作指引 — 指定业务类型，我提供全流程操作步骤与材料清单
+
+请直接描述您的方案需求，我开始协助您。
+
+💡 您可以直接描述需求，例如：
+
+>>> 帮我设计一个定增方案，客户是制造业上市公司，计划融资5亿扩产`
             },
             {
                 index: 3,
@@ -3971,7 +4479,24 @@
                 emoji: '🔍',
                 avatarClass: 'jiaocha',
                 modelName: '适当性风控交叉核验模型',
-                welcomeText: `请选择业务条线开始交叉核验：`
+                welcomeText: `我是您的交叉验证助手，当前已加载以下能力模型：
+
+**【投行业务】12项业务核验维度**
+• 股权类核验：定增、IPO、可转债 — 核查治理结构、财务异常、关联交易
+• 债权类核验：公司债、银行间债务工具、ABS — 核查偿债能力、资金监管、底层资产
+• 并购类核验：收购资产、收购上市公司、破产重整 — 核查估值合理性、同业竞争、表决程序
+• 客户服务核验：买方分析、信披判断、公告生成 — 核查合规性、披露标准
+
+**【我能帮您】**
+1. 适当性核验 — 输入方案内容，我逐项核验风险与合规匹配度
+2. 异常筛查 — 自动识别财务数据异常、关联交易风险、治理结构缺陷
+3. 合规提示 — 输出业务流程合规要求与需签署的法律文件清单
+
+请直接提交需要核验的方案或描述核验需求，我开始协助您。
+
+💡 您可以直接描述需求，例如：
+
+>>> 帮我核验一下这个定增方案，看看有没有合规问题`
             },
             {
                 index: 4,
@@ -3979,41 +4504,293 @@
                 emoji: '👁️',
                 avatarClass: 'tianyan',
                 modelName: '标准化客户沟通与回访服务模型',
-                welcomeText: `请选择业务条线开始生成沟通内容：`
+                welcomeText: `我是您的客户服务助手，当前已加载以下能力模型：
+
+**【投行业务】3项客户服务能力**
+• 买方分析：投资者画像、资金规模、投资偏好 — 筛选匹配的潜在投资者
+• 信披判断：披露时点、披露内容、合规标准 — 判断信息披露义务与要求
+• 临时公告生成：公告类型、事实依据、披露要点 — 辅助生成合规公告文本
+
+**【我能帮您】**
+1. 筛选投资者 — 描述发行项目，我匹配潜在投资者并制定沟通策略
+2. 判断信披义务 — 描述事件，我判断是否触发披露义务及披露要求
+3. 生成公告文本 — 提供事实依据，我生成符合格式要求的公告初稿
+
+请直接描述您的客户服务需求，我开始协助您。
+
+💡 您可以直接描述需求，例如：
+
+>>> 客户刚签了一个重大合同，需要判断是否要披露`
             }
         ];
 
         function markdownToHtml(text) {
-            const lines = text.split('\n');
+            if (!text) return '';
+            // 统一换行符
+            let normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+            // 预处理：检测裸露的JSON对象（未被```包裹但以{开头）
+            // 如果整个文本或文本中某段以 { 开头且能解析为JSON，直接渲染为卡片
+            const trimmedForJson = normalizedText.trim();
+            if (trimmedForJson.startsWith('{') || trimmedForJson.startsWith('[')) {
+                try {
+                    const obj = JSON.parse(trimmedForJson);
+                    return renderJsonCard(obj);
+                } catch(e) {
+                    // 不是合法JSON，继续正常解析
+                }
+            }
+            // 如果文本中间包含JSON片段（如 {"business":"定增",...}），也尝试提取
+            const jsonInText = normalizedText.match(/\{[\s\S]*?"business"[\s\S]*?\}/);
+            if (jsonInText && !normalizedText.includes('```')) {
+                try {
+                    const obj = JSON.parse(jsonInText[0]);
+                    const card = renderJsonCard(obj);
+                    const beforeText = normalizedText.substring(0, normalizedText.indexOf(jsonInText[0])).trim();
+                    const afterText = normalizedText.substring(normalizedText.indexOf(jsonInText[0]) + jsonInText[0].length).trim();
+                    let result = '';
+                    if (beforeText) result += markdownToHtml(beforeText);
+                    result += card;
+                    if (afterText) result += markdownToHtml(afterText);
+                    return result;
+                } catch(e) {
+                    // 不是合法JSON，继续正常解析
+                }
+            }
+
+            // 先提取代码块，用占位符替换，防止代码块内容被其他规则解析
+            const codeBlocks = [];
+            let processed = normalizedText.replace(/```([\s\S]*?)```/g, (match, code) => {
+                const idx = codeBlocks.length;
+                // 检测是否为 JSON 代码块，尝试美化渲染
+                const langMatch = code.match(/^(\w+)\n?([\s\S]*)/);
+                const lang = langMatch ? langMatch[1] : '';
+                let codeContent = langMatch ? langMatch[2] : code;
+                codeContent = codeContent.trim();
+
+                // JSON 内容：尝试解析为结构化卡片
+                if (lang === 'json' || codeContent.startsWith('{') || codeContent.startsWith('[')) {
+                    try {
+                        const obj = JSON.parse(codeContent);
+                        const card = renderJsonCard(obj);
+                        codeBlocks.push(card);
+                    } catch(e) {
+                        codeBlocks.push(`<pre class="chat-md-code"><code>${escapeHtml(codeContent)}</code></pre>`);
+                    }
+                } else {
+                    codeBlocks.push(`<pre class="chat-md-code"><code>${escapeHtml(codeContent)}</code></pre>`);
+                }
+                return `\n%%CODEBLOCK_${idx}%%\n`;
+            });
+
+            // 处理行内代码 `...`
+            processed = processed.replace(/`([^`]+)`/g, '<code class="chat-md-inline-code">$1</code>');
+
+            const lines = processed.split('\n');
             let html = '';
             let inList = false;
+            let inOrderedList = false;
+            let inTable = false;
         
             lines.forEach((line) => {
-                // h1
-                if (line.startsWith('# ')) {
+                const trimmed = line.trim();
+
+                // 代码块占位符还原
+                if (trimmed.match(/^%%CODEBLOCK_\d+%%$/)) {
                     if (inList) { html += '</ul>'; inList = false; }
-                    const content = line.replace(/^#\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    if (inTable) { html += '</tbody></table>'; inTable = false; }
+                    const idx = parseInt(trimmed.match(/%%CODEBLOCK_(\d+)%%/)[1]);
+                    html += codeBlocks[idx];
+                    return;
+                }
+
+                // 表格行 | ... |
+                if (trimmed.match(/^\|.*\|$/)) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    if (trimmed.match(/^\|[\s\-:|]+\|$/)) return;
+                    if (!inTable) { html += '<table class="chat-md-table"><thead><tr>'; inTable = 'thead'; }
+                    else if (inTable === 'thead') { html += '</tr></thead><tbody><tr>'; inTable = 'tbody'; }
+                    else { html += '<tr>'; }
+                    const cells = trimmed.split('|').filter(c => c.trim() !== '');
+                    const tag = inTable === 'thead' ? 'th' : 'td';
+                    cells.forEach(c => {
+                        const content = c.trim().replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        html += `<${tag}>${content}</${tag}>`;
+                    });
+                    if (inTable !== 'thead') html += '</tr>';
+                    return;
+                } else if (inTable) {
+                    html += '</tbody></table>';
+                    inTable = false;
+                }
+                // h1
+                if (trimmed.startsWith('# ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    const content = trimmed.replace(/^#\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     html += `<p class="chat-md-h1">${content}</p>`;
                 // h2
-                } else if (line.startsWith('## ')) {
+                } else if (trimmed.startsWith('## ')) {
                     if (inList) { html += '</ul>'; inList = false; }
-                    const content = line.replace(/^##\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    const content = trimmed.replace(/^##\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     html += `<p class="chat-md-h2">${content}</p>`;
-                // 列表项 - 或 •
-                } else if (line.match(/^[-•]\s/)) {
-                    if (!inList) { html += '<ul class="chat-md-list">'; inList = true; }
-                    const content = line.replace(/^[-•]\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                // h3
+                } else if (trimmed.startsWith('### ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    const content = trimmed.replace(/^###\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    html += `<p class="chat-md-h3">${content}</p>`;
+                // 分割线
+                } else if (/^---+$/.test(trimmed)) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    html += '<hr class="chat-md-hr">';
+                // 提示词 >>> 可点击卡片
+                } else if (trimmed.startsWith('>>> ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    const promptText = trimmed.replace(/^>>>\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    const escapedPrompt = promptText.replace(/<\/?strong>/g, '').replace(/'/g, "\\'");
+                    html += `<div class="chat-prompt-card" onclick="clickPromptCard(this, '${escapedPrompt}')">\u{1F4AC} ${promptText}</div>`;
+                // 引用 >
+                } else if (trimmed.startsWith('> ')) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    const content = trimmed.replace(/^>\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    html += `<blockquote class="chat-md-quote">${content}</blockquote>`;
+                // 有序列表 1. 2. 3.
+                } else if (trimmed.match(/^\d+\.\s/)) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (!inOrderedList) { html += '<ol class="chat-md-olist">'; inOrderedList = true; }
+                    const content = trimmed.replace(/^\d+\.\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     html += `<li>${content}</li>`;
+                // 无序列表 - 或 •
+                } else if (trimmed.match(/^[-•]\s/)) {
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    // 文档卡片：列表项包含 markdown 链接 [text](url)
+                    const docLinkMatch = trimmed.match(/^[-•]\s+\*\*\[(.+?)\]\((.+?)\)\*\*(.*)$/) ||
+                                         trimmed.match(/^[-•]\s+\[(.+?)\]\((.+?)\)(.*)$/);
+                    if (docLinkMatch) {
+                        if (inList) { html += '</ul>'; inList = false; }
+                        const docName = docLinkMatch[1];
+                        const docUrl  = docLinkMatch[2];
+                        const docDesc = (docLinkMatch[3] || '').replace(/^\s*[-—]\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').trim();
+                        const ext = docUrl.split('.').pop().toUpperCase().replace(/[?#].*/, '') || 'FILE';
+                        const extClass = ['PDF','DOCX','DOC','XLSX','XLS'].includes(ext) ? ext.toLowerCase() : 'file';
+                        html += `<div class="chat-doc-card" onclick="downloadDocFile('${docUrl}', '${docName.replace(/'/g,"'")}')">`;
+                        html += `<span class="doc-card-icon doc-ext-${extClass}">${ext}</span>`;
+                        html += `<span class="doc-card-body"><span class="doc-card-name">${docName}</span>`;
+                        if (docDesc) html += `<span class="doc-card-desc">${docDesc}</span>`;
+                        html += `</span><span class="doc-card-dl">↓ 下载</span></div>`;
+                    } else {
+                        if (!inList) { html += '<ul class="chat-md-list">'; inList = true; }
+                        const content = trimmed.replace(/^[-•]\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        html += `<li>${content}</li>`;
+                    }
                 } else {
                     if (inList) { html += '</ul>'; inList = false; }
-                    if (line.trim() === '') return;
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    if (trimmed === '') return;
                     const content = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                     html += `<p>${content}</p>`;
                 }
             });
         
             if (inList) html += '</ul>';
+            if (inOrderedList) html += '</ol>';
+            if (inTable) html += '</tbody></table>';
             return html;
+        }
+
+        // 将 JSON 对象渲染为结构化卡片（而非原始代码）
+        function renderJsonCard(obj) {
+            if (Array.isArray(obj)) {
+                return obj.map(item => renderJsonCard(item)).join('');
+            }
+            if (typeof obj !== 'object' || obj === null) {
+                return `<p>${escapeHtml(String(obj))}</p>`;
+            }
+
+            // 判断是否为业务人员信息类型
+            const isPerson = obj.name && (obj.employee_id || obj.email || obj.scope || obj.role);
+            if (isPerson) {
+                let cardHtml = '<div class="chat-json-person-card">';
+                cardHtml += `<div class="chat-json-person-header">`;
+                cardHtml += `<div class="chat-json-person-name">${escapeHtml(obj.name)}</div>`;
+                if (obj.role || obj.scope) {
+                    cardHtml += `<div class="chat-json-person-scope">${escapeHtml(obj.role || obj.scope)}</div>`;
+                }
+                cardHtml += '</div>';
+                const detailFields = Object.entries(obj).filter(([k]) => !['name','role','scope'].includes(k));
+                if (detailFields.length > 0) {
+                    cardHtml += '<div class="chat-json-person-details">';
+                    detailFields.forEach(([key, val]) => {
+                        const label = jsonKeyLabel(key);
+                        cardHtml += `<div class="chat-json-field"><span class="chat-json-label">${label}</span><span class="chat-json-value">${escapeHtml(String(val))}</span></div>`;
+                    });
+                    cardHtml += '</div>';
+                }
+                cardHtml += '</div>';
+                return cardHtml;
+            }
+
+            // 判断是否为业务信息类型（支持人员查询结果）
+            const isBusiness = obj.business && (obj.category || obj.description || obj.support_person);
+            if (isBusiness) {
+                let cardHtml = '<div class="chat-json-business-card">';
+                // 业务名称标题区
+                cardHtml += `<div class="chat-json-business-header">`;
+                cardHtml += `<span class="chat-json-business-tag">${escapeHtml(obj.category || '')}</span>`;
+                cardHtml += `<span class="chat-json-business-name">${escapeHtml(obj.business)}</span>`;
+                cardHtml += '</div>';
+                // 业务描述
+                if (obj.description) {
+                    cardHtml += `<div class="chat-json-business-desc">${escapeHtml(obj.description)}</div>`;
+                }
+                // 支持人员信息卡片（嵌套深色风格）
+                if (obj.support_person && typeof obj.support_person === 'object') {
+                    const p = obj.support_person;
+                    cardHtml += '<div class="chat-json-support-card">';
+                    cardHtml += '<div class="chat-json-support-title">支持人员</div>';
+                    cardHtml += `<div class="chat-json-support-name">${escapeHtml(p.name || '')}<span class="chat-json-support-id">${p.employee_id ? '（工号' + escapeHtml(String(p.employee_id)) + '）' : ''}</span></div>`;
+                    if (p.scope) cardHtml += `<div class="chat-json-field"><span class="chat-json-label-dark">职责范围</span><span class="chat-json-value-light">${escapeHtml(p.scope)}</span></div>`;
+                    if (p.email) cardHtml += `<div class="chat-json-field"><span class="chat-json-label-dark">联系方式</span><span class="chat-json-value-email">${escapeHtml(p.email)}</span></div>`;
+                    cardHtml += '</div>';
+                }
+                cardHtml += '</div>';
+                return cardHtml;
+            }
+
+            // 通用对象渲染
+            let html = '<div class="chat-json-generic-card">';
+            Object.entries(obj).forEach(([key, val]) => {
+                const label = jsonKeyLabel(key);
+                if (typeof val === 'object' && val !== null) {
+                    html += `<div class="chat-json-field"><span class="chat-json-label">${label}</span></div>`;
+                    html += renderJsonCard(val);
+                } else {
+                    html += `<div class="chat-json-field"><span class="chat-json-label">${label}</span><span class="chat-json-value">${escapeHtml(String(val))}</span></div>`;
+                }
+            });
+            html += '</div>';
+            return html;
+        }
+
+        // JSON key 中文映射
+        function jsonKeyLabel(key) {
+            const map = {
+                business: '业务类型', category: '业务分类', description: '描述',
+                support_person: '支持人员', name: '姓名', employee_id: '工号',
+                email: '邮箱', scope: '职责范围', role: '角色', phone: '电话',
+                department: '部门', title: '职位', company: '公司',
+                amount: '金额', date: '日期', status: '状态', type: '类型',
+                risk_level: '风险等级', product: '产品', term: '期限',
+                yield: '收益率', issuer: '发行人', rating: '评级'
+            };
+            return map[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         }
 
         function getSolutionSelectHtml(blockId) {
@@ -4093,12 +4870,14 @@
 
             const carousel = getPanelEl('ai-carousel-view', p);
             const chatView = getPanelEl('ai-chat-view', p);
+            const chatAreaWrap = p.querySelector('#ai-chat-area-wrap') || document.getElementById('ai-chat-area-wrap');
             const miniAvatars = getPanelEl('ai-mini-avatars', p);
             const workbench = p.querySelector('.ai-workbench-section');
             const inputSection = p.querySelector('.input-section');
 
             if (carousel) carousel.style.display = 'none';
-            if (chatView) chatView.style.display = 'block';
+            if (chatAreaWrap) chatAreaWrap.style.display = 'flex';
+            if (chatView) chatView.style.display = '';
             if (miniAvatars) miniAvatars.style.display = 'flex';
             if (workbench) workbench.classList.add('chat-mode');
             if (inputSection) inputSection.classList.add('chat-mode');
@@ -4111,6 +4890,30 @@
             appendAssistantConversation(index, p);
             updateMiniAvatarActive(index, p);
             syncEmployeeChatModeLayout();
+        }
+
+        // 切换今日任务/今日提醒 tab
+        function switchWorkTipsTab(tab) {
+            const tasksLayout = document.getElementById('employee-tasks-layout');
+            const remindersLayout = document.getElementById('employee-reminders-layout');
+            const tabs = document.querySelectorAll('#work-tips-tabs .work-tips-tab');
+            const countEl = document.getElementById('work-tips-count');
+
+            tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+
+            if (tab === 'tasks') {
+                if (tasksLayout) tasksLayout.style.display = '';
+                if (remindersLayout) remindersLayout.style.display = 'none';
+                if (countEl) {
+                    const tasks = getEmployeeDailyTasks() || [];
+                    countEl.textContent = String(tasks.length);
+                }
+            } else {
+                if (tasksLayout) tasksLayout.style.display = 'none';
+                if (remindersLayout) remindersLayout.style.display = '';
+                const reminders = document.querySelectorAll('#employee-reminders-list .tip-item');
+                if (countEl) countEl.textContent = String(reminders.length);
+            }
         }
 
         function toggleSection(sectionName) {
@@ -4194,8 +4997,7 @@
             const n = currentCustomerName;
             return {
                 assistantIndex: s.assistantIndex,
-                userCommand: s.userCommand.replace(/王总/g, n),
-                response: s.response.replace(/王总/g, n)
+                userCommand: s.userCommand.replace(/王总/g, n)
             };
         }
 
@@ -4203,32 +5005,27 @@
             // 第1步：客户分析助手
             {
                 assistantIndex: 0,
-                userCommand: '调取客户王总的全部资产状况、风险承受能力、投资行为以及现金流情况，输出完整的客户综合分析内容。',
-                response: `**客户综合分析报告**\n\n**① 基础综合分析**\n客户王总，52岁，属于稳健型投资者，家庭可投资资产共计800万，未来3年内无大额资金支出计划。\n\n**② 持仓现状分析**\n股票账户整体浮亏12%，持仓行业单一、资产集中度偏高，短期交易行为频繁，存在追涨操作习惯。\n\n**③ 风险约束提示**\n⚠️ 客户风险测评结果为稳健型，未达到私募股权产品对应的风险准入标准，客户诉求存在明显矛盾点。\n\n**④ 现金流拆解**\n300万活期资金暂无固定使用规划，可划分为：\n- 中长期稳健配置资金\n- 短期灵活理财资金\n\n**⑤ 投资行为分析**\n客户过往仅配置固收产品、公募基金，无权益类私募产品投资经历，目前暂不具备合格投资者资质。`
+                userCommand: '调取客户王总的全部资产状况、风险承受能力、投资行为以及现金流情况，输出完整的客户综合分析内容。'
             },
             // 第2步：业务分析助手
             {
                 assistantIndex: 1,
-                userCommand: '结合王总的稳健属性，匹配合规且可承接300万资金的产品与业务，调取同类型客户的成交参考案例。',
-                response: `**业务分析产品匹配结果**\n\n**① 业务分析适配业务清单**（匹配稳健型风险等级）\n- ✅ 短期收益凭证\n- ✅ 固收+公募基金\n- ✅ 均衡指数基金\n- ✅ 中长期低波动理财\n\n**② 禁止推介业务标注**\n- ❌ 私募股权产品\n- ❌ 高波动单一赛道基金\n- ❌ 金融衍生品\n以上品类与客户风险承受能力不匹配，禁止推介。\n\n**③ 同类客群参考配置比例**\n同年龄段稳健型客户常规配置：65%固收类产品 / 25%均衡混合基金 / 10%现金管理工具\n\n**④ 衍生业务机会提示**\n客户股票持仓集中度超标，可分批次置换均衡类公募基金，分散投资波动风险。`
+                userCommand: '结合王总的稳健属性，匹配合规且可承接300万资金的产品与业务，调取同类型客户的成交参考案例。'
             },
             // 第3步：方案生成助手
             {
                 assistantIndex: 2,
-                userCommand: '为王总300万闲置资金定制资产配置方案，同步给出存量股票持仓优化建议，内容做到通俗易懂，并附带完整合规提示。',
-                response: `📄 **王总专属资金配置规划方案**\n\n您有 **300万闲置资金**，我们为您制定了以下分层配置方案：\n\n**① 中长期固收+理财 180万**\n年化区间 3.2%-3.8%，匹配您稳健保値需求，资金流动性适中\n\n**② 均衡混合公募基金 90万**\n对冲您现有股票单一行业持仓集中风险，阶段式分散配置\n\n**③ 现金管理类理财 30万**\n满足临时资金灵活支取需求，随用随取无锁定\n\n---\n\n📈 **存量持仓优化建议**\n建议分 3 个月逐步减持单一行业股票，置换均衡类公募产品，平滑投资波动\n\n⚠️ **风险约束说明**\n股权投资产品波动与风险超出您当前风险承受等级，本次暂不配置；若后续有意向，需先完成合格投资者资质认定并更新风险测评\n\n📋 **配套合规提示**\n全部推荐产品均已标注风险等级及流动性约束，不承诺保本保收益。`
+                userCommand: '为王总300万闲置资金定制资产配置方案，同步给出存量股票持仓优化建议，内容做到通俗易懂，并附带完整合规提示。'
             },
             // 第4步：交叉验证助手
             {
                 assistantIndex: 3,
-                userCommand: '交叉核验整套方案的适当性匹配、合规话术、产品准入规则，全面排查潜在风险漏洞。',
-                response: `**合规风控交叉核验报告**\n\n**① 正向核验结果**\n✅ 全部推荐产品为R2/R3风险等级，和客户稳健型C3测评结果相匹配，资金配比也符合同类客群配置标准。\n\n**② 风险漏洞筛查**\n✅ 方案内无夸大收益、保本保息等违规表述，关于股权产品不予配置的提示内容完整清晰。\n\n**③ 优化整改提示**\n⚠️ 需在方案中补充“股票置换过程存在浮亏波动风险”相关说明。\n\n**④ 业务流程提示**\n📋 与客户沟通达成意向后，需线上签署《适当性匹配告知书》，按要求留存业务凭证。`
+                userCommand: '交叉核验整套方案的适当性匹配、合规话术、产品准入规则，全面排查潜在风险漏洞。'
             },
             // 第5步：客户服务助手
             {
                 assistantIndex: 4,
-                userCommand: '生成微信简短通俗版沟通文案，同时配套标准化回访提问清单。',
-                response: `**客户沟通服务内容**\n\n**① 微信简短沟通文案**（可直接转发客户）\n---\n王总，结合您目前持仓情况与300万闲置资金，我整理了一套低波动增值规划，兼顾资金安全性，同时也规划了分散股票持仓风险的思路。您提到的股权投资产品风险超出当前测评等级，后续我们可以先评估资质，再考虑配置。方案我发您，有空咱们线下细聊。\n---\n\n**② 标准化回访清单**\n1. 确认客户已阅读并理解资产配置方案内容\n2. 确认客户知悉推荐产品风险等级及非保本提示\n3. 确认客户对股权产品暂不配置的处理无异议\n4. 确认客户了解股票置换过程中的波动风险\n5. 确认客户同意签署《适当性匹配告知书》\n\n沟通结束后可直接生成回访记录，同步至业务系统。`
+                userCommand: '生成微信简短通俗版沟通文案，同时配套标准化回访提问清单。'
             }
         ];
 
@@ -4252,14 +5049,13 @@
             userMsg.innerHTML = `<div class="chat-bubble chat-bubble-user">${assistant.name}</div>`;
             block.appendChild(userMsg);
 
-            // 助手欢迎语+业务条线选择
+            // 助手欢迎语
             const aiMsg = document.createElement('div');
             aiMsg.className = 'chat-row chat-row-assistant';
             aiMsg.innerHTML = `
                 ${buildEmployeeChatAvatarHtml(index)}
                 <div class="chat-bubble chat-bubble-assistant">
-                    <div class="assistant-welcome">${assistant.welcomeText}</div>
-                    ${getBusinessLineSelectHtml()}
+                    <div class="assistant-welcome">${markdownToHtml(assistant.welcomeText)}</div>
                 </div>
             `;
             block.appendChild(aiMsg);
@@ -4279,75 +5075,15 @@
             // 用户选择消息
             appendChatMessage('选择了「' + line + '」', 'user', panel);
 
-            // 助手回复
+            // 业务团队模式：通过 ib-business-assistant 输出回答
             const state = getPanelState(panel);
             const index = state.currentCardIndex;
-            const assistant = aiAssistants[index];
 
             setTimeout(() => {
-                if (line === '零售业务' && index === 0) {
-                    // 客户分析助手+零售业务：提示输入客户姓名
-                    appendChatMessage('已切换到「零售业务」条线，请输入客户姓名开始综合分析。', 'assistant', panel);
-                } else {
-                    appendChatMessage('已切换至「' + line + '」条线，' + assistant.modelName + '已就绪。请在下方输入指令。', 'assistant', panel);
-                }
+                getAssistantReply(`用户选择了「${line}」条线，请确认并提供相关指导`, index, panel).then(reply => {
+                    appendChatMessage(reply, 'assistant', panel);
+                });
             }, 300);
-        }
-
-        // ========== 全流程：输入客户姓名后自动优化指令 ==========
-        // 各助手针对零售业务的用户输入自动优化模板
-        const autoOptimizeTemplates = [
-            // 第1步：客户分析助手 - 输入姓名 → 自动优化
-            { assistantIndex: 0, template: (name) => '调取客户' + name + '的全部资产状况、风险承受能力、投资行为以及现金流情况，输出完整的客户综合分析内容。' },
-            // 第2步：业务分析助手
-            { assistantIndex: 1, template: (name) => '结合' + name + '的稳健属性，匹配合规且可承接300万资金的产品与业务，调取同类型客户的成交参考案例。' },
-            // 第3步：方案生成助手
-            { assistantIndex: 2, template: (name) => '为' + name + '300万闲置资金定制资产配置方案，同步给出存量股票持仓优化建议，内容做到通俗易懂，并附带完整合规提示。' },
-            // 第4步：交叉验证助手
-            { assistantIndex: 3, template: (name) => '交叉核验' + name + '整套方案的适当性匹配、合规话术、产品准入规则，全面排查潜在风险漏洞。' },
-            // 第5步：客户服务助手
-            { assistantIndex: 4, template: (name) => '为' + name + '生成微信简短通俗版沟通文案，同时配套标准化回访提问清单。' }
-        ];
-
-        // 检测用户输入是否为客户姓名（2-4个中文字符）
-        function isChineseName(input) {
-            return /^[一-龥]{2,4}$/.test(input.trim());
-        }
-
-        // 处理客户姓名输入
-        function handleCustomerNameInput(name) {
-            const panel = getActiveWorkbenchPanel();
-            const state = getPanelState(panel);
-            const index = state.currentCardIndex;
-
-            // 找到对应模板
-            const templateObj = autoOptimizeTemplates.find(t => t.assistantIndex === index);
-            if (!templateObj) return false;
-
-            // 保存客户姓名供后续步骤使用
-            currentCustomerName = name;
-
-            const optimizedCommand = templateObj.template(name);
-
-            // 显示用户原始输入
-            appendChatMessage(name, 'user', panel);
-
-            // 显示优化后的指令
-            setTimeout(() => {
-                appendChatMessage('📝 已优化指令：' + optimizedCommand, 'assistant', panel);
-                // 延迟后发送正式指令并获取回复
-                setTimeout(() => {
-                    currentFlowStep = index;
-                    // 显示优化指令作为用户发送
-                    appendChatMessage(optimizedCommand, 'user', panel);
-                    // 显示助手回复（带联想提示词）
-                    setTimeout(() => {
-                        appendChatMessageWithPrompt(getFlowStep(index).response, index, panel);
-                    }, 500);
-                }, 600);
-            }, 400);
-
-            return true;
         }
 
         // 快捷指令：开始全流程
@@ -4377,9 +5113,11 @@
             // 显示用户指令
             appendChatMessage(step.userCommand, 'user', panel);
 
-            // 延迟显示助手回复
+            // 延迟通过 ib-business-assistant 显示助手回复
             setTimeout(() => {
-                appendChatMessageWithPrompt(step.response, currentFlowStep, panel);
+                getAssistantReply(step.userCommand, step.assistantIndex, panel).then(reply => {
+                    appendChatMessageWithPrompt(reply, currentFlowStep, panel);
+                });
             }, 500);
         }
 
@@ -4416,6 +5154,7 @@
             const lastBlock = messagesEl.querySelector('.chat-conversation-block:last-of-type');
             (lastBlock || messagesEl).appendChild(row);
             scrollWorkbenchChatToBottom(p);
+            updateFullscreenTitle();
         }
 
         // 添加联想提示词（用于姓名输入触发的流程）
@@ -4433,8 +5172,11 @@
         function jumpToBusinessAgent() {
             const panel = getActiveWorkbenchPanel();
             appendChatMessage('正在跳转至零售业务助理，同步全部工作成果...', 'user', panel);
+            // 业务团队模式：通过 ib-business-assistant 输出回答
             setTimeout(() => {
-                appendChatMessage('✅ 已成功同步以下工作成果至零售业务助理：\n- 客户综合分析报告\n- 业务分析匹配清单\n- 资产配置规划方案\n- 业务分析交叉核验记录\n- 标准化沟通底稿与回访清单\n\n您现在可以在零售业务助理中完成线上产品推介、适当性文书签署、客户回访档案录入等操作。所有业务数据将回流至业绩与绩效看板，自动测算预估绩效。', 'assistant', panel);
+                getAssistantReply('请确认同步工作成果至零售业务助理的操作结果', getPanelState(panel).currentCardIndex ?? 0, panel).then(reply => {
+                    appendChatMessage(reply, 'assistant', panel);
+                });
             }, 500);
         }
 
@@ -4459,6 +5201,7 @@
             const lastBlock = messagesEl.querySelector('.chat-conversation-block:last-of-type');
             (lastBlock || messagesEl).appendChild(row);
             scrollWorkbenchChatToBottom(p);
+            updateFullscreenTitle();
         }
 
         function escapeHtml(text) {
@@ -4467,36 +5210,184 @@
             return div.innerHTML;
         }
 
-        function getAssistantReply(message, index) {
+        // ========== AI回复后推荐问题功能 ==========
+
+        // 根据助手类型和对话上下文生成推荐问题
+        function generateSuggestedQuestions(assistantIndex, userMessage, replyText) {
+            // 各助手的推荐问题库
+            const questionBank = [
+                // 0: 客户分析助手
+                [
+                    '这家客户的投行业务机会有哪些？',
+                    '客户的风险评级和业务准入限制是什么？',
+                    '客户适合做哪类融资业务？',
+                    '请分析客户现金流和偿债能力',
+                    '这个客户做定增条件够吗？',
+                    '客户有没有并购重组的需求？'
+                ],
+                // 1: 业务分析助手
+                [
+                    '定增业务怎么做？',
+                    '公司债发行流程是什么？',
+                    '可转债适合什么类型的客户？',
+                    'ABS产品怎么设计？',
+                    'IPO上市需要满足哪些条件？',
+                    '破产重整操作流程是怎样的？'
+                ],
+                // 2: 方案生成助手
+                [
+                    '帮我设计一个定增发行方案',
+                    '公司债发行方案怎么写？',
+                    '可转债条款如何设计？',
+                    '收购上市公司的交易方案要点是什么？',
+                    'ABS结构设计方案有哪些要素？',
+                    '破产重整计划如何编制？'
+                ],
+                // 3: 交叉验证助手
+                [
+                    '帮我核验这个方案的合规性',
+                    '定增有关联交易风险吗？',
+                    '财务数据有没有异常？',
+                    '这个业务流程合规吗？',
+                    '需要签署哪些法律文件？',
+                    '治理结构有什么问题吗？'
+                ],
+                // 4: 客户服务助手
+                [
+                    '帮我筛选匹配的投资者',
+                    '这个事件是否需要信息披露？',
+                    '帮我生成一份临时公告',
+                    '投资者沟通策略怎么制定？',
+                    '信披标准有哪些要求？',
+                    '公告格式和要点是什么？'
+                ]
+            ];
+
+            const bank = questionBank[assistantIndex] || questionBank[0];
+            // 简单去重：避免推荐和用户当前问题太相似的内容
+            const userKeywords = userMessage.replace(/[?？。，！!、]/g, '').substring(0, 10);
+            const filtered = bank.filter(q => !q.includes(userKeywords));
+            // 随机选3个（但固定顺序以保持体验一致性）
+            const questions = filtered.slice(0, 3);
+            return questions;
+        }
+
+        // 在AI回复后追加推荐问题到聊天区
+        function appendSuggestedQuestions(assistantIndex, userMessage, replyText, panel) {
+            const p = panel || getActiveWorkbenchPanel();
+            const messagesEl = getPanelEl('ai-chat-messages', p);
+            if (!messagesEl) return;
+
+            const questions = generateSuggestedQuestions(assistantIndex, userMessage, replyText);
+            if (!questions || questions.length === 0) return;
+
+            const lastBlock = messagesEl.querySelector('.chat-conversation-block:last-of-type');
+            if (!lastBlock) return;
+
+            const suggestRow = document.createElement('div');
+            suggestRow.className = 'chat-row chat-row-suggest';
+
+            let suggestHtml = '<div class="chat-suggest-area">';
+            suggestHtml += '<div class="chat-suggest-label">\u{1F4AC} 相关问题</div>';
+            suggestHtml += '<div class="chat-suggest-list">';
+            questions.forEach(q => {
+                suggestHtml += `<div class="chat-suggest-item" onclick="clickSuggestedQuestion(this, '${escapeHtml(q).replace(/'/g, "\\'")}')">${escapeHtml(q)}</div>`;
+            });
+            suggestHtml += '</div></div>';
+
+            suggestRow.innerHTML = suggestHtml;
+            lastBlock.appendChild(suggestRow);
+            scrollWorkbenchChatToBottom(p);
+        }
+
+        // 点击推荐问题，直接发送
+        function clickSuggestedQuestion(el, question) {
+            // 移除当前推荐区域
+            const suggestRow = el.closest('.chat-row-suggest');
+            if (suggestRow) suggestRow.remove();
+            // 发送问题
+            sendMainMessage(question);
+        }
+
+        // 点击提示词卡片：填入输入框并发送
+        // 文档卡片下载处理
+        function downloadDocFile(url, name) {
+            // 假设是示例模板文件，展示对话假误提示
+            const panel = getActiveWorkbenchPanel();
+            appendChatMessage(`正在准备下载「${name}」...`, 'user', panel);
+            setTimeout(() => {
+                // 对话模拟回复：提示文件可联系支持人员获取
+                appendChatMessage(
+                    `「${name}」已准备就绪。\n\n请联系支持人员张明（工号8012）获取正式文件，或可直接发送邮件至：zhangm@company.com`,
+                    'assistant', panel
+                );
+            }, 600);
+        }
+
+        function clickPromptCard(el, promptText) {
+            const panel = getActiveWorkbenchPanel();
+            const input = getPanelEl('main-chat-input', panel);
+            if (input) {
+                input.value = promptText;
+                input.focus();
+            }
+            // 直接发送
+            sendMainMessage(promptText);
+        }
+
+        async function getAssistantReply(message, index, panel) {
             const assistant = aiAssistants[index];
-            const lowerMsg = message.toLowerCase();
+            const p = panel || getActiveWorkbenchPanel();
 
-            if (index === 0) {
-                if (lowerMsg.includes('分析') || lowerMsg.includes('股票') || lowerMsg.includes('公司')) {
-                    return `好的，我将为您分析「${message}」。请稍候，正在调取相关研报与财务数据...\n\n您可以告诉我更具体的分析维度，例如：基本面分析、估值对比、行业地位等。`;
-                }
-            }
-            if (index === 1) {
-                if (lowerMsg.includes('客户') || lowerMsg.includes('线索') || lowerMsg.includes('挖掘')) {
-                    return `好的，正在为您查询「${message}」相关的潜在客户线索...\n\n如需查看完整线索列表，请告诉我具体的业务类型（经纪/资管/投行）。`;
-                }
-            }
-            if (index === 3) {
-                if (lowerMsg.includes('验证') || lowerMsg.includes('复核') || lowerMsg.includes('比对')) {
-                    return `好的，我将启动交叉验证流程，对「${message}」进行多维度核验。\n\n请提供需要验证的方案文档或数据来源，我将为您出具验证报告。`;
-                }
-            }
-            if (index === 4) {
-                if (message.includes('个人') || message.includes('银行') || message.includes('企业')) {
-                    return `好的，已为您匹配「${message}」服务方案。请描述具体的服务需求，我将为您推荐合适的服务流程。`;
-                }
-            }
+            // 显示加载中状态
+            appendChatMessage('正在分析中，请稍候...', 'assistant', p);
 
-            return `收到您的需求：「${message}」。${assistant.name}正在为您处理，请稍候...`;
+            try {
+                const agentIdMap = ['customer', 'business', 'plan', 'verify', 'service'];
+                const response = await fetch('/api/ib-assistant', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        input: message,
+                        agentId: agentIdMap[index] || 'customer',
+                        agentName: assistant.name
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 移除加载消息，显示 ib-business-assistant 的回复
+                    removeLastAssistantMessage(p);
+                    return data.content;
+                } else {
+                    removeLastAssistantMessage(p);
+                    return data.error || '处理失败，请重试';
+                }
+            } catch (err) {
+                removeLastAssistantMessage(p);
+                console.error('投行助手API调用失败:', err);
+                return '投行助手服务暂时不可用，请确认服务已启动（node proxy-server.js）';
+            }
+        }
+
+        // 移除最后一条助手消息（用于移除加载中状态）
+        function removeLastAssistantMessage(panel) {
+            const p = panel || getActiveWorkbenchPanel();
+            const messagesEl = getPanelEl('ai-chat-messages', p);
+            if (!messagesEl) return;
+            
+            const lastBlock = messagesEl.querySelector('.chat-conversation-block:last-of-type');
+            if (lastBlock) {
+                const lastRow = lastBlock.querySelector('.chat-row-assistant:last-of-type');
+                if (lastRow && lastRow.textContent.includes('正在分析中')) {
+                    lastRow.remove();
+                }
+            }
         }
 
         function cancelSolutionSelect(blockId) {
-            appendChatMessage('已取消方案类型选择。如需重新选择，请告诉我。', 'assistant');
+            // 业务团队模式：取消操作不输出固定文案
         }
 
         function confirmSolutionSelect(blockId) {
@@ -4505,8 +5396,12 @@
                 alert('请先选择方案类型');
                 return;
             }
+            // 业务团队模式：确认选择后通过 ib-business-assistant 输出回答
             const labels = { bankruptcy: '破产重整', placement: '定增', bond: '债券', asset: '资管产品' };
-            appendChatMessage(`您选择了「${labels[selected.value]}」方案，我将为您定制方案，请提供相关项目信息。`, 'assistant');
+            const panel = getActiveWorkbenchPanel();
+            getAssistantReply(`用户选择了「${labels[selected.value]}」方案，请提供相关指导`, getPanelState(panel).currentCardIndex ?? 0, panel).then(reply => {
+                appendChatMessage(reply, 'assistant', panel);
+            });
         }
 
         function bringToFront(clickedCard) {
@@ -4538,6 +5433,141 @@
                 return;
             }
             selectAssistant(index, panel);
+        }
+
+        // ========== 对话流工具栏：新建会话 & 全屏展示 ==========
+
+        // 当前是否处于全屏模式
+        let chatFullscreenActive = false;
+
+        // 新建会话：清空当前对话，重新显示当前助手介绍
+        function newChatSession() {
+            const panel = getActiveWorkbenchPanel();
+            const state = getPanelState(panel);
+            const index = state.currentCardIndex ?? 0;
+
+            // 清空对话内容
+            const messagesEl = getPanelEl('ai-chat-messages', panel);
+            if (messagesEl) messagesEl.innerHTML = '';
+
+            // 重新显示助手介绍
+            appendAssistantConversation(index, panel);
+
+            // 如果在全屏模式，同步更新标题
+            if (chatFullscreenActive) {
+                document.getElementById('chat-fullscreen-title').textContent = '新对话';
+            }
+        }
+
+        // 展开为全屏展示
+        function expandChatView() {
+            const panel = getActiveWorkbenchPanel();
+            const overlay = document.getElementById('chat-fullscreen-overlay');
+            const fullscreenBody = document.getElementById('chat-fullscreen-body');
+            const fullscreenInputWrap = document.getElementById('chat-fullscreen-input-wrap');
+            const chatView = getPanelEl('ai-chat-view', panel);
+            const inputSection = panel.querySelector('.input-section.chat-mode');
+
+            if (!overlay || !chatView) return;
+
+            // 移动对话内容到全屏容器
+            const messagesEl = getPanelEl('ai-chat-messages', panel);
+            if (messagesEl && fullscreenBody) {
+                fullscreenBody.innerHTML = '';
+                fullscreenBody.appendChild(messagesEl);
+            }
+
+            // 移动输入区到全屏底部
+            if (inputSection && fullscreenInputWrap) {
+                fullscreenInputWrap.innerHTML = '';
+                fullscreenInputWrap.appendChild(inputSection);
+            }
+
+            // 生成对话标题
+            const title = generateChatTitle(panel);
+            document.getElementById('chat-fullscreen-title').textContent = title;
+
+            overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            chatFullscreenActive = true;
+
+            // 滚动到底部
+            requestAnimationFrame(() => {
+                fullscreenBody.scrollTop = fullscreenBody.scrollHeight;
+            });
+        }
+
+        // 缩小回原主页面
+        function collapseChatView() {
+            const panel = getActiveWorkbenchPanel();
+            const overlay = document.getElementById('chat-fullscreen-overlay');
+            const fullscreenBody = document.getElementById('chat-fullscreen-body');
+            const fullscreenInputWrap = document.getElementById('chat-fullscreen-input-wrap');
+            const chatView = getPanelEl('ai-chat-view', panel);
+
+            if (!overlay || !chatView) return;
+
+            // 将对话内容移回原位
+            const messagesEl = fullscreenBody?.querySelector('.ai-chat-messages');
+            if (messagesEl && chatView) {
+                chatView.appendChild(messagesEl);
+            }
+
+            // 将输入区移回原位
+            const inputSection = fullscreenInputWrap?.querySelector('.input-section');
+            if (inputSection) {
+                const workbench = panel.querySelector('.ai-workbench-section');
+                if (workbench) {
+                    workbench.appendChild(inputSection);
+                }
+            }
+
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+            chatFullscreenActive = false;
+
+            // 滚动到底部
+            requestAnimationFrame(() => {
+                scrollWorkbenchChatToBottom(panel);
+            });
+        }
+
+        // AI根据交流内容自动生成对话标题
+        function generateChatTitle(panel) {
+            const p = panel || getActiveWorkbenchPanel();
+            const messagesEl = getPanelEl('ai-chat-messages', p);
+            if (!messagesEl) return '新对话';
+
+            // 提取对话中的关键文本
+            const userMessages = [];
+            messagesEl.querySelectorAll('.chat-bubble-user').forEach(bubble => {
+                const text = bubble.textContent.trim();
+                if (text && text.length > 1 && text.length < 50) {
+                    userMessages.push(text);
+                }
+            });
+
+            const assistant = getEmployeeAssistant(getPanelState(p).currentCardIndex ?? 0);
+
+            if (userMessages.length === 0) {
+                return assistant.name + ' - 新对话';
+            }
+
+            // 取第一条用户消息作为标题，截断过长内容
+            let title = userMessages[0];
+            if (title.length > 20) {
+                title = title.substring(0, 20) + '...';
+            }
+
+            return assistant.name + '：' + title;
+        }
+
+        // 全屏模式下发送消息后更新标题
+        function updateFullscreenTitle() {
+            if (!chatFullscreenActive) return;
+            const panel = getActiveWorkbenchPanel();
+            const title = generateChatTitle(panel);
+            document.getElementById('chat-fullscreen-title').textContent = title;
         }
         
         // ========== 军师方案设计功能 ==========
@@ -4602,16 +5632,16 @@
         }
         
         // 发送消息并智能路由
-        function sendMainMessage() {
+        function sendMainMessage(overrideMsg) {
             const panel = getActiveWorkbenchPanel();
             const input = getPanelEl('main-chat-input', panel);
-            const message = input?.value.trim();
+            const message = (overrideMsg || input?.value || '').trim();
             
             if (!message) {
                 return;
             }
             
-            input.value = '';
+            if (input) input.value = '';
 
             if (getPanelKey(panel) === 'org') {
                 appendOrgChatMessage(message, 'user', panel);
@@ -4644,29 +5674,22 @@
                     }, 400);
                     return;
                 }
-                // 检查是否为客户姓名输入（在零售业务+客户分析助手场景下）
-                if (currentBusinessLine === '零售业务' && isChineseName(message)) {
-                    handleCustomerNameInput(message.trim());
-                    return;
-                }
+                const currentAssistantIndex = getPanelState().currentCardIndex;
                 appendChatMessage(message, 'user');
-                setTimeout(() => {
-                    appendChatMessage(getAssistantReply(message, getPanelState().currentCardIndex), 'assistant');
-                }, 400);
+                // 异步调用投行业务助手API
+                getAssistantReply(message, currentAssistantIndex).then(reply => {
+                    appendChatMessage(reply, 'assistant');
+                });
                 return;
             }
             
-            // 智能识别需求类型
-            const matchedAssistant = recognizeIntent(message);
-            
-            if (matchedAssistant) {
-                showRecognitionToast(matchedAssistant.name, message);
-                setTimeout(() => {
-                    matchedAssistant.action();
-                }, 800);
-            } else {
-                showGeneralHelp();
-            }
+            // ========== 未进入聊天模式时的处理 ==========
+            // 自动进入聊天模式（默认使用第一个助手），并调用投行业务助手API回复
+            enterChatMode(0, panel);
+            appendChatMessage(message, 'user');
+            getAssistantReply(message, 0).then(reply => {
+                appendChatMessage(reply, 'assistant', panel);
+            });
         }
         
         // 语音识别输入
@@ -4713,8 +5736,11 @@
 
             if (getPanelState(panel).chatModeActive) {
                 appendChatMessage(message, 'user');
+                // 业务团队模式：通过 ib-business-assistant 输出回答
                 setTimeout(() => {
-                    appendChatMessage(`已收到文件「${file.name}」，我将为您提取关键信息并协助处理。`, 'assistant');
+                    getAssistantReply(`已收到文件「${file.name}」，请提取关键信息并协助处理`, getPanelState(panel).currentCardIndex ?? 0, panel).then(reply => {
+                        appendChatMessage(reply, 'assistant', panel);
+                    });
                 }, 400);
                 return;
             }
@@ -6773,21 +7799,21 @@
         
         // ========== 今日任务 / 工作日志功能 ==========
         const EMPLOYEE_DAILY_TASKS_KEY = 'employeeDailyTasks';
-        const EMPLOYEE_DAILY_TASKS_SEED_VERSION = 2;
+        const EMPLOYEE_DAILY_TASKS_SEED_VERSION = 6;
         let pendingDeleteEmployeeTaskId = null;
         let selectedEmployeeTaskId = null;
 
         const defaultEmployeeDailyTasks = [
             {
                 id: 'seed-1',
-                title: '高净值客户张三季度回访待完成，客户资产近3月波动较大需主动触达',
-                summary: '张三（资产规模888万），近3月资产变动约15%，需了解持仓变动原因并推荐固收类产品进行仓位调整',
-                content: '该客户为营业部重点维护的高净值客户，账户资产规模约888万元，近三个月账户资产出现约15%的波动，主要系持仓的权益类产品净值调整所致。客户此前风险偏好为稳健型，目前持仓中权益类占比偏高，需在本次回访中了解客户对近期市场波动的反馈，评估其风险承受能力是否有变化，并根据客户反馈推荐合适的固收类或固收+产品进行仓位再平衡，回访记录需在CRM系统中完整留痕。',
-                source: '投资业务助理',
-                sourceType: 'agent',
-                date: '2026-06-16',
+                title: '迪阿股份8亿结构性存款Q1到期，需启动客户拜访及产品配置方案评估',
+                summary: '上市公司迪阿股份(301177.SZ)2026年Q1约8亿银行结构性存款到期，自有资金充裕，存量资管产品业绩基准1.6%~4.6%，为资管业务潜在客户',
+                content: '上市公司迪阿股份在2026年一季度将有8亿左右银行结构性存款到期。该客户自有资金充裕，投过其他券商资管计划，存续产品业绩基准在1.6%-4.6%之间，是公司资管业务的潜在客户。请尽快安排客户拜访。',
+                source: '智能体',
+                sourceType: 'agent-page',
+                date: '2026-06-24',
                 time: '09:00',
-                timestamp: new Date('2026-06-16T09:00:00').getTime()
+                timestamp: new Date('2026-06-24T09:00:00').getTime()
             },
             {
                 id: 'seed-2',
@@ -6796,53 +7822,42 @@
                 content: '测试科技有限公司为营业部新拓展的机构客户，拟开通证券账户用于闲置资金理财。该客户开户申请已提交至柜台系统，目前因营业执照印件扫描件清晰度不足被退回，且法人身份证有效期将于下月到期，需提醒客户同步更新证件。客户表示有资金使用计划，希望尽快完成开户，已申请绿色通道加急处理，需持续跟进资料补齐进度。',
                 source: '投行业务助理',
                 sourceType: 'agent',
-                date: '2026-06-16',
+                date: '2026-06-24',
                 time: '09:45',
-                timestamp: new Date('2026-06-16T09:45:00').getTime()
-            },
-            {
-                id: 'seed-3',
-                title: '私募基金双录视频待完成，客户已签署风险揭示书',
-                summary: '李四（合格投资者）已签署"测试一号"私募基金风险揭示书，需在系统中完成双录视频上传及合规提交',
-                content: '客户李四已完成合格投资者认定，风险测评结果为进取型，符合"测试一号"私募基金(R4风险等级)的投资者适当性要求。客户已线下签署基金合同及风险揭示书，根据监管要求，需在签约过程中完成录音录像双录。目前双录视频尚未上传至合规系统，需尽快预约客户完成双录环节，确保签约流程符合合规要求并归档备查。',
-                source: '资管业务助理',
-                sourceType: 'agent',
-                date: '2026-06-16',
-                time: '10:30',
-                timestamp: new Date('2026-06-16T10:30:00').getTime()
+                timestamp: new Date('2026-06-24T09:45:00').getTime()
             },
             {
                 id: 'seed-4',
-                title: '本月基金定投任务缺口8户，需重点触达偏股型持仓客户',
+                title: '基金定投缺口8户，待外呼权益类持仓≥60%且未开定投客户35人',
                 summary: '当前完成率73% (22/30户)，需对持仓偏股型客户进行定投转化营销',
-                content: '本月营业部下达的基金定投新增签约任务目标为30户，截至目前已完成22户，缺口8户，完成率73%。经分析，存量客户中持有偏股型基金但未开通定投功能的客户约35人，该群体对权益市场已有一定认知，转化为定投客户的概率较高。建议重点针对该客户群体进行外呼营销，介绍定投分散风险、平摊成本的优势，争取在本月20日前补齐缺口。',
+                content: '本月营业部下达的基金定投新增签约任务目标为30户，截至目前已完成22户，缺口8户，完成率73%。经分析，存量客户中持有偏股型基金且权益类持仓≥60%但未开通定投功能的客户约35人，该群体对权益市场已有一定认知，转化为定投客户的概率较高。建议重点针对该客户群体进行外呼营销，介绍定投分散风险、平摊成本的优势，争取在本月20日前补齐缺口。',
                 source: '员工工作台',
                 sourceType: 'workbench',
-                date: '2026-06-16',
+                date: '2026-06-24',
                 time: '11:15',
-                timestamp: new Date('2026-06-16T11:15:00').getTime()
+                timestamp: new Date('2026-06-24T11:15:00').getTime()
             },
             {
                 id: 'seed-5',
-                title: '适当性匹配异常客户待处理，需出具不匹配警示书',
+                title: '客户周八（风险测评C1）持有R4产品，待出具不匹配警示书',
                 summary: '客户周八风险等级C1却持有R4产品，需出具风险不匹配警示书并系统留痕',
                 content: '客户周八于两年前开户时风险测评结果为保守型(C1)，期间未进行风险测评更新。系统监测发现该客户目前持仓中持有"测试一号"私募基金(R4风险等级)，与其当前风险承受能力存在不匹配情况。根据适当性管理要求，需对该客户进行风险承受能力重测，如果测评结果仍为C1，需向客户出具风险不匹配警示书，由客户签字确认已知悉风险，相关文件需扫描上传至系统留痕备查。',
                 source: '交叉验证助理',
                 sourceType: 'agent',
-                date: '2026-06-16',
+                date: '2026-06-24',
                 time: '14:00',
-                timestamp: new Date('2026-06-16T14:00:00').getTime()
+                timestamp: new Date('2026-06-24T14:00:00').getTime()
             },
             {
                 id: 'seed-6',
-                title: '大额资金到账客户3日内无持仓变动，需主动推荐短期理财',
+                title: '单笔银证转入≥100万且3日零持仓变动，待推荐期限≤90天产品',
                 summary: '客户吴九银证转账转入566万，3日内未做持仓配置，需主动触达推荐短期理财产品',
-                content: '客户吴九为营业部活跃客户，历史交易以股票为主，账户日均资产约120万元。系统监测到该客户于6月12日通过银证转账转入资金566万元，截至今日(6月15日)该笔资金尚未进行任何证券或理财产品配置，处于闲置状态。考虑到客户可能有短期理财需求，建议主动联系客户了解资金安排计划，推荐短期理财产品或货币基金，帮助客户。',
+                content: '客户吴九为营业部活跃客户，历史交易以股票为主，账户日均资产约120万元。系统监测到该客户于6月21日通过银证转账转入资金566万元，截至今日(6月24日)该笔资金尚未进行任何证券或理财产品配置，处于闲置状态。考虑到客户可能有短期理财需求，建议主动联系客户了解资金安排计划，推荐期限≤90天的短期理财产品或货币基金，帮助客户提高资金使用效率。',
                 source: '投资业务助理',
                 sourceType: 'agent',
-                date: '2026-06-16',
+                date: '2026-06-24',
                 time: '15:30',
-                timestamp: new Date('2026-06-16T15:30:00').getTime()
+                timestamp: new Date('2026-06-24T15:30:00').getTime()
             }
         ];
 
@@ -6863,7 +7878,9 @@
 
         function initEmployeeDailyTasks() {
             const seedVersion = localStorage.getItem(EMPLOYEE_DAILY_TASKS_KEY + '_seed');
-            if (!getEmployeeDailyTasks() || seedVersion !== String(EMPLOYEE_DAILY_TASKS_SEED_VERSION)) {
+            const existingTasks = getEmployeeDailyTasks();
+            // 任务为空或版本不匹配时，重新写入种子数据
+            if (!existingTasks || existingTasks.length === 0 || seedVersion !== String(EMPLOYEE_DAILY_TASKS_SEED_VERSION)) {
                 saveEmployeeDailyTasks(defaultEmployeeDailyTasks);
                 localStorage.setItem(EMPLOYEE_DAILY_TASKS_KEY + '_seed', String(EMPLOYEE_DAILY_TASKS_SEED_VERSION));
             }
@@ -6942,6 +7959,12 @@
             const task = tasks.find(item => item.id === taskId);
             if (!task) return;
 
+            // 智能体页面类型任务：跳转到智能体内部页面
+            if (task.sourceType === 'agent-page') {
+                openAgentDaiaPage();
+                return;
+            }
+
             selectedEmployeeTaskId = taskId;
             const drawer = document.getElementById('employee-task-detail-drawer');
             if (!drawer) return;
@@ -6996,12 +8019,14 @@
             const assistantIndex = state.currentCardIndex ?? 0;
             const carousel = getPanelEl('ai-carousel-view', panel);
             const chatView = getPanelEl('ai-chat-view', panel);
+            const chatAreaWrap = panel.querySelector('#ai-chat-area-wrap') || document.getElementById('ai-chat-area-wrap');
             const miniAvatars = getPanelEl('ai-mini-avatars', panel);
             const workbench = panel.querySelector('.ai-workbench-section');
             const inputSection = panel.querySelector('.input-section');
 
             if (carousel) carousel.style.display = 'none';
-            if (chatView) chatView.style.display = 'block';
+            if (chatAreaWrap) chatAreaWrap.style.display = 'flex';
+            if (chatView) chatView.style.display = '';
             if (miniAvatars) miniAvatars.style.display = 'flex';
             if (workbench) workbench.classList.add('chat-mode');
             if (inputSection) inputSection.classList.add('chat-mode');
@@ -7014,8 +8039,8 @@
         }
 
         function getTaskAssistantReply(task, index) {
-            const assistant = aiAssistants[index] || aiAssistants[0];
-            return `您好！收到您的任务「${task.title}」。\n\n我是${assistant.name}，可协助您：\n• 梳理任务背景与关键节点\n• 生成执行建议与协作清单\n• 跟进任务进展并同步相关事项\n\n请告诉我您希望从哪一步开始？`;
+            // 业务团队模式：返回空，由 sendEmployeeTaskToChat 调用 ib-business-assistant
+            return null;
         }
 
         function sendEmployeeTaskToChat(taskId) {
@@ -7027,9 +8052,16 @@
             if (!panel) return;
 
             const assistantIndex = ensureEmployeeChatMode(panel);
-            appendChatMessage(task.title, 'user', panel);
+
+            // 根据任务内容构造针对性提示词
+            const prompt = buildTaskPrompt(task);
+            appendChatMessage(prompt, 'user', panel);
+
+            // 通过 ib-business-assistant 输出回答
             setTimeout(() => {
-                appendChatMessage(getTaskAssistantReply(task, getPanelState(panel).currentCardIndex ?? assistantIndex), 'assistant', panel);
+                getAssistantReply(prompt, getPanelState(panel).currentCardIndex ?? assistantIndex, panel).then(reply => {
+                    appendChatMessage(reply, 'assistant', panel);
+                });
             }, 400);
 
             const workTipsSection = panel.querySelector('#work-tips-section');
@@ -7039,6 +8071,40 @@
                 if (workTipsToggle) workTipsToggle.textContent = '展开';
             }
             syncEmployeeChatModeLayout();
+        }
+
+        // 根据任务内容构造针对性提示词
+        function buildTaskPrompt(task) {
+            const title = task.title || '';
+            const content = task.content || task.summary || '';
+
+            // 第二条任务：开户资料补件
+            if (title.includes('开户资料补件') || title.includes('资料补件') || title.includes('营业执照')) {
+                return `我是营业部员工，当前有一笔机构客户开户资料补件任务需要处理：\n${content}\n\n请帮我：\n1. 生成与客户的沟通话术（电话+企业微信），提醒客户补充营业执照和更新法人证件\n2. 列出客户需上传的资料清单和操作步骤\n3. 生成一条可通过企业微信一键转发给客户的消息模板`;
+            }
+
+            // 第一条任务：迪阿股份
+            if (title.includes('迪阿股份') || title.includes('结构性存款')) {
+                return `当前有客户迪阿股份的资管业务机会：\n${content}\n\n请帮我分析该客户的业务机会并推荐适合的产品配置方案。`;
+            }
+
+            // 基金定投
+            if (title.includes('定投') || title.includes('外呼')) {
+                return `当前有基金定投缺口任务：\n${content}\n\n请帮我生成针对权益类持仓客户的外呼话术和定投营销策略。`;
+            }
+
+            // 不匹配/风险警示
+            if (title.includes('不匹配') || title.includes('警示') || title.includes('风险')) {
+                return `当前有客户风险匹配预警任务：\n${content}\n\n请帮我生成不匹配警示书的关键内容和与客户沟通的建议。`;
+            }
+
+            // 银证转入
+            if (title.includes('银证') || title.includes('持仓变动')) {
+                return `当前有大额资金转入监控任务：\n${content}\n\n请帮我生成适合该客户的短期理财产品推荐和沟通话术。`;
+            }
+
+            // 通用
+            return `我需要处理以下任务，请提供执行建议和协助：\n${title}\n\n${content}`;
         }
 
         function updateEmployeeTaskCharCount(inputId, countId, max) {
@@ -7076,6 +8142,135 @@
             workLogPage.style.display = 'none';
             document.body.style.overflow = '';
             document.getElementById('import-preview').style.display = 'none';
+        }
+
+        // ========== 迪阿股份智能体对话流页面 ==========
+        function openAgentDaiaPage() {
+            const page = document.getElementById('agent-daia-page');
+            page.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            // 滚动到底部
+            requestAnimationFrame(() => {
+                const chatBody = document.getElementById('agent-daia-chat-body');
+                if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+            });
+        }
+
+        function closeAgentDaiaPage() {
+            const page = document.getElementById('agent-daia-page');
+            page.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // 在智能体对话流中追加用户消息
+        function appendDaiaUserMessage(text) {
+            const chatBody = document.getElementById('agent-daia-chat-body');
+            if (!chatBody) return;
+            const row = document.createElement('div');
+            row.className = 'agent-daia-chat-row agent-daia-chat-user';
+            row.innerHTML = `<div class="agent-daia-chat-bubble"><p>${escapeHtml(text)}</p></div>`;
+            chatBody.appendChild(row);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // 在智能体对话流中追加AI回复
+        function appendDaiaAIMessage(text) {
+            const chatBody = document.getElementById('agent-daia-chat-body');
+            if (!chatBody) return;
+            const row = document.createElement('div');
+            row.className = 'agent-daia-chat-row agent-daia-chat-ai';
+            row.innerHTML = `
+                <div class="agent-daia-chat-avatar">🤖</div>
+                <div class="agent-daia-chat-bubble">${markdownToHtml(text)}</div>
+            `;
+            chatBody.appendChild(row);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // 显示加载中状态
+        function appendDaiaTyping() {
+            const chatBody = document.getElementById('agent-daia-chat-body');
+            if (!chatBody) return;
+            const row = document.createElement('div');
+            row.className = 'agent-daia-chat-row agent-daia-chat-ai';
+            row.id = 'agent-daia-typing';
+            row.innerHTML = `
+                <div class="agent-daia-chat-avatar">🤖</div>
+                <div class="agent-daia-chat-bubble">
+                    <div class="agent-daia-typing">
+                        <div class="agent-daia-typing-dot"></div>
+                        <div class="agent-daia-typing-dot"></div>
+                        <div class="agent-daia-typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatBody.appendChild(row);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function removeDaiaTyping() {
+            const el = document.getElementById('agent-daia-typing');
+            if (el) el.remove();
+        }
+
+        // 在智能体页面内发送对话消息
+        function sendDaiaChat(message) {
+            const msg = message || document.getElementById('agent-daia-input')?.value?.trim();
+            if (!msg) return;
+
+            // 清空输入框
+            const input = document.getElementById('agent-daia-input');
+            if (input) input.value = '';
+
+            // 显示用户消息
+            appendDaiaUserMessage(msg);
+
+            // 显示加载状态
+            appendDaiaTyping();
+
+            // 调用投行业务助手API（使用业务分析助手）
+            getAssistantReply(msg, 1).then(reply => {
+                removeDaiaTyping();
+                appendDaiaAIMessage(reply);
+            }).catch(() => {
+                removeDaiaTyping();
+                appendDaiaAIMessage('服务暂时不可用，请稍后重试。');
+            });
+        }
+
+        function handleDaiaAction(action) {
+            const panel = getActiveWorkbenchPanel();
+            const state = getPanelState(panel);
+            switch (action) {
+                case 'report':
+                    // 在智能体对话流中发送调研指令
+                    sendDaiaChat('请生成迪阿股份(301177.SZ)的客户调研报告');
+                    break;
+                case 'roadshow':
+                    // 在智能体对话流中发送路演指令
+                    sendDaiaChat('请为迪阿股份8亿结构性存款到期资金设计路演方案');
+                    break;
+                case 'process':
+                    // 立即处理：在智能体对话流中发送业务分析指令
+                    sendDaiaChat('迪阿股份2026年Q1约8亿结构性存款到期，自有资金充裕，请分析该客户的业务机会');
+                    break;
+                case 'confirm':
+                    appendDaiaUserMessage('确认接收需求');
+                    appendDaiaTyping();
+                    getAssistantReply('用户已确认接收迪阿股份客户需求，请生成下一步跟进计划', 1).then(reply => {
+                        removeDaiaTyping();
+                        appendDaiaAIMessage(reply);
+                    });
+                    break;
+                case 'contact':
+                    appendDaiaUserMessage('联系内部联系人');
+                    appendDaiaTyping();
+                    getAssistantReply('用户需要联系佛山营业部李经理关于迪阿股份的业务对接，请提供联系建议', 1).then(reply => {
+                        removeDaiaTyping();
+                        appendDaiaAIMessage(reply);
+                    });
+                    break;
+            }
         }
 
         function importDocument() {
