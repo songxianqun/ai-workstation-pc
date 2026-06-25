@@ -238,75 +238,14 @@
         <section class="performance-section" id="performance-section">
             <div class="performance-header">
                 <div class="performance-tabs">
-                    <div class="perf-tab active" onclick="switchPerfTab('performance')">📊 业绩与绩效</div>
-                    <div class="perf-tab" onclick="switchPerfTab('behavior')">👤 差旅分析</div>
+                    <div class="perf-tab active" onclick="switchPerfTab('behavior')">👤 差旅分析</div>
                 </div>
                 <button class="section-toggle-btn" id="performance-toggle" onclick="toggleSection('performance')">收起</button>
             </div>
             <div class="section-collapsible-body" id="performance-body">
 
-            <!-- 业绩Tab内容 -->
-            <div class="perf-tab-content" id="perf-performance-content">
-            <!-- 业绩看板 -->
-            <div class="performance-part">
-                <h4 class="part-title">业绩看板</h4>
-                <div class="performance-dashboard">
-                    <div class="dashboard-card" onclick="openDashboardDetail('assets')">
-                        <div class="dashboard-icon">💰</div>
-                        <div class="dashboard-info">
-                            <div class="dashboard-label">客户总资产</div>
-                            <div class="dashboard-hint">点击选择时间点查看明细</div>
-                        </div>
-                        <div class="dashboard-arrow">›</div>
-                    </div>
-                    <div class="dashboard-card" onclick="openDashboardDetail('revenue')">
-                        <div class="dashboard-icon">📈</div>
-                        <div class="dashboard-info">
-                            <div class="dashboard-label">客户带来的总收入</div>
-                            <div class="dashboard-hint">点击选择时间段查看明细</div>
-                        </div>
-                        <div class="dashboard-arrow">›</div>
-                    </div>
-                    <div class="dashboard-card" onclick="openDashboardDetail('cost')">
-                        <div class="dashboard-icon">💸</div>
-                        <div class="dashboard-info">
-                            <div class="dashboard-label">维护客户的总成本</div>
-                            <div class="dashboard-hint">点击选择时间段查看明细</div>
-                        </div>
-                        <div class="dashboard-arrow">›</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 预计绩效收入 -->
-            <div class="performance-part">
-                <h4 class="part-title">预计绩效收入</h4>
-                <div class="performance-bonus compact-layout">
-                    <div class="date-selector-compact">
-                        <label class="date-label">选择时间段：</label>
-                        <div class="date-inputs-row">
-                            <input type="date" id="start-date" value="2026-01-01" class="date-input">
-                            <span class="date-separator">至</span>
-                            <input type="date" id="end-date" value="2026-01-31" class="date-input">
-                            <button class="calculate-btn-compact" onclick="calculateBonus()">计算</button>
-                        </div>
-                    </div>
-                    <div class="bonus-result-inline" id="calculation-result">
-                        <div class="bonus-item-inline">
-                            <span class="bonus-label-inline">客户带来的收入</span>
-                            <span class="bonus-value-inline" id="customer-revenue">30万元</span>
-                        </div>
-                        <div class="bonus-item-inline highlight">
-                            <span class="bonus-label-inline">预计可获得绩效奖金</span>
-                            <span class="bonus-amount-inline" id="bonus-amount">6万元</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            </div>
-
-            <!-- 员工行为Tab内容 -->
-            <div class="perf-tab-content" id="perf-behavior-content" style="display:none;">
+            <!-- 差旅分析内容 -->
+            <div class="perf-tab-content" id="perf-behavior-content">
                 <!-- 三大核心指标卡片 -->
                 <div class="behavior-metric-cards">
                     <div class="behavior-metric-card" data-type="travel" onclick="switchBehaviorCard('travel')">
@@ -406,16 +345,8 @@
                         <div class="ai-card-fan-desc">生成方案显韬略</div>
                     </div>
                 </div>
-                <!-- 交叉验证助手卡片 -->
-                <div class="ai-card-fan" data-index="3" onclick="bringToFront(this)">
-                    <div class="ai-card-fan-inner">
-                        <div class="ai-card-fan-avatar jiaocha">🔍</div>
-                        <div class="ai-card-fan-name">交叉验证助手</div>
-                        <div class="ai-card-fan-desc">交叉核验保准确</div>
-                    </div>
-                </div>
                 <!-- 客户服务助手卡片 -->
-                <div class="ai-card-fan" data-index="4" onclick="bringToFront(this)">
+                <div class="ai-card-fan" data-index="3" onclick="bringToFront(this)">
                     <div class="ai-card-fan-inner">
                         <div class="ai-card-fan-avatar tianyan">👁️</div>
                         <div class="ai-card-fan-name">客户服务助手</div>
@@ -429,7 +360,6 @@
                 <span class="indicator" data-index="1"></span>
                 <span class="indicator" data-index="2"></span>
                 <span class="indicator" data-index="3"></span>
-                <span class="indicator" data-index="4"></span>
             </div>
             </div>
 
@@ -1919,7 +1849,7 @@
         // 按时间点查询客户总资产
 
         // ========== 业绩与绩效 Tab切换 ==========
-        let currentPerfTab = 'performance';
+        let currentPerfTab = 'behavior';
 
         function switchPerfTab(tab) {
             currentPerfTab = tab;
@@ -3176,7 +3106,7 @@
 
             const message = `异常提醒：${title}。${desc}\n\n请帮我分析该异常情况并提供处置建议。`;
             const input = panel.querySelector('.support-chat-input');
-            if (input) { input.value = message; input.focus(); }
+            if (input) { input.value = ''; input.focus(); }
 
             // 直接发送到对话
             appendSupportChatMessage(message, 'user', panel);
@@ -4521,31 +4451,6 @@
             },
             {
                 index: 3,
-                name: '交叉验证助手',
-                emoji: '🔍',
-                avatarClass: 'jiaocha',
-                modelName: '适当性风控交叉核验模型',
-                welcomeText: `我是您的交叉验证助手，当前已加载以下能力模型：
-
-**【投行业务】12项业务核验维度**
-• 股权类核验：定增、IPO、可转债 — 核查治理结构、财务异常、关联交易
-• 债权类核验：公司债、银行间债务工具、ABS — 核查偿债能力、资金监管、底层资产
-• 并购类核验：收购资产、收购上市公司、破产重整 — 核查估值合理性、同业竞争、表决程序
-• 客户服务核验：买方分析、信披判断、公告生成 — 核查合规性、披露标准
-
-**【我能帮您】**
-1. 适当性核验 — 输入方案内容，我逐项核验风险与合规匹配度
-2. 异常筛查 — 自动识别财务数据异常、关联交易风险、治理结构缺陷
-3. 合规提示 — 输出业务流程合规要求与需签署的法律文件清单
-
-请直接提交需要核验的方案或描述核验需求，我开始协助您。
-
-💡 您可以直接描述需求，例如：
-
->>> 帮我核验一下这个定增方案，看看有没有合规问题`
-            },
-            {
-                index: 4,
                 name: '客户服务助手',
                 emoji: '👁️',
                 avatarClass: 'tianyan',
@@ -5285,14 +5190,9 @@
                 assistantIndex: 2,
                 userCommand: '为王总300万闲置资金定制资产配置方案，同步给出存量股票持仓优化建议，内容做到通俗易懂，并附带完整合规提示。'
             },
-            // 第4步：交叉验证助手
+            // 第4步：客户服务助手
             {
                 assistantIndex: 3,
-                userCommand: '交叉核验整套方案的适当性匹配、合规话术、产品准入规则，全面排查潜在风险漏洞。'
-            },
-            // 第5步：客户服务助手
-            {
-                assistantIndex: 4,
                 userCommand: '生成微信简短通俗版沟通文案，同时配套标准化回访提问清单。'
             }
         ];
@@ -5511,16 +5411,7 @@
                     'ABS结构设计方案有哪些要素？',
                     '破产重整计划如何编制？'
                 ],
-                // 3: 交叉验证助手
-                [
-                    '帮我核验这个方案的合规性',
-                    '定增有关联交易风险吗？',
-                    '财务数据有没有异常？',
-                    '这个业务流程合规吗？',
-                    '需要签署哪些法律文件？',
-                    '治理结构有什么问题吗？'
-                ],
-                // 4: 客户服务助手
+                // 3: 客户服务助手
                 [
                     '帮我筛选匹配的投资者',
                     '这个事件是否需要信息披露？',
@@ -6240,13 +6131,6 @@
                 // 天眼 - 信息监控类
                 keywords: ['监控', '预警', '信息', '舆情', '跟踪', '实时信息', '市场信息', '客户服务', '个人客户', '银行客户', '企业客户'],
                 name: '天眼',
-                action: () => {
-                    enterChatMode(4);
-                }
-            },
-            jiaocha: {
-                keywords: ['交叉验证', '验证', '复核', '比对', '核验'],
-                name: '交叉验证',
                 action: () => {
                     enterChatMode(3);
                 }
