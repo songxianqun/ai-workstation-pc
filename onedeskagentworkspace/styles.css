@@ -9847,3 +9847,12 @@ body.support-tab-active .workbench-panel[data-panel="support"] .input-section {
         margin-bottom: 6px;
     }
 }
+
+/* 聊天模式滚动修复：允许页面在对话后仍可滚动 */
+body.employee-chat-mode { overflow-x: hidden !important; overflow-y: auto !important; height: auto !important; min-height: 100vh; }
+body.employee-chat-mode .main-content { height: auto !important; min-height: 100vh !important; overflow: visible !important; }
+body.employee-chat-mode .workbench-panels,
+body.employee-chat-mode .workbench-panel[data-panel="employee"],
+body.employee-chat-mode .workbench-panel[data-panel="employee"] .ai-workbench-section.chat-mode,
+body.employee-chat-mode .workbench-panel[data-panel="employee"] .ai-workbench-section.chat-mode .ai-chat-area-wrap { overflow: visible !important; }
+body.employee-chat-mode .workbench-panel[data-panel="employee"] .ai-workbench-section.chat-mode .ai-chat-messages { overflow-y: visible !important; flex: none !important; }
