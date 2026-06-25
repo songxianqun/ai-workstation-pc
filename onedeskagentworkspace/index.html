@@ -183,11 +183,10 @@
                 <div class="work-tips-header">
                     <span class="tips-icon">📋</span>
                     <div class="work-tips-tabs" id="work-tips-tabs">
-                        <div class="work-tips-tab active" data-tab="tasks" onclick="switchWorkTipsTab('tasks')">今日任务</div>
-                        <div class="work-tips-tab" data-tab="reminders" onclick="switchWorkTipsTab('reminders')">今日提醒</div>
+                        <div class="work-tips-tab active" data-tab="tasks" onclick="switchWorkTipsTab('tasks')">今日任务 <span class="tab-count" id="tasks-count">5</span></div>
+                        <div class="work-tips-tab" data-tab="reminders" onclick="switchWorkTipsTab('reminders')">今日提醒 <span class="tab-count" id="reminders-count">6</span></div>
                     </div>
-                    <span class="tips-count" id="work-tips-count">5</span>
-                    <button class="work-log-btn" onclick="openWorkLog()">
+                    <button class="work-log-btn" id="work-log-btn" onclick="openWorkLog()">
                         <span class="log-icon">📝</span>
                         <span>今日任务</span>
                     </button>
@@ -1494,7 +1493,7 @@
                         </div>
                         <div class="form-actions work-log-form-actions">
                             <button type="button" class="secondary-btn" onclick="closeWorkLog()">取消</button>
-                            <button type="submit" class="primary-btn">保存日志</button>
+                            <button type="submit" class="primary-btn">保存</button>
                         </div>
                     </form>
                 </div>
@@ -2800,8 +2799,8 @@
             const tipsBody = workTips?.querySelector('#work-tips-body-support');
             if (tipsBody) tipsBody.remove();
 
-            const tipsCount = workTips?.querySelector('.tips-count');
-            if (tipsCount) tipsCount.remove();
+            const tipsCounts = workTips?.querySelectorAll('.tab-count');
+            tipsCounts?.forEach(el => el.remove());
 
             const carousel = panel.querySelector('#ai-carousel-view-support');
             if (carousel) carousel.remove();
@@ -4897,22 +4896,28 @@
             const tasksLayout = document.getElementById('employee-tasks-layout');
             const remindersLayout = document.getElementById('employee-reminders-layout');
             const tabs = document.querySelectorAll('#work-tips-tabs .work-tips-tab');
-            const countEl = document.getElementById('work-tips-count');
+            const workLogBtn = document.getElementById('work-log-btn');
 
             tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+            // 「今日任务」按钮仅在今日任务tab时显示
+            if (workLogBtn) workLogBtn.style.display = (tab === 'tasks') ? '' : 'none';
 
             if (tab === 'tasks') {
                 if (tasksLayout) tasksLayout.style.display = '';
                 if (remindersLayout) remindersLayout.style.display = 'none';
-                if (countEl) {
+                const tasksCountEl = document.getElementById('tasks-count');
+                if (tasksCountEl) {
                     const tasks = getEmployeeDailyTasks() || [];
-                    countEl.textContent = String(tasks.length);
+                    tasksCountEl.textContent = String(tasks.length);
                 }
             } else {
                 if (tasksLayout) tasksLayout.style.display = 'none';
                 if (remindersLayout) remindersLayout.style.display = '';
-                const reminders = document.querySelectorAll('#employee-reminders-list .tip-item');
-                if (countEl) countEl.textContent = String(reminders.length);
+                const remindersCountEl = document.getElementById('reminders-count');
+                if (remindersCountEl) {
+                    const reminders = document.querySelectorAll('#employee-reminders-list .tip-item');
+                    remindersCountEl.textContent = String(reminders.length);
+                }
             }
         }
 
@@ -8206,7 +8211,7 @@
 
         function renderEmployeeDailyTasks() {
             const listEl = document.getElementById('employee-daily-tasks-list');
-            const countEl = document.querySelector('#work-tips-section .tips-count');
+            const countEl = document.getElementById('tasks-count');
             const tasks = getEmployeeDailyTasks() || [];
             if (!listEl) return;
 
