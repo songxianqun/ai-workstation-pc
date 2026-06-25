@@ -93,7 +93,7 @@
                         <!-- 子Tab切换 -->
                         <div class="m-segment-tabs">
                             <div class="m-segment-tab active" onclick="mSwitchPerfTab('performance')">业绩</div>
-                            <div class="m-segment-tab" onclick="mSwitchPerfTab('behavior')">员工行为</div>
+                            <div class="m-segment-tab" onclick="mSwitchPerfTab('behavior')">差旅分析</div>
                         </div>
 
                         <!-- 业绩Tab内容 -->
@@ -594,7 +594,7 @@ function mSwitchPerfTab(tab) {
     document.querySelectorAll('.m-segment-tab').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.m-segment-tab').forEach(el => {
         if ((tab === 'performance' && el.textContent === '业绩') ||
-            (tab === 'behavior' && el.textContent === '员工行为')) el.classList.add('active');
+            (tab === 'behavior' && el.textContent === '差旅分析')) el.classList.add('active');
     });
     document.getElementById('m-perf-performance-content').hidden = (tab !== 'performance');
     document.getElementById('m-perf-behavior-content').hidden = (tab !== 'behavior');

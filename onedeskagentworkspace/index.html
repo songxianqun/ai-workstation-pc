@@ -240,7 +240,7 @@
             <div class="performance-header">
                 <div class="performance-tabs">
                     <div class="perf-tab active" onclick="switchPerfTab('performance')">📊 业绩与绩效</div>
-                    <div class="perf-tab" onclick="switchPerfTab('behavior')">👤 员工行为</div>
+                    <div class="perf-tab" onclick="switchPerfTab('behavior')">👤 差旅分析</div>
                 </div>
                 <button class="section-toggle-btn" id="performance-toggle" onclick="toggleSection('performance')">收起</button>
             </div>
@@ -1881,7 +1881,7 @@
             if (!panel) return;
             panel.querySelectorAll('.perf-tab').forEach(el => {
                 const isPerf = el.textContent.includes('业绩');
-                const isBehavior = el.textContent.includes('员工行为');
+                const isBehavior = el.textContent.includes('差旅分析');
                 el.classList.toggle('active', (tab === 'performance' && isPerf) || (tab === 'behavior' && isBehavior));
             });
             const perfContent = panel.querySelector('#perf-performance-content') || panel.querySelector('[id^="perf-performance-content"]');
