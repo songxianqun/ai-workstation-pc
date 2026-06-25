@@ -4932,6 +4932,8 @@
 
             const isCollapsed = section.classList.toggle('collapsed');
             toggleBtn.textContent = isCollapsed ? '展开' : '收起';
+            // 强制重绘，确保浏览器重新计算滚动高度
+            void document.body.offsetHeight;
         }
 
         function collapseTopSections(panel) {
@@ -5631,9 +5633,84 @@
             L.push('>>> ' + biz + '找谁支持？— 直接对接投行支持人员');
             return L.join('\n');
         }
+        // 开户资料补件任务专属AI回复
+        function ibGenerateAccountOpeningReply() {
+            var lines = [];
+            lines.push('## 客户情况概要');
+            lines.push('');
+            lines.push('测试科技有限公司为营业部新拓展的机构客户，拟开通证券账户用于闲置资金理财。开户申请已提交至柜台系统，目前因营业执照扫描件清晰度不足被退回，同时法人身份证将于下月到期，需提醒客户同步更新证件。客户已申请绿色通道加急处理，需持续跟进资料补齐进度。');
+            lines.push('');
+            lines.push('---');
+            lines.push('');
+            lines.push('## 一、沟通话术');
+            lines.push('');
+            lines.push('### 电话沟通参考');
+            lines.push('');
+            lines.push('> 您好，XX总，我是XX证券XX营业部的XXX。您公司之前提交的证券账户开户申请，柜台审核反馈有两项资料需要补充：');
+            lines.push('>');
+            lines.push('> 1. **营业执照副本**扫描件清晰度不足，麻烦您重新拍摄或扫描一份更清晰的版本；');
+            lines.push('> 2. 我们注意到贵公司**法人代表身份证**将于下月到期，建议您这次一并更新为新证件，避免后续还需补办。');
+            lines.push('>');
+            lines.push('> 您这边可以通过我发您的企业微信链接直接上传，操作很方便，我马上把详细步骤发您。资料补齐后我们会立即重新提交审核，预计当天即可完成开户。');
+            lines.push('');
+            lines.push('### 企业微信沟通参考');
+            lines.push('');
+            lines.push('> XX总您好，贵公司证券账户开户申请柜台审核反馈如下：');
+            lines.push('>');
+            lines.push('> ① 营业执照副本扫描件清晰度不足，请重新拍摄/扫描上传；');
+            lines.push('> ② 法人代表身份证即将到期，建议同步更新为新证件。');
+            lines.push('>');
+            lines.push('> 您可通过以下链接直接上传：https://biz.example.com/upload?token=XXXX');
+            lines.push('> 补齐后我这边立即重新提交，预计当天可完成开户。感谢配合！');
+            lines.push('');
+            lines.push('---');
+            lines.push('');
+            lines.push('## 二、客户需上传的资料清单');
+            lines.push('');
+            lines.push('| 序号 | 资料名称 | 要求 | 状态 |');
+            lines.push('|------|----------|------|------|');
+            lines.push('| 1 | 营业执照副本（加盖公章） | 彩色扫描件，分辨率≥300dpi，四角完整、字迹清晰 | ❌ 需重新上传 |');
+            lines.push('| 2 | 法人代表身份证（正反面） | 彩色扫描件，证件在有效期内（当前即将到期，需更换新证） | ❌ 需更新 |');
+            lines.push('| 3 | 开户申请表（法人签字+公章） | 确认原件已签署并加盖公章 | ✅ 已提交 |');
+            lines.push('| 4 | 组织机构代码证 | 在有效期内 | ✅ 已提交 |');
+            lines.push('');
+            lines.push('### 操作步骤');
+            lines.push('');
+            lines.push('1. 登录机构客户线上服务平台：**https://biz.example.com/org-service**');
+            lines.push('2. 进入「开户管理」→「资料补传」模块');
+            lines.push('3. 选择开户申请单号（系统会自动关联）');
+            lines.push('4. 点击「上传文件」，逐项上传以上清单中标记为“需重新上传/需更新”的资料');
+            lines.push('5. 提交后通知我确认，我将立即重新发起柜台审核');
+            lines.push('');
+            lines.push('---');
+            lines.push('');
+            lines.push('## 三、企业微信一键转发消息模板');
+            lines.push('');
+            lines.push('```');
+            lines.push('【开户资料补充通知】');
+            lines.push('');
+            lines.push('XX总您好，贵公司证券账户开户申请柜台审核反馈如下资料需补充：');
+            lines.push('');
+            lines.push('1️⃣ 营业执照副本——原扫描件不清晰，请重新拍摄或扫描（要求彩色、字迹清晰、四角完整）');
+            lines.push('2️⃣ 法人身份证——即将到期，建议更换新证后上传正反面');
+            lines.push('');
+            lines.push('📎 上传地址：https://biz.example.com/upload?token=XXXX');
+            lines.push('📞 如需协助请随时联系我');
+            lines.push('');
+            lines.push('资料补齐当天即可完成开户，感谢配合！');
+            lines.push('```');
+            lines.push('');
+            lines.push('>>> 查看开户审核进度');
+            lines.push('>>> 如何为机构客户配置理财产品');
+            return lines.join('\n');
+        }
         function ibLocalReply(message) {
             const il = (message || '').toLowerCase();
             const bizName = ibExtractBusinessName(il);
+            // 开户资料补件任务专属回复
+            if (ibAnyKeyword(il, ['开户资料补件','测试科技有限公司'])) {
+                return ibGenerateAccountOpeningReply();
+            }
             if (ibAnyKeyword(il, ['发行条件','准入标准','准入条件','发行要求','资质要求'])) {
                 return ibGenerateAdmission(bizName || '定增');
             } else if (ibAnyKeyword(il, ['设计','帮我设计']) || (ibAnyKeyword(il, ['方案']) && !ibAnyKeyword(il, ['核验','合规','风险','材料','准备']))) {
@@ -8368,7 +8445,7 @@
 
             // 第二条任务：开户资料补件
             if (title.includes('开户资料补件') || title.includes('资料补件') || title.includes('营业执照')) {
-                return `我是营业部员工，当前有一笔机构客户开户资料补件任务需要处理：\n${content}\n\n请帮我：\n1. 生成与客户的沟通话术（电话+企业微信），提醒客户补充营业执照和更新法人证件\n2. 列出客户需上传的资料清单和操作步骤\n3. 生成一条可通过企业微信一键转发给客户的消息模板`;
+                return `机构客户"测试科技有限公司"开户资料补件待跟进，营业执照及法人证件需重新上传`;
             }
 
             // 第一条任务：迪阿股份
