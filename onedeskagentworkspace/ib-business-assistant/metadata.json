@@ -1,0 +1,37 @@
+{
+  "name": "ib-business-assistant",
+  "version": "1.0.0",
+  "description": "投行业务参与助手 - 为非投行部门员工提供投行业务推荐、操作指导及支持人员匹配",
+  "displayName": "投行业务参与助手",
+  "displayName_zh": "投行业务参与助手",
+  "description_zh": "基于投行30个业务模型，帮助普通员工识别客户业务机会，获得展业指导，匹配投行支持资源",
+  "author": "公司投行部",
+  "license": "INTERNAL",
+  "tags": ["投行", "业务拓展", "客户分析", "业务推荐"],
+  "skills": [
+    {
+      "name": "business-recommendation",
+      "description": "根据客户信息推荐适合的投行业务类型",
+      "triggers": ["推荐业务", "客户能做什么业务", "适合什么产品", "业务机会分析"]
+    },
+    {
+      "name": "business-teaching", 
+      "description": "提供选定业务的操作指导和展业要点",
+      "triggers": ["怎么做", "如何开展", "业务指导", "操作步骤"]
+    },
+    {
+      "name": "support-contact",
+      "description": "匹配各业务的投行支持人员信息",
+      "triggers": ["找谁支持", "联系哪位", "投行对接人", "谁负责"]
+    }
+  ],
+  "requiredPermissions": [],
+  "entryPoints": {
+    "cli": "ib-assistant",
+    "web": "/ib-assistant"
+  },
+  "compatibility": {
+    "platform": ["stepfun-workbench"],
+    "minVersion": "1.0.0"
+  }
+}

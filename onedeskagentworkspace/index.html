@@ -974,6 +974,53 @@
         </div>
     </div>
 
+    <!-- 自建智能体创建/编辑Modal -->
+    <div id="custom-agent-modal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeCreateAgentModal()"></div>
+        <div class="modal-container" style="max-width: 460px; margin-left: 0; margin-top: 0;">
+            <div class="modal-header">
+                <h4 id="custom-agent-modal-title">✨ 创建智能体</h4>
+                <button class="close-modal-btn" onclick="closeCreateAgentModal()">✕</button>
+            </div>
+            <div class="modal-content">
+                <div class="form-field">
+                    <label class="form-label">智能体名称 <span class="required" style="color:#ef4444;">*</span></label>
+                    <input type="text" id="agent-name-input" class="form-input" placeholder="如：合规审查助手" maxlength="12">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">一句话描述</label>
+                    <input type="text" id="agent-desc-input" class="form-input" placeholder="如：部门自建·合规审查" maxlength="20">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">头像图标</label>
+                    <div class="emoji-picker" id="emoji-picker"></div>
+                    <input type="hidden" id="agent-emoji-input" value="🤖">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">头像颜色</label>
+                    <div class="color-picker" id="color-picker"></div>
+                    <input type="hidden" id="agent-color-input" value="custom-1">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">欢迎语</label>
+                    <textarea id="agent-welcome-input" class="form-textarea" rows="2" placeholder="用户进入对话时显示的欢迎信息"></textarea>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">API地址 <span class="required" style="color:#ef4444;">*</span></label>
+                    <input type="text" id="agent-api-url-input" class="form-input" placeholder="如：https://api.example.com/chat">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">API Key（可选）</label>
+                    <input type="text" id="agent-api-key-input" class="form-input" placeholder="将作为 ?key=xxx 拼接到API地址">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn" onclick="closeCreateAgentModal()">取消</button>
+                <button class="confirm-btn" id="agent-save-btn" onclick="saveCustomAgent()">创建智能体</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 发送成功提示 -->
     <div id="send-success-toast" class="toast" style="display: none;">
         <div class="toast-content">
@@ -4523,6 +4570,192 @@
             }
         ];
 
+        // ========== 自建智能体数据层 ==========
+        const CUSTOM_AGENTS_KEY = 'customAgents_v1';
+        let customAgents = loadCustomAgents();
+
+        function loadCustomAgents() {
+            try { return JSON.parse(localStorage.getItem(CUSTOM_AGENTS_KEY)) || []; }
+            catch(e) { return []; }
+        }
+        function saveCustomAgents() {
+            localStorage.setItem(CUSTOM_AGENTS_KEY, JSON.stringify(customAgents));
+        }
+        function nextCustomIndex() {
+            return customAgents.length > 0 ? Math.max(...customAgents.map(a => a.index)) + 1 : 100;
+        }
+        function getAssistantByIndex(index) {
+            if (index >= 100) return customAgents.find(a => a.index === index) || aiAssistants[0];
+            return aiAssistants[index] || aiAssistants[0];
+        }
+        function isCustomAgent(index) { return index >= 100; }
+
+        // ========== 自建智能体 Modal 控制 ==========
+        let editingAgentIndex = null;
+        const AGENT_EMOJIS = ['🤖','⚖️','📊','💼','🎯','🔔','💡','📝','🏦','📈','🛡️','🔍'];
+        const AGENT_COLORS = ['custom-1','custom-2','custom-3','custom-4','custom-5','custom-6'];
+
+        function openCreateAgentModal(editIndex) {
+            editingAgentIndex = (editIndex != null && editIndex !== undefined) ? editIndex : null;
+            const modal = document.getElementById('custom-agent-modal');
+            const titleEl = document.getElementById('custom-agent-modal-title');
+            const saveBtn = document.getElementById('agent-save-btn');
+
+            if (editingAgentIndex != null) {
+                const agent = customAgents.find(a => a.index === editingAgentIndex);
+                if (!agent) return;
+                titleEl.textContent = '✏️ 编辑智能体';
+                saveBtn.textContent = '保存修改';
+                document.getElementById('agent-name-input').value = agent.name;
+                document.getElementById('agent-desc-input').value = agent.desc || '';
+                document.getElementById('agent-emoji-input').value = agent.emoji;
+                document.getElementById('agent-color-input').value = agent.avatarClass;
+                document.getElementById('agent-welcome-input').value = agent.welcomeText || '';
+                document.getElementById('agent-api-url-input').value = agent.apiUrl || '';
+                document.getElementById('agent-api-key-input').value = agent.apiKey || '';
+            } else {
+                titleEl.textContent = '✨ 创建智能体';
+                saveBtn.textContent = '创建智能体';
+                ['agent-name-input','agent-desc-input','agent-welcome-input','agent-api-url-input','agent-api-key-input']
+                    .forEach(id => document.getElementById(id).value = '');
+                document.getElementById('agent-emoji-input').value = '🤖';
+                document.getElementById('agent-color-input').value = 'custom-1';
+            }
+
+            initEmojiPicker();
+            initColorPicker();
+            modal.style.display = 'flex';
+        }
+
+        function closeCreateAgentModal() {
+            document.getElementById('custom-agent-modal').style.display = 'none';
+            editingAgentIndex = null;
+        }
+
+        function initEmojiPicker() {
+            const picker = document.getElementById('emoji-picker');
+            const current = document.getElementById('agent-emoji-input').value;
+            picker.innerHTML = AGENT_EMOJIS.map(emoji =>
+                `<div class="emoji-option${emoji === current ? ' selected' : ''}" onclick="selectEmoji('${emoji}')">${emoji}</div>`
+            ).join('');
+        }
+
+        function selectEmoji(emoji) {
+            document.getElementById('agent-emoji-input').value = emoji;
+            document.querySelectorAll('#emoji-picker .emoji-option').forEach(el => {
+                el.classList.toggle('selected', el.textContent === emoji);
+            });
+        }
+
+        function initColorPicker() {
+            const picker = document.getElementById('color-picker');
+            const current = document.getElementById('agent-color-input').value;
+            picker.innerHTML = AGENT_COLORS.map(cls =>
+                `<div class="color-option ${cls}${cls === current ? ' selected' : ''}" onclick="selectColor('${cls}')"></div>`
+            ).join('');
+        }
+
+        function selectColor(cls) {
+            document.getElementById('agent-color-input').value = cls;
+            document.querySelectorAll('#color-picker .color-option').forEach((el, i) => {
+                el.classList.toggle('selected', AGENT_COLORS[i] === cls);
+            });
+        }
+
+        function saveCustomAgent() {
+            const name = document.getElementById('agent-name-input').value.trim();
+            const apiUrl = document.getElementById('agent-api-url-input').value.trim();
+            if (!name) { alert('请输入智能体名称'); return; }
+            if (!apiUrl) { alert('请输入API地址'); return; }
+
+            const agentData = {
+                name: name,
+                desc: document.getElementById('agent-desc-input').value.trim() || '自建智能体',
+                emoji: document.getElementById('agent-emoji-input').value,
+                avatarClass: document.getElementById('agent-color-input').value,
+                welcomeText: document.getElementById('agent-welcome-input').value.trim()
+                    || `我是${name}，很高兴为您服务。请描述您的需求，我将通过外部AI能力为您提供支持。`,
+                apiUrl: apiUrl,
+                apiKey: document.getElementById('agent-api-key-input').value.trim(),
+                isCustom: true
+            };
+
+            if (editingAgentIndex != null) {
+                const existing = customAgents.find(a => a.index === editingAgentIndex);
+                agentData.index = editingAgentIndex;
+                agentData.createdAt = existing?.createdAt || new Date().toISOString().slice(0, 10);
+                const idx = customAgents.findIndex(a => a.index === editingAgentIndex);
+                customAgents[idx] = agentData;
+            } else {
+                agentData.index = nextCustomIndex();
+                agentData.createdAt = new Date().toISOString().slice(0, 10);
+                customAgents.push(agentData);
+            }
+
+            saveCustomAgents();
+            closeCreateAgentModal();
+            document.querySelectorAll('.workbench-panel').forEach(p => refreshMiniAvatars(p));
+        }
+
+        function deleteCustomAgent(index) {
+            const agent = customAgents.find(a => a.index === index);
+            if (!agent) return;
+            if (!confirm(`确定删除「${agent.name}」吗？此操作不可撤销。`)) return;
+            customAgents = customAgents.filter(a => a.index !== index);
+            saveCustomAgents();
+            document.querySelectorAll('.workbench-panel').forEach(p => {
+                const state = getPanelState(p);
+                if (state.currentCardIndex === index) state.currentCardIndex = 0;
+                refreshMiniAvatars(p);
+            });
+        }
+
+        function refreshMiniAvatars(panel) {
+            const p = panel || getActiveWorkbenchPanel();
+            const state = getPanelState(p);
+            state.miniAvatarsInitialized = false;
+            const container = getPanelEl('ai-mini-avatars', p);
+            if (container) container.innerHTML = '';
+            initMiniAvatars(p);
+            updateMiniAvatarActive(state.currentCardIndex ?? 0, p);
+        }
+
+        // 右键菜单
+        let agentContextMenuEl = null;
+        function showAgentContextMenu(event, index) {
+            event.preventDefault();
+            hideAgentContextMenu();
+            const menu = document.createElement('div');
+            menu.className = 'agent-context-menu';
+            menu.innerHTML =
+                `<div class="agent-context-menu-item" onclick="hideAgentContextMenu();openCreateAgentModal(${index})">✏️ 编辑</div>` +
+                `<div class="agent-context-menu-item danger" onclick="hideAgentContextMenu();deleteCustomAgent(${index})">🗑️ 删除</div>`;
+            document.body.appendChild(menu);
+            menu.style.left = Math.min(event.clientX, window.innerWidth - 120) + 'px';
+            menu.style.top = Math.min(event.clientY, window.innerHeight - 80) + 'px';
+            agentContextMenuEl = menu;
+        }
+        function hideAgentContextMenu() {
+            if (agentContextMenuEl) { agentContextMenuEl.remove(); agentContextMenuEl = null; }
+        }
+        document.addEventListener('click', () => hideAgentContextMenu());
+
+        // 自建智能体回复（外部API）
+        async function getCustomAgentReply(message, index) {
+            const agent = getAssistantByIndex(index);
+            if (!agent || !agent.apiUrl) return '智能体API地址未配置，请编辑后重试。';
+            let url = agent.apiUrl;
+            if (agent.apiKey) url += (url.includes('?') ? '&' : '?') + 'key=' + encodeURIComponent(agent.apiKey);
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: message
+            });
+            if (!resp.ok) throw new Error('API返回状态 ' + resp.status);
+            const text = await resp.text();
+            return text || '（API返回空回复）';
+        }
+
         function markdownToHtml(text) {
             if (!text) return '';
             // 统一换行符
@@ -4851,6 +5084,34 @@
                 btn.onclick = () => selectAssistant(assistant.index, p);
                 container.appendChild(btn);
             });
+
+            // 分隔线（系统助手与自建智能体之间）
+            const separator = document.createElement('div');
+            separator.className = 'mini-avatar-separator';
+            container.appendChild(separator);
+
+            // 自建智能体头像
+            customAgents.forEach((agent) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `ai-mini-avatar ${agent.avatarClass}`;
+                btn.dataset.index = agent.index;
+                btn.title = agent.name + '（自建）';
+                btn.innerHTML = `<span>${agent.emoji}</span>`;
+                btn.onclick = () => selectAssistant(agent.index, p);
+                btn.oncontextmenu = (e) => { e.preventDefault(); showAgentContextMenu(e, agent.index); };
+                container.appendChild(btn);
+            });
+
+            // 添加按钮
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.className = 'ai-mini-avatar ai-mini-avatar-add';
+            addBtn.title = '添加智能体';
+            addBtn.innerHTML = '<span>＋</span>';
+            addBtn.onclick = () => openCreateAgentModal();
+            container.appendChild(addBtn);
+
             state.miniAvatarsInitialized = true;
         }
 
@@ -4968,7 +5229,7 @@
         }
 
         function getEmployeeAssistant(index) {
-            return aiAssistants[index] || aiAssistants[0];
+            return getAssistantByIndex(index);
         }
 
         function buildEmployeeChatAvatarHtml(index) {
@@ -5040,7 +5301,7 @@
 
         function appendAssistantConversation(index, panel) {
             const p = panel || getActiveWorkbenchPanel();
-            const assistant = aiAssistants[index];
+            const assistant = getAssistantByIndex(index);
             const messagesEl = getPanelEl('ai-chat-messages', p);
             if (!messagesEl) return;
 
@@ -5733,6 +5994,9 @@
             appendChatMessage('正在分析中，请稍候...', 'assistant', p);
             await new Promise(r => setTimeout(r, 400));
             removeLastAssistantMessage(p);
+            if (isCustomAgent(index)) {
+                return await getCustomAgentReply(message, index);
+            }
             return ibLocalReply(message);
         }
 
@@ -6044,6 +6308,8 @@
                 // 异步调用投行业务助手API
                 getAssistantReply(message, currentAssistantIndex).then(reply => {
                     appendChatMessage(reply, 'assistant');
+                }).catch(err => {
+                    appendChatMessage('⚠️ 智能体调用失败：' + (err.message || '未知错误') + '\n\n请检查API地址是否正确、服务是否可用。', 'assistant');
                 });
                 return;
             }

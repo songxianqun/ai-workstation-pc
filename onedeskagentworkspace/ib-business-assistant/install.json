@@ -1,0 +1,15 @@
+{
+  "name": "ib-business-assistant",
+  "version": "1.0.0",
+  "display_name": "投行业务参与助手",
+  "install_time": "2026-06-24T11:07:08.136838",
+  "entry_point": "main.py",
+  "launcher": {
+    "linux/mac": "launcher.sh",
+    "windows": "launcher.bat"
+  },
+  "commands": {
+    "interactive": "python main.py",
+    "api": "python main.py --api"
+  }
+}

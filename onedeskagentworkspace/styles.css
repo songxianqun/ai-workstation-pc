@@ -6280,6 +6280,150 @@ body.employee-chat-mode .chat-fullscreen-body .ai-chat-messages .chat-bubble-use
     transform: scale(1.12);
 }
 
+/* 自建智能体迷你头像颜色 */
+.ai-mini-avatar.custom-1 { background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); }
+.ai-mini-avatar.custom-2 { background: linear-gradient(135deg, #EC4899 0%, #F43F5E 100%); }
+.ai-mini-avatar.custom-3 { background: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%); }
+.ai-mini-avatar.custom-4 { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+.ai-mini-avatar.custom-5 { background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); }
+.ai-mini-avatar.custom-6 { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+
+/* 迷你头像分隔线 */
+.mini-avatar-separator {
+    width: 1px;
+    height: 24px;
+    background: var(--border-color);
+    margin: 0 4px;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+/* 迷你头像"+"按钮 */
+.ai-mini-avatar.ai-mini-avatar-add {
+    background: transparent;
+    border: 2px dashed #ccc;
+    color: #999;
+    box-shadow: none;
+}
+.ai-mini-avatar.ai-mini-avatar-add:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* 自建智能体聊天头像颜色 */
+.employee-chat-avatar.custom-1 { background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); }
+.employee-chat-avatar.custom-2 { background: linear-gradient(135deg, #EC4899 0%, #F43F5E 100%); }
+.employee-chat-avatar.custom-3 { background: linear-gradient(135deg, #14B8A6 0%, #0D9488 100%); }
+.employee-chat-avatar.custom-4 { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+.employee-chat-avatar.custom-5 { background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); }
+.employee-chat-avatar.custom-6 { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+
+/* 自建智能体表单样式 */
+.form-field {
+    margin-bottom: 16px;
+}
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.form-input, .form-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+.form-textarea {
+    resize: vertical;
+}
+
+/* emoji选择器 */
+.emoji-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.emoji-option {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background: #f5f5f5;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.emoji-option:hover {
+    background: #e8e8e8;
+}
+.emoji-option.selected {
+    border-color: var(--primary-color);
+    background: #f0f7ff;
+}
+
+/* 颜色选择器 */
+.color-picker {
+    display: flex;
+    gap: 8px;
+}
+.color-option {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+}
+.color-option:hover {
+    transform: scale(1.1);
+}
+.color-option.selected {
+    border-color: #333;
+}
+.color-option.custom-1 { background: linear-gradient(135deg, #8B5CF6, #6366F1); }
+.color-option.custom-2 { background: linear-gradient(135deg, #EC4899, #F43F5E); }
+.color-option.custom-3 { background: linear-gradient(135deg, #14B8A6, #0D9488); }
+.color-option.custom-4 { background: linear-gradient(135deg, #F59E0B, #D97706); }
+.color-option.custom-5 { background: linear-gradient(135deg, #6366F1, #4F46E5); }
+.color-option.custom-6 { background: linear-gradient(135deg, #10B981, #059669); }
+
+/* 右键菜单 */
+.agent-context-menu {
+    position: fixed;
+    z-index: 10000;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    padding: 4px 0;
+    min-width: 100px;
+}
+.agent-context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-primary);
+    transition: background 0.15s;
+}
+.agent-context-menu-item:hover {
+    background: #f5f5f5;
+}
+.agent-context-menu-item.danger {
+    color: #ef4444;
+}
+
 /* 底部输入区 */
 .input-section {
     margin-bottom: 0;
