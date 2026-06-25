@@ -4900,7 +4900,7 @@
 
             tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
             // 「今日任务」按钮仅在今日任务tab时显示
-            if (workLogBtn) workLogBtn.style.display = (tab === 'tasks') ? '' : 'none';
+            if (workLogBtn) workLogBtn.style.visibility = (tab === 'tasks') ? '' : 'hidden';
 
             if (tab === 'tasks') {
                 if (tasksLayout) tasksLayout.style.display = '';
